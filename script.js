@@ -95,34 +95,36 @@ document.addEventListener('DOMContentLoaded', function () {
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
   /* ------------------------------------------------------------------
-     6. FORMULÁRIO DE CONTATO — validação simples + envio via fetch
-        (compatível com Netlify Forms: envia para "/" com o mesmo
-        form-name usado no atributo data-netlify do HTML)
+     6. FORMULÁRIOS — validação + envio via fetch, compatível com Netlify
+        Forms (mesmo form-name usado no atributo data-netlify do HTML).
+        Uma função genérica cuida de qualquer formulário da página; o que
+        acontece depois do envio (mensagem de sucesso ou liberar um
+        download) é definido por quem chama.
      ------------------------------------------------------------------ */
-  var form = document.getElementById('contact-form');
-  if (form) {
+  var validateField = function (field) {
+    var wrapper = field.closest('.form-field');
+    var value = field.value.trim();
+    var isValid = true;
+
+    if (field.hasAttribute('required') && value === '') {
+      isValid = false;
+    }
+    if (field.type === 'email' && value !== '') {
+      var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(value)) isValid = false;
+    }
+
+    wrapper.classList.toggle('has-error', !isValid);
+    return isValid;
+  };
+
+  var wireForm = function (form, onSuccess, onError) {
     var statusEl = form.querySelector('.form-status');
 
     var showStatus = function (type, message) {
+      if (!statusEl) return;
       statusEl.textContent = message;
       statusEl.className = 'form-status is-visible ' + (type === 'success' ? 'is-success' : 'is-error');
-    };
-
-    var validateField = function (field) {
-      var wrapper = field.closest('.form-field');
-      var value = field.value.trim();
-      var isValid = true;
-
-      if (field.hasAttribute('required') && value === '') {
-        isValid = false;
-      }
-      if (field.type === 'email' && value !== '') {
-        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(value)) isValid = false;
-      }
-
-      wrapper.classList.toggle('has-error', !isValid);
-      return isValid;
     };
 
     form.querySelectorAll('input, textarea').forEach(function (field) {
@@ -158,17 +160,49 @@ document.addEventListener('DOMContentLoaded', function () {
         body: encoded.toString()
       })
         .then(function () {
-          showStatus('success', 'Mensagem enviada! Responderemos o quanto antes em ' + (form.dataset.replyEmail || 'suporte@criativamente.ia.br') + '.');
+          showStatus('success', '');
+          if (statusEl) statusEl.className = 'form-status';
+          if (onSuccess) onSuccess(form);
           form.reset();
         })
         .catch(function () {
-          showStatus('error', 'Não foi possível enviar agora. Tente novamente ou escreva direto para suporte@criativamente.ia.br.');
+          if (onError) onError();
+          else showStatus('error', 'Não foi possível enviar agora. Tente novamente em alguns instantes.');
         })
         .finally(function () {
           submitBtn.disabled = false;
           submitBtn.textContent = originalLabel;
         });
     });
+  };
+
+  /* Formulário de contato (contato.html) */
+  var contactForm = document.getElementById('contact-form');
+  if (contactForm) {
+    wireForm(contactForm, function (form) {
+      var statusEl = form.querySelector('.form-status');
+      statusEl.textContent = 'Mensagem enviada! Responderemos o quanto antes em ' + (form.dataset.replyEmail || 'suporte@criativamente.ia.br') + '.';
+      statusEl.className = 'form-status is-visible is-success';
+    });
   }
+
+  /* Formulários de materiais gratuitos (materiais.html) — ao enviar com
+     sucesso, esconde o formulário e revela o botão de download do arquivo
+     indicado em data-reveal-download. Basta esse atributo pra funcionar em
+     qualquer material novo, sem precisar tocar neste arquivo de novo. */
+  document.querySelectorAll('form[data-reveal-download]').forEach(function (form) {
+    wireForm(form, function (form) {
+      var wrap = form.closest('.material-form-wrap');
+      if (!wrap) return;
+      var reveal = wrap.querySelector('.download-reveal');
+      var link = reveal ? reveal.querySelector('.download-link') : null;
+      if (link) {
+        link.href = form.dataset.revealDownload;
+        if (form.dataset.fileLabel) link.setAttribute('aria-label', 'Baixar ' + form.dataset.fileLabel);
+      }
+      form.setAttribute('hidden', '');
+      if (reveal) reveal.removeAttribute('hidden');
+    });
+  });
 
 });

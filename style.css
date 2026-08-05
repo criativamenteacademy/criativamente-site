@@ -580,6 +580,7 @@ a.card { display: block; text-decoration: none; }
 .ghost-line.w-40 { width: 40%; }
 
 .ghost-card .tag { align-self: flex-start; opacity: 0.7; }
+.ghost-card .card-icon { margin-bottom: 0; opacity: 0.85; }
 
 /* --------------------------------------------------------------------------
    14. FORMULÁRIO (Contato)
@@ -990,3 +991,125 @@ a.card { display: block; text-decoration: none; }
 @media (max-width: 760px) {
   .curriculum-item { padding: var(--space-sm) var(--space-md); }
 }
+
+/* --------------------------------------------------------------------------
+   20. MATERIAIS GRATUITOS — spotlight de material + formulário de captura
+   Reaproveita .split (duas colunas) já usado em Sobre/Contato.
+   -------------------------------------------------------------------------- */
+.material-points {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+}
+.material-points li {
+  display: flex;
+  gap: var(--space-2xs);
+  font-size: var(--text-sm);
+  color: var(--ivory-muted);
+}
+.material-points svg { flex-shrink: 0; width: 18px; height: 18px; stroke: var(--copper-light); margin-top: 2px; }
+
+.material-form-wrap {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.lead-form .form-field { margin-bottom: var(--space-md); }
+
+.download-reveal {
+  text-align: center;
+  padding: var(--space-md) 0;
+}
+.download-reveal[hidden] { display: none; }
+.download-reveal .card-icon { margin: 0 auto var(--space-md); }
+.download-reveal h3 { margin-bottom: var(--space-2xs); }
+.download-reveal p { margin-bottom: var(--space-md); }
+.download-reveal .btn { width: 100%; }
+
+.lead-form[hidden] { display: none; }
+
+/* estado "mais em breve" reaproveitando o padrão de ghost-card já existente */
+.material-more {
+  margin-top: var(--space-xl);
+}
+
+/* --------------------------------------------------------------------------
+   21. ARTIGO DE BLOG — cabeçalho + coluna de leitura confortável
+   -------------------------------------------------------------------------- */
+.article-header {
+  padding-top: calc(var(--header-h) + var(--space-xl));
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--line);
+}
+.article-header .container { max-width: 760px; }
+.article-header .eyebrow { margin-bottom: var(--space-sm); }
+.article-header h1 { max-width: none; }
+.article-header .lede { font-size: var(--text-lg); margin-top: var(--space-sm); }
+.article-meta {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-top: var(--space-md);
+  font-size: var(--text-xs);
+  color: var(--warm-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.article-body { max-width: 720px; margin-inline: auto; }
+.article-body h2 {
+  font-size: var(--text-2xl);
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-sm);
+}
+.article-body h2:first-child { margin-top: 0; }
+.article-body p { font-size: var(--text-lg); line-height: 1.7; margin-bottom: var(--space-md); color: var(--ivory-muted); }
+.article-body ul { display: flex; flex-direction: column; gap: var(--space-xs); margin: var(--space-md) 0; }
+.article-body ul li {
+  font-size: var(--text-lg);
+  line-height: 1.6;
+  color: var(--ivory-muted);
+  padding-left: var(--space-md);
+  position: relative;
+}
+.article-body ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--copper-light);
+}
+
+.article-callout {
+  background: var(--surface-1);
+  border-left: 3px solid var(--copper);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-lg);
+  margin: var(--space-lg) 0;
+}
+.article-callout p { margin-bottom: 0; font-size: var(--text-base); }
+.article-callout p + p { margin-top: var(--space-xs); }
+
+.article-sources {
+  max-width: 720px;
+  margin: var(--space-2xl) auto 0;
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--line);
+}
+.article-sources h4 {
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--warm-gray);
+  margin-bottom: var(--space-sm);
+}
+.article-sources ol { display: flex; flex-direction: column; gap: var(--space-2xs); padding-left: 1.2em; }
+.article-sources li { font-size: var(--text-xs); color: var(--warm-gray); }
+.article-sources a { color: var(--copper-light); word-break: break-word; }
+.article-sources a:hover { text-decoration: underline; }
