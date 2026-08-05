@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contato — CriativaMente Academy</title>
+  <meta name="description" content="Fale com a CriativaMente Academy. Envie sua mensagem ou siga a gente no Instagram.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://criativamenteacademy.com/contato.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CriativaMente Academy">
+  <meta property="og:title" content="Contato — CriativaMente Academy">
+  <meta property="og:description" content="Fale com a CriativaMente Academy.">
+  <meta property="og:url" content="https://criativamenteacademy.com/contato.html">
+  <meta property="og:locale" content="pt_BR">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 96 96%22><rect width=%2296%22 height=%2296%22 rx=%2220%22 fill=%22%230F0A05%22/><text x=%2248%22 y=%2260%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22800%22 font-size=%2232%22 fill=%22%23E8892A%22>CM</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="brand" aria-label="CriativaMente Academy, página inicial">
+        <svg viewBox="0 0 96 116" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="8" y="6" width="80" height="80" rx="18" fill="var(--warm-black, #0F0A05)" stroke="var(--copper, #B5541A)" stroke-width="11"/>
+          <text x="48" y="58" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="30" fill="var(--ivory, #FDF6E3)">CM</text>
+          <rect x="32" y="94" width="32" height="6" rx="3" fill="var(--copper-light, #E8892A)"/>
+          <rect x="20" y="104" width="56" height="6" rx="3" fill="var(--copper, #B5541A)"/>
+        </svg>
+        <span class="brand-word">Criativa<span class="brand-accent">Mente</span></span><span class="brand-academy">academy</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Navegação principal">
+        <a href="index.html">Início</a>
+        <a href="sobre.html">Sobre</a>
+        <a href="projetos.html">Projetos</a>
+        <a href="blog.html">Blog</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+
+      <a href="contato.html" class="btn btn-primary nav-cta">Fale com a gente</a>
+
+      <button class="nav-toggle" aria-expanded="false" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="conteudo">
+
+    <section class="page-hero">
+      <div class="container">
+        <span class="eyebrow">Contato</span>
+        <h1>Vamos conversar sobre o seu próximo passo.</h1>
+        <p class="lede">Dúvidas, parcerias ou só quer dizer oi — a mensagem chega direto pra gente.</p>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <div class="container">
+        <div class="split">
+
+          <!--
+            Formulário pronto para o Netlify Forms: o atributo
+            data-netlify="true" faz o Netlify detectar e processar os
+            envios automaticamente, sem precisar de servidor próprio.
+            As submissões aparecem no painel Netlify > Forms.
+          -->
+          <form name="contato" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="contact-form" data-reply-email="suporte@criativamente.ia.br">
+            <input type="hidden" name="form-name" value="contato">
+            <p class="hp-field">
+              <label>Não preencha este campo: <input name="bot-field" tabindex="-1" autocomplete="off"></label>
+            </p>
+
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required>
+                <span class="field-error">Conta pra gente seu nome.</span>
+              </div>
+
+              <div class="form-field">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email" placeholder="voce@email.com" required>
+                <span class="field-error">Confere se o e-mail tá certinho.</span>
+              </div>
+
+              <div class="form-field full">
+                <label for="assunto">Assunto</label>
+                <input type="text" id="assunto" name="assunto" placeholder="Sobre o que você quer falar?" required>
+                <span class="field-error">Conta o assunto em poucas palavras.</span>
+              </div>
+
+              <div class="form-field full">
+                <label for="mensagem">Mensagem</label>
+                <textarea id="mensagem" name="mensagem" placeholder="Escreva sua mensagem aqui" required></textarea>
+                <span class="field-error">Escreve sua mensagem antes de enviar.</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: var(--space-md);">Enviar mensagem</button>
+            <p class="form-note">Respondemos pelo e-mail suporte@criativamente.ia.br o quanto antes.</p>
+            <div class="form-status" role="status" aria-live="polite"></div>
+          </form>
+
+          <div class="contact-social">
+            <div class="contact-social-item">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="14" rx="2.5"/>
+                  <path d="M3.5 6.5 L12 13 L20.5 6.5"/>
+                </svg>
+              </div>
+              <a href="mailto:suporte@criativamente.ia.br">
+                <strong>E-mail</strong>
+                <span>suporte@criativamente.ia.br</span>
+              </a>
+            </div>
+
+            <div class="contact-social-item">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 8 L7 8 L8.5 5.5 L15.5 5.5 L17 8 L20 8 C20.55 8 21 8.45 21 9 L21 18 C21 18.55 20.55 19 20 19 L4 19 C3.45 19 3 18.55 3 18 L3 9 C3 8.45 3.45 8 4 8 Z"/>
+                  <circle cx="12" cy="13" r="3.6"/>
+                </svg>
+              </div>
+              <a href="https://www.instagram.com/criativamenteacademy" target="_blank" rel="noopener">
+                <strong>Instagram</strong>
+                <span>@criativamenteacademy</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="brand" aria-label="CriativaMente Academy, página inicial">
+            <svg viewBox="0 0 96 116" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="8" y="6" width="80" height="80" rx="18" fill="var(--warm-black, #0F0A05)" stroke="var(--copper, #B5541A)" stroke-width="11"/>
+              <text x="48" y="58" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="30" fill="var(--ivory, #FDF6E3)">CM</text>
+              <rect x="32" y="94" width="32" height="6" rx="3" fill="var(--copper-light, #E8892A)"/>
+              <rect x="20" y="104" width="56" height="6" rx="3" fill="var(--copper, #B5541A)"/>
+            </svg>
+            <span class="brand-word">Criativa<span class="brand-accent">Mente</span></span><span class="brand-academy">academy</span>
+          </a>
+          <p>Mais do que cursos. Construímos o próximo passo para a sua carreira.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Navegação</h4>
+          <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="sobre.html">Sobre</a></li>
+            <li><a href="projetos.html">Projetos</a></li>
+            <li><a href="blog.html">Blog</a></li>
+            <li><a href="contato.html">Contato</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contato</h4>
+          <ul>
+            <li><a href="mailto:suporte@criativamente.ia.br">suporte@criativamente.ia.br</a></li>
+            <li><a href="https://www.instagram.com/criativamenteacademy" target="_blank" rel="noopener">@criativamenteacademy</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© <span data-year>2026</span> CriativaMente Academy. Todos os direitos reservados.</span>
+        <span>Conclua com resultado.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
