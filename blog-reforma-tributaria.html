@@ -52,7 +52,6 @@
         <a href="index.html">Início</a>
         <a href="sobre.html">Sobre</a>
         <a href="projetos.html">Projetos</a>
-        <a href="materiais.html">Materiais</a>
         <a href="blog.html">Blog</a>
         <a href="contato.html">Contato</a>
       </nav>
@@ -111,58 +110,25 @@
       </div>
     </section>
 
-    <!-- Bloco de captura reaproveitado de materiais.html: mesmo form-name
+    <!-- Bloco de download direto do guia. Pra oferecer outro material
          diferente, mesmo data-reveal-download. Se quiser outro material
          no fim de um próximo artigo, copie este bloco inteiro e troque
-         apenas o name do form e o data-reveal-download. -->
+         o ícone, o texto e o href do botão de download. -->
     <section class="reveal">
       <div class="container">
-        <div class="split" style="max-width: 900px; margin-inline: auto;">
-          <div>
-            <div class="card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 3h9l5 5v13H6z"/>
-                <path d="M15 3v5h5"/>
-                <path d="M9 13h6M9 16.5h6"/>
-              </svg>
-            </div>
-            <span class="eyebrow">Guia gratuito · PDF</span>
-            <h2 style="margin-top: var(--space-2xs);">Reforma Tributária na Prática</h2>
-            <p class="lede" style="font-size: var(--text-lg);">O guia completo de 13 páginas: o que são IBS, CBS e Imposto Seletivo, quem sente cada mudança, e um exemplo numérico mostrando o cálculo passo a passo.</p>
+        <div class="follow-band" style="max-width: 720px; margin-inline: auto;">
+          <div class="card-icon" style="margin: 0 auto var(--space-md);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 3h9l5 5v13H6z"/>
+              <path d="M15 3v5h5"/>
+              <path d="M9 13h6M9 16.5h6"/>
+            </svg>
           </div>
-
-          <div class="material-form-wrap">
-            <form name="download-reforma-tributaria-blog" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="lead-form" data-reveal-download="reforma-tributaria-na-pratica.pdf" data-file-label="Reforma Tributária na Prática (PDF)">
-              <input type="hidden" name="form-name" value="download-reforma-tributaria-blog">
-              <p class="hp-field">
-                <label>Não preencha este campo: <input name="bot-field" tabindex="-1" autocomplete="off"></label>
-              </p>
-
-              <div class="form-field">
-                <label for="nome-blog">Nome</label>
-                <input type="text" id="nome-blog" name="nome" placeholder="Seu nome" required>
-                <span class="field-error">Conta pra gente seu nome.</span>
-              </div>
-
-              <div class="form-field">
-                <label for="email-blog">E-mail</label>
-                <input type="email" id="email-blog" name="email" placeholder="voce@email.com" required>
-                <span class="field-error">Confere se o e-mail tá certinho.</span>
-              </div>
-
-              <button type="submit" class="btn btn-primary">Quero baixar o guia</button>
-              <p class="form-note">Sem spam. Só o material — e, de vez em quando, um aviso quando sair conteúdo novo.</p>
-              <div class="form-status" role="status" aria-live="polite"></div>
-            </form>
-
-            <div class="download-reveal" hidden>
-              <div class="card-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5 L10.5 15 L16 9"/></svg>
-              </div>
-              <h3>Prontinho!</h3>
-              <p>Seu guia já está pronto pra baixar.</p>
-              <a class="btn btn-primary download-link" href="#" download>Baixar PDF agora</a>
-            </div>
+          <span class="eyebrow" style="justify-content: center;">Guia gratuito · PDF</span>
+          <h2>Reforma Tributária na Prática</h2>
+          <p class="lede">O guia completo de 13 páginas: o que são IBS, CBS e Imposto Seletivo, quem sente cada mudança, e um exemplo numérico mostrando o cálculo passo a passo.</p>
+          <div class="hero-actions">
+            <a href="reforma-tributaria-na-pratica.pdf" class="btn btn-primary" download>Quero baixar o guia gratuito</a>
           </div>
         </div>
       </div>
@@ -202,7 +168,6 @@
             <li><a href="index.html">Início</a></li>
             <li><a href="sobre.html">Sobre</a></li>
             <li><a href="projetos.html">Projetos</a></li>
-            <li><a href="materiais.html">Materiais</a></li>
             <li><a href="blog.html">Blog</a></li>
             <li><a href="contato.html">Contato</a></li>
           </ul>

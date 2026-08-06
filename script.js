@@ -186,23 +186,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* Formulários de materiais gratuitos (materiais.html) — ao enviar com
-     sucesso, esconde o formulário e revela o botão de download do arquivo
-     indicado em data-reveal-download. Basta esse atributo pra funcionar em
-     qualquer material novo, sem precisar tocar neste arquivo de novo. */
-  document.querySelectorAll('form[data-reveal-download]').forEach(function (form) {
-    wireForm(form, function (form) {
-      var wrap = form.closest('.material-form-wrap');
-      if (!wrap) return;
-      var reveal = wrap.querySelector('.download-reveal');
-      var link = reveal ? reveal.querySelector('.download-link') : null;
-      if (link) {
-        link.href = form.dataset.revealDownload;
-        if (form.dataset.fileLabel) link.setAttribute('aria-label', 'Baixar ' + form.dataset.fileLabel);
-      }
-      form.setAttribute('hidden', '');
-      if (reveal) reveal.removeAttribute('hidden');
-    });
-  });
-
 });
