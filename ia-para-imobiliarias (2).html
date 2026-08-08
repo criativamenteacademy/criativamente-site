@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IA para Imobiliárias — Automatize o WhatsApp da sua imobiliária | CriativaMente Academy</title>
+  <meta name="description" content="Curso prático da CriativaMente Academy: construa uma automação real de atendimento no WhatsApp com IA e n8n para a sua imobiliária, módulo a módulo.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://criativamenteacademy.com/ia-para-imobiliarias.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CriativaMente Academy">
+  <meta property="og:title" content="IA para Imobiliárias — CriativaMente Academy">
+  <meta property="og:description" content="Construa uma automação real de atendimento no WhatsApp com IA e n8n para a sua imobiliária.">
+  <meta property="og:url" content="https://criativamenteacademy.com/ia-para-imobiliarias.html">
+  <meta property="og:locale" content="pt_BR">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 96 96%22><rect width=%2296%22 height=%2296%22 rx=%2220%22 fill=%22%230F0A05%22/><text x=%2248%22 y=%2260%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22800%22 font-size=%2232%22 fill=%22%23E8892A%22>CM</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": "IA para Imobiliárias",
+    "description": "Curso prático para construir uma automação de atendimento no WhatsApp com IA e n8n para imobiliárias e corretores.",
+    "provider": {
+      "@type": "EducationalOrganization",
+      "name": "CriativaMente Academy",
+      "url": "https://criativamenteacademy.com/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <!-- Header enxuto de página de venda: só a marca, sem menu de navegação. -->
+  <header class="site-header sales-header">
+    <div class="container">
+      <a href="index.html" class="brand" aria-label="CriativaMente Academy, página inicial">
+        <svg viewBox="0 0 96 116" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="8" y="6" width="80" height="80" rx="18" fill="var(--warm-black, #0F0A05)" stroke="var(--copper, #B5541A)" stroke-width="11"/>
+          <text x="48" y="58" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="30" fill="var(--ivory, #FDF6E3)">CM</text>
+          <rect x="32" y="94" width="32" height="6" rx="3" fill="var(--copper-light, #E8892A)"/>
+          <rect x="20" y="104" width="56" height="6" rx="3" fill="var(--copper, #B5541A)"/>
+        </svg>
+        <span class="brand-word">Criativa<span class="brand-accent">Mente</span></span><span class="brand-academy">academy</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="conteudo">
+
+    <!-- ================================================================
+         HERO
+         ================================================================ -->
+    <section class="hero sales-hero">
+      <div class="container">
+        <span class="eyebrow">Curso CriativaMente Academy</span>
+        <h1>Automatize o atendimento da sua imobiliária no WhatsApp com IA</h1>
+        <p class="lede">Curso 100% prático: você constrói, módulo a módulo, uma automação real rodando no WhatsApp da sua imobiliária — não uma teoria sobre automação, a automação em si, pronta ao final do curso.</p>
+
+        <div class="hero-actions">
+          <a href="https://pay.hotmart.com/K107061895I?off=dqkntv5j&hotfeature=51&bid=1786192915729&offDiscount=VIP10&split=1" target="_blank" rel="noopener" class="btn btn-primary">Inscrever-se agora</a>
+        </div>
+        <p class="price-tag">Acesso via Hotmart <img src="hotmart-icon.png" alt="Hotmart" class="hotmart-icon"></p>
+        <p class="form-note">Desconto especial VIP10 para pagamento à vista — válido até 08/09/2026.</p>
+      </div>
+    </section>
+
+    <hr class="seam container">
+
+    <!-- ================================================================
+         O PROBLEMA
+         ================================================================ -->
+    <section class="reveal">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">O problema</span>
+          <h2>Sua imobiliária não pode parar de responder no WhatsApp</h2>
+        </div>
+
+        <div class="point-list" style="max-width: 62ch;">
+          <div class="point-item">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 7 L12 12 L15.5 14"/>
+              </svg>
+            </div>
+            <p><strong>Lead esfriando</strong>Um lead demora minutos pra ser respondido e já foi falar com o corretor concorrente.</p>
+          </div>
+
+          <div class="point-item">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 12a8 8 0 0 1 14.5-4.5M20 4v4.5h-4.5"/>
+                <path d="M20 12a8 8 0 0 1-14.5 4.5M4 20v-4.5h4.5"/>
+              </svg>
+            </div>
+            <p><strong>As mesmas perguntas, todo dia</strong>Preço, disponibilidade, endereço, horário de visita — as dúvidas se repetem e tomam o dia inteiro do time.</p>
+          </div>
+
+          <div class="point-item">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"/>
+              </svg>
+            </div>
+            <p><strong>Fora do horário comercial</strong>Mensagem que chega à noite ou no fim de semana só é respondida no dia seguinte — se for respondida.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         O QUE VOCÊ CONSTRÓI
+         ================================================================ -->
+    <section class="reveal">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">O que você constrói</span>
+          <h2>Uma automação real, no ar, até o fim do curso</h2>
+        </div>
+        <p class="lede" style="max-width: 62ch; font-size: var(--text-lg); margin-bottom: var(--space-lg);">
+          Nada de curso genérico sobre inteligência artificial. Você conecta o WhatsApp da sua imobiliária a um fluxo de automação no n8n, ensina esse fluxo a responder as perguntas mais comuns dos seus leads e sai do curso com essa automação funcionando de verdade — não com anotações sobre como ela funcionaria.
+        </p>
+        <blockquote style="border-left: 2px solid var(--copper); padding-left: var(--space-md); font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; color: var(--ivory); max-width: 40ch;">
+          "Mais do que cursos. Construímos o próximo passo para a sua carreira."
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         CURRÍCULO
+         ================================================================ -->
+    <section class="reveal">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Currículo</span>
+          <h2>7 módulos práticos, 20 aulas em formato texto</h2>
+          <p class="lede" style="margin-top: var(--space-sm);">Sem vídeo. Você lê, aplica no seu WhatsApp e avança — cada módulo entrega uma parte real da automação final.</p>
+        </div>
+
+        <!-- Currículo real, extraído do conteúdo do curso (7 módulos, 20 aulas). -->
+        <div class="curriculum-list" aria-label="Módulos do curso">
+          <div class="curriculum-item"><span class="mod-number">01</span><div class="mod-title">Fundamentos<span>Por que automatizar, como um agente de IA funciona sem jargão técnico, e quais ferramentas você vai usar</span></div></div>
+          <div class="curriculum-item"><span class="mod-number">02</span><div class="mod-title">Configurando a base (WhatsApp + n8n)<span>Primeiros passos no n8n: criando sua conta e montando seu primeiro fluxo de automação</span></div></div>
+          <div class="curriculum-item"><span class="mod-number">03</span><div class="mod-title">O agente de atendimento<span>Construção do agente de IA que conversa com o lead — arquitetura, testes e ajustes finos</span></div></div>
+          <div class="curriculum-item"><span class="mod-number">04</span><div class="mod-title">Qualificação e envio de imóveis<span>Sua base de imóveis no Google Sheets conectada ao agente, para qualificar e enviar as opções certas</span></div></div>
+          <div class="curriculum-item"><span class="mod-number">05</span><div class="mod-title">Agendamento e follow-up<span>Migração do ambiente de teste para o WhatsApp real, com agendamento automático de visitas no Google Agenda</span></div></div>
+          <div class="curriculum-item"><span class="mod-number">06</span><div class="mod-title">Aplicação real<span>Uma conversa real do início ao fim, checklist final e como resolver os erros mais comuns</span></div></div>
+          <div class="curriculum-item"><span class="mod-number">07</span><div class="mod-title">Próximos passos<span>Como evoluir o sistema com o tempo — e até prestar esse serviço para outras imobiliárias, se quiser</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         PARA QUEM É / FORMATO
+         ================================================================ -->
+    <section class="reveal">
+      <div class="container">
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 5h16v10H12l-4 4v-4H4z"/>
+                <path d="M8 9h8M8 12.5h5"/>
+              </svg>
+            </div>
+            <h3>Para quem é</h3>
+            <p>Corretores autônomos e imobiliárias de qualquer tamanho que atendem leads pelo WhatsApp e querem parar de responder tudo manualmente.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 4 L21 9 L12 14 L3 9 Z"/>
+                <path d="M3 14 L12 19 L21 14"/>
+              </svg>
+            </div>
+            <h3>Não precisa saber programar</h3>
+            <p>Cada etapa é explicada do zero, com o mesmo cuidado prático da CriativaMente: aprender fazendo, não assistindo.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="8"/>
+                <circle cx="12" cy="12" r="3.2"/>
+                <path d="M12 2 L12 5 M12 19 L12 22 M2 12 L5 12 M19 12 L22 12"/>
+              </svg>
+            </div>
+            <h3>Formato direto ao ponto</h3>
+            <p>100% em texto — sem hora de vídeo pra assistir. Você lê, aplica no seu próprio WhatsApp e segue pro próximo módulo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         PREÇO / CTA
+         ================================================================ -->
+    <section class="reveal">
+      <div class="container">
+        <div class="section-head" style="text-align:center; margin-inline:auto;">
+          <span class="eyebrow" style="justify-content:center;">Inscrição</span>
+          <h2>Comece a construir a sua automação</h2>
+        </div>
+
+        <div class="price-card">
+          <p class="eyebrow" style="justify-content:center;">IA para Imobiliárias</p>
+          <p style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-xl); color: var(--copper-light); margin: var(--space-md) 0; display: flex; align-items: center; justify-content: center; gap: var(--space-2xs);">Acesso via Hotmart <img src="hotmart-icon.png" alt="Hotmart" class="hotmart-icon"></p>
+          <ul>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5 L10.5 15 L16 9"/></svg>
+              7 módulos práticos, 20 aulas
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5 L10.5 15 L16 9"/></svg>
+              Formato 100% texto, direto ao ponto
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5 L10.5 15 L16 9"/></svg>
+              Automação real no WhatsApp da sua imobiliária
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5 L10.5 15 L16 9"/></svg>
+              Compra processada pela Hotmart
+            </li>
+          </ul>
+          <a href="https://pay.hotmart.com/K107061895I?off=dqkntv5j&hotfeature=51&bid=1786192915729&offDiscount=VIP10&split=1" target="_blank" rel="noopener" class="btn btn-primary">Inscrever-se agora</a>
+          <p class="form-note">Desconto especial VIP10 para pagamento à vista — válido até 08/09/2026. Quer aprofundar ainda mais? Também temos o e-book complementar (cupom LIVRO47) — acesso via Hotmart.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         FAQ
+         ================================================================ -->
+    <section class="reveal">
+      <div class="container" style="max-width: 760px;">
+        <div class="section-head">
+          <span class="eyebrow">Perguntas frequentes</span>
+          <h2>Antes de se inscrever</h2>
+        </div>
+
+        <div>
+          <details class="faq-item">
+            <summary>Preciso saber programar?</summary>
+            <p>Não. O curso foi pensado pra quem trabalha com imobiliária no dia a dia, não pra programador. Cada passo é explicado do zero, na prática.</p>
+          </details>
+          <details class="faq-item">
+            <summary>O curso tem vídeo?</summary>
+            <p>Não. É um curso 100% em texto, direto ao ponto — você lê, aplica e já sai com a automação funcionando, sem precisar assistir horas de vídeo.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Funciona pra imobiliária pequena ou corretor autônomo?</summary>
+            <p>Sim. A automação é construída no seu próprio WhatsApp, no seu ritmo — funciona tanto pra quem atua sozinho quanto pra equipes maiores.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Como recebo o acesso depois de me inscrever?</summary>
+            <p>A inscrição é processada pela Hotmart, e o acesso ao conteúdo do curso é liberado logo em seguida.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Tem garantia?</summary>
+            <p>Sim — como em qualquer compra online no Brasil, você tem 7 dias de garantia (direito de arrependimento) após a inscrição.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         CTA FINAL
+         ================================================================ -->
+    <section class="reveal">
+      <div class="container">
+        <div class="follow-band">
+          <h2>Pronto pra tirar sua imobiliária do manual?</h2>
+          <p class="lede">Comece hoje e termine com uma automação de verdade — não com mais uma anotação.</p>
+          <div class="hero-actions">
+            <a href="https://pay.hotmart.com/K107061895I?off=dqkntv5j&hotfeature=51&bid=1786192915729&offDiscount=VIP10&split=1" target="_blank" rel="noopener" class="btn btn-primary">Inscrever-se agora</a>
+            <a href="contato.html" class="btn btn-ghost">Tirar uma dúvida antes</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="brand" aria-label="CriativaMente Academy, página inicial">
+            <svg viewBox="0 0 96 116" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="8" y="6" width="80" height="80" rx="18" fill="var(--warm-black, #0F0A05)" stroke="var(--copper, #B5541A)" stroke-width="11"/>
+              <text x="48" y="58" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="30" fill="var(--ivory, #FDF6E3)">CM</text>
+              <rect x="32" y="94" width="32" height="6" rx="3" fill="var(--copper-light, #E8892A)"/>
+              <rect x="20" y="104" width="56" height="6" rx="3" fill="var(--copper, #B5541A)"/>
+            </svg>
+            <span class="brand-word">Criativa<span class="brand-accent">Mente</span></span><span class="brand-academy">academy</span>
+          </a>
+          <p>Mais do que cursos. Construímos o próximo passo para a sua carreira.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Navegação</h4>
+          <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="sobre.html">Sobre</a></li>
+            <li><a href="projetos.html">Projetos</a></li>
+            <li><a href="blog.html">Blog</a></li>
+            <li><a href="contato.html">Contato</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contato</h4>
+          <ul>
+            <li><a href="mailto:suporte@criativamente.ia.br">suporte@criativamente.ia.br</a></li>
+            <li><a href="https://www.instagram.com/criativamenteacademy" target="_blank" rel="noopener">@criativamenteacademy</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span class="ssl-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          © <span data-year>2026</span> CriativaMente Academy. Todos os direitos reservados.
+        </span>
+        <span>Conclua com resultado.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

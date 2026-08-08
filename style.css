@@ -906,18 +906,14 @@ a.card { display: block; text-decoration: none; }
 }
 
 .ssl-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-2xs);
-  padding: var(--space-sm) 0;
-  color: var(--warm-gray);
-  font-size: var(--text-xs);
-  text-align: center;
+  gap: 6px;
 }
+
 .ssl-badge svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: var(--copper-light);
   flex-shrink: 0;
 }
