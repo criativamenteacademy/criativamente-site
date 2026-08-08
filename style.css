@@ -905,17 +905,11 @@ a.card { display: block; text-decoration: none; }
   vertical-align: middle;
 }
 
-.ssl-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ssl-badge svg {
-  width: 14px;
-  height: 14px;
-  color: var(--copper-light);
-  flex-shrink: 0;
+.ssl-seal {
+  width: 15px;
+  height: 15px;
+  vertical-align: -2px;
+  margin-left: 2px;
 }
 
 /* lista de pontos com ícone (dores, o que você constrói, para quem é) */
