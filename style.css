@@ -897,6 +897,31 @@ a.card { display: block; text-decoration: none; }
   color: var(--copper-light);
 }
 
+.hotmart-icon {
+  width: 18px;
+  height: auto;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.ssl-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  padding: var(--space-sm) 0;
+  color: var(--warm-gray);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+.ssl-badge svg {
+  width: 16px;
+  height: 16px;
+  color: var(--copper-light);
+  flex-shrink: 0;
+}
+
 /* lista de pontos com ícone (dores, o que você constrói, para quem é) */
 .point-list { display: flex; flex-direction: column; gap: var(--space-lg); }
 .point-item { display: flex; gap: var(--space-md); align-items: flex-start; }
