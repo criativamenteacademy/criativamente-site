@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp vai cobrar por cada mensagem: o que muda pra quem automatiza atendimento | CriativaMente Academy</title>
+  <meta name="description" content="A partir de 1º de outubro de 2026, a Meta passa a cobrar por toda mensagem enviada dentro da janela de 24h no WhatsApp. Veja o que muda e uma simulação de custo pra quem usa automação de atendimento.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://criativamenteacademy.com/blog-whatsapp-cobranca.html">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="CriativaMente Academy">
+  <meta property="og:title" content="WhatsApp vai cobrar por cada mensagem: o que muda pra quem automatiza atendimento">
+  <meta property="og:description" content="A partir de 1º de outubro de 2026, toda mensagem enviada dentro da janela de 24h no WhatsApp passa a ser cobrada. Veja o que muda e uma simulação de custo.">
+  <meta property="og:url" content="https://criativamenteacademy.com/blog-whatsapp-cobranca.html">
+  <meta property="og:locale" content="pt_BR">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 96 96%22><rect width=%2296%22 height=%2296%22 rx=%2220%22 fill=%22%230F0A05%22/><text x=%2248%22 y=%2260%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22800%22 font-size=%2232%22 fill=%22%23E8892A%22>CM</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "WhatsApp vai cobrar por cada mensagem: o que muda pra quem automatiza atendimento",
+    "datePublished": "2026-08-09",
+    "publisher": { "@type": "EducationalOrganization", "name": "CriativaMente Academy" }
+  }
+  </script>
+
+  <!-- Estilo local só desta página: tabela de simulação de custo.
+       O style.css global não tem regras de <table>, então isso fica
+       aqui em vez de poluir o design system com um componente usado
+       em só um artigo até agora. -->
+  <style>
+    .cost-table-wrap {
+      margin: var(--space-lg) 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .cost-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+    .cost-table th {
+      background: var(--surface-2);
+      color: var(--ivory);
+      text-align: left;
+      padding: var(--space-sm) var(--space-md);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cost-table td {
+      padding: var(--space-sm) var(--space-md);
+      border-top: 1px solid var(--line);
+      color: var(--ivory-muted);
+    }
+    .cost-table td:first-child { color: var(--ivory); font-weight: 500; }
+    .cost-table td.highlight { color: var(--copper-light); font-weight: 600; }
+
+    .before-after {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+      margin: var(--space-lg) 0;
+    }
+    .ba-card {
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      text-align: center;
+    }
+    .ba-card.before { background: var(--surface-1); border: 1px solid var(--line); }
+    .ba-card.after { background: var(--warm-black); border: 1px solid var(--copper); }
+    .ba-card .ba-label {
+      font-family: var(--font-display);
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--warm-gray);
+      margin-bottom: var(--space-sm);
+    }
+    .ba-card.after .ba-label { color: var(--copper-light); }
+    .ba-card .ba-status { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); margin: var(--space-2xs) 0; }
+    .ba-card.before .ba-status { color: #8FA05A; }
+    .ba-card.after .ba-status { color: var(--copper-light); }
+    .ba-card .ba-note { font-size: var(--text-xs); color: var(--warm-gray); }
+
+    @media (max-width: 600px) {
+      .before-after { grid-template-columns: 1fr; }
+      .cost-table { font-size: var(--text-xs); }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="brand" aria-label="CriativaMente Academy, página inicial">
+        <svg viewBox="0 0 96 116" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="8" y="6" width="80" height="80" rx="18" fill="var(--warm-black, #0F0A05)" stroke="var(--copper, #B5541A)" stroke-width="11"/>
+          <text x="48" y="58" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="30" fill="var(--ivory, #FDF6E3)">CM</text>
+          <rect x="32" y="94" width="32" height="6" rx="3" fill="var(--copper-light, #E8892A)"/>
+          <rect x="20" y="104" width="56" height="6" rx="3" fill="var(--copper, #B5541A)"/>
+        </svg>
+        <span class="brand-word">Criativa<span class="brand-accent">Mente</span></span><span class="brand-academy">academy</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Navegação principal">
+        <a href="index.html">Início</a>
+        <a href="sobre.html">Sobre</a>
+        <a href="projetos.html">Projetos</a>
+        <a href="blog.html">Blog</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+
+      <a href="contato.html" class="btn btn-primary nav-cta">Fale com a gente</a>
+
+      <button class="nav-toggle" aria-expanded="false" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="conteudo">
+
+    <header class="article-header">
+      <div class="container">
+        <span class="eyebrow">WhatsApp Business</span>
+        <h1>WhatsApp vai cobrar por cada mensagem: o que muda pra quem automatiza atendimento</h1>
+        <p class="lede">A partir de outubro, a era de "responder o cliente no WhatsApp sai de graça" chega ao fim. Veja o que muda e quanto isso custa na prática.</p>
+        <div class="article-meta">
+          <span>Publicado em agosto de 2026</span>
+          <span>·</span>
+          <span>Leitura de 5 min</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="reveal" style="padding-top: var(--space-2xl);">
+      <div class="container article-body">
+
+        <h2>O que já mudou</h2>
+        <p>Até meados de 2025, a lógica era simples: toda vez que uma conversa começava, abria-se uma janela de 24 horas, e dentro dela a empresa podia trocar mensagens com o cliente sem custo adicional por mensagem — pagava-se por conversa, não por mensagem individual.</p>
+        <p>Isso já não existe mais. Desde julho de 2025, a Meta passou a cobrar por <strong>template entregue</strong> — cada mensagem de marketing, utilidade ou autenticação iniciada pela empresa gera uma cobrança própria, com valor definido pela categoria e pelo país do destinatário.</p>
+
+        <h2>O que muda agora — e por que isso importa</h2>
+        <p>O ponto mais importante pra quem trabalha com automação de atendimento é o seguinte: <strong>a partir de 1º de outubro de 2026, toda mensagem que a empresa envia dentro da janela de 24 horas passa a ser cobrada</strong> — incluindo respostas automáticas geradas por IA, respostas de atendentes humanos e templates de utilidade que hoje ainda são gratuitos nesse período.</p>
+
+        <div class="article-callout">
+          <p><strong>Resumindo:</strong> a era de "responder o cliente no WhatsApp sai de graça" está com os dias contados. A cobrança passa a valer mesmo dentro da janela de 24h, que até agora era isenta.</p>
+        </div>
+
+        <div class="before-after">
+          <div class="ba-card before">
+            <div class="ba-label">Até set/2026</div>
+            <div class="ba-status">Resposta grátis</div>
+            <div class="ba-note">dentro da janela de 24h, após o cliente iniciar contato</div>
+          </div>
+          <div class="ba-card after">
+            <div class="ba-label">A partir de out/2026</div>
+            <div class="ba-status">Resposta cobrada</div>
+            <div class="ba-note">~R$ 0,035 por mensagem, mesmo dentro da janela de 24h</div>
+          </div>
+        </div>
+
+        <h2>O que continua gratuito</h2>
+        <ul>
+          <li><strong>Mensagens enviadas pelo cliente</strong> nunca são cobradas — a cobrança é só sobre o que a empresa envia.</li>
+          <li><strong>Conversas iniciadas por anúncio Click-to-WhatsApp ou botão de contato</strong> no Instagram/Facebook continuam com uma janela de 72 horas sem custo de mensagem — ótimo ponto de entrada pra quem usa tráfego pago.</li>
+          <li>O valor de referência para mensagens de serviço no Brasil gira em torno de <strong>R$ 0,035 por mensagem</strong> — não é alto isoladamente, mas escala com o volume.</li>
+        </ul>
+
+        <h2>Quanto isso custa na prática?</h2>
+        <p>Simulação simples pra ilustrar o impacto. O custo real depende de duas variáveis: quantas conversas o negócio recebe por mês e quantas mensagens a automação manda em cada uma.</p>
+
+        <div class="cost-table-wrap">
+          <table class="cost-table">
+            <tr>
+              <th>Volume de conversas/mês</th>
+              <th>2 msgs/conversa</th>
+              <th>4 msgs/conversa</th>
+              <th>6 msgs/conversa</th>
+            </tr>
+            <tr>
+              <td>200 (negócio pequeno)</td>
+              <td>R$ 14</td>
+              <td class="highlight">R$ 28</td>
+              <td>R$ 42</td>
+            </tr>
+            <tr>
+              <td>500 (negócio médio)</td>
+              <td>R$ 35</td>
+              <td class="highlight">R$ 70</td>
+              <td>R$ 105</td>
+            </tr>
+            <tr>
+              <td>1.000 (negócio grande)</td>
+              <td>R$ 70</td>
+              <td class="highlight">R$ 140</td>
+              <td>R$ 210</td>
+            </tr>
+          </table>
+        </div>
+
+        <p>Pra um negócio pequeno, o impacto tende a ficar entre R$ 15 e R$ 50 por mês — não inviabiliza a automação, mas é um custo que precisa entrar na conta desde o início, e não ser descoberto na primeira fatura depois de outubro.</p>
+
+        <h2>O que fazer a partir de agora</h2>
+        <ul>
+          <li><strong>Simule o custo com o seu volume real de conversas antes de outubro</strong>, em vez de ser pego de surpresa na fatura.</li>
+          <li><strong>Aproveite as janelas gratuitas de entrada</strong> (Click-to-WhatsApp, botões do Instagram/Facebook) sempre que possível — elas continuam sem custo de mensagem por 72 horas.</li>
+          <li><strong>Desenhe fluxos de conversa mais enxutos</strong> — cada mensagem enviada pela automação agora tem um custo direto, então respostas mais objetivas custam menos ao longo do mês.</li>
+        </ul>
+
+        <p>Entender esse tipo de mudança faz parte de construir uma automação que funciona de verdade — não só no dia em que você monta o fluxo, mas seis meses depois, quando as regras da plataforma mudam. É exatamente esse tipo de conhecimento prático, aplicado, que a gente leva pro curso <strong>IA para Imobiliárias</strong>: além de montar a automação do zero, você aprende a pensar nela como um sistema vivo, que precisa ser ajustado conforme o ambiente muda.</p>
+      </div>
+    </section>
+
+    <section class="reveal">
+      <div class="container">
+        <div class="follow-band" style="max-width: 720px; margin-inline: auto;">
+          <div class="card-icon" style="margin: 0 auto var(--space-md);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 5h16v10H12l-4 4v-4H4z"/>
+              <path d="M8 9h8M8 12.5h5"/>
+            </svg>
+          </div>
+          <span class="eyebrow" style="justify-content: center;">Curso</span>
+          <h2>IA para Imobiliárias</h2>
+          <p class="lede">Automatize o atendimento no WhatsApp com IA e n8n — 7 módulos práticos, pensados pra continuar funcionando mesmo quando as regras da plataforma mudam.</p>
+          <div class="hero-actions">
+            <a href="ia-para-imobiliarias.html" class="btn btn-primary">Conhecer o curso</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="article-sources container">
+      <h4>Fontes</h4>
+      <ol>
+        <li>Meta for Developers — Documentação oficial de precificação de mensagens do WhatsApp Business Platform</li>
+        <li>Central de Ajuda da Meta Business — Mudanças no modelo de cobrança de conversas e templates</li>
+      </ol>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="brand" aria-label="CriativaMente Academy, página inicial">
+            <svg viewBox="0 0 96 116" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="8" y="6" width="80" height="80" rx="18" fill="var(--warm-black, #0F0A05)" stroke="var(--copper, #B5541A)" stroke-width="11"/>
+              <text x="48" y="58" text-anchor="middle" font-family="Sora, sans-serif" font-weight="800" font-size="30" fill="var(--ivory, #FDF6E3)">CM</text>
+              <rect x="32" y="94" width="32" height="6" rx="3" fill="var(--copper-light, #E8892A)"/>
+              <rect x="20" y="104" width="56" height="6" rx="3" fill="var(--copper, #B5541A)"/>
+            </svg>
+            <span class="brand-word">Criativa<span class="brand-accent">Mente</span></span><span class="brand-academy">academy</span>
+          </a>
+          <p>Mais do que cursos. Construímos o próximo passo para a sua carreira.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Navegação</h4>
+          <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="sobre.html">Sobre</a></li>
+            <li><a href="projetos.html">Projetos</a></li>
+            <li><a href="blog.html">Blog</a></li>
+            <li><a href="contato.html">Contato</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contato</h4>
+          <ul>
+            <li><a href="mailto:suporte@criativamente.ia.br">suporte@criativamente.ia.br</a></li>
+            <li><a href="https://www.instagram.com/criativamenteacademy" target="_blank" rel="noopener">@criativamenteacademy</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© <span data-year>2026</span> CriativaMente Academy. Todos os direitos reservados.</span>
+        <span>Conclua com resultado.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
