@@ -1128,3 +1128,93 @@ a.card { display: block; text-decoration: none; }
 .article-sources li { font-size: var(--text-xs); color: var(--warm-gray); }
 .article-sources a { color: var(--copper-light); word-break: break-word; }
 .article-sources a:hover { text-decoration: underline; }
+
+/* --------------------------------------------------------------------------
+   22. TABELA DE DADOS — componente global (promovido do .cost-table usado
+   originalmente só no blog). Usado em "O que você vai construir" e em
+   qualquer futura comparação curso → resultado.
+   -------------------------------------------------------------------------- */
+.data-table-wrap {
+  margin: var(--space-lg) 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.data-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.data-table th {
+  background: var(--surface-2);
+  color: var(--ivory);
+  text-align: left;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.data-table td {
+  padding: var(--space-sm) var(--space-md);
+  border-top: 1px solid var(--line);
+  color: var(--ivory-muted);
+}
+.data-table td:first-child { color: var(--ivory); font-weight: 500; }
+
+/* --------------------------------------------------------------------------
+   23. FLUXO DE ETAPAS — reaproveita a estética numerada de .curriculum-item
+   para processos curtos (ex: "Como funciona a CriativaMente Academy").
+   -------------------------------------------------------------------------- */
+.step-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.step-item {
+  display: flex;
+  gap: var(--space-md);
+  align-items: baseline;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--surface-1);
+}
+.step-item .step-number {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-lg);
+  color: var(--copper-light);
+  flex-shrink: 0;
+  width: 3ch;
+}
+.step-item .step-title { font-weight: 600; color: var(--ivory); font-size: var(--text-base); }
+.step-item .step-title span {
+  display: block;
+  font-weight: 400;
+  font-size: var(--text-xs);
+  color: var(--warm-gray);
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   24. CARD DE CURSO — variação de .card com lista de resultados + CTA,
+   usado em "O que você pode construir hoje" (home e página Cursos).
+   -------------------------------------------------------------------------- */
+.course-card ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  margin: var(--space-md) 0 var(--space-lg);
+}
+.course-card li {
+  display: flex;
+  gap: var(--space-2xs);
+  font-size: var(--text-sm);
+  color: var(--ivory-muted);
+}
+.course-card li svg { flex-shrink: 0; width: 16px; height: 16px; stroke: var(--copper-light); margin-top: 2px; }
+.course-card .btn { width: 100%; }
+
+@media (max-width: 760px) {
+  .step-item { padding: var(--space-sm) var(--space-md); }
+}
