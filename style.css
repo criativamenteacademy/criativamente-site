@@ -1138,9 +1138,10 @@ a.card { display: block; text-decoration: none; }
   margin: var(--space-lg) 0;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
-.data-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.data-table { width: 100%; min-width: 480px; border-collapse: collapse; font-size: var(--text-sm); }
 .data-table th {
   background: var(--surface-2);
   color: var(--ivory);
