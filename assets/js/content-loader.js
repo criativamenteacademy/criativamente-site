@@ -25,6 +25,7 @@ export const ERROS = {
   EMAIL_NAO_VERIFICADO: "EMAIL_NAO_VERIFICADO",
   CONTA_INATIVA: "CONTA_INATIVA",
   CURSO_NAO_LIBERADO: "CURSO_NAO_LIBERADO",
+  CURSO_EM_MANUTENCAO: "CURSO_EM_MANUTENCAO",
   CONTEUDO_NAO_ENCONTRADO: "CONTEUDO_NAO_ENCONTRADO"
 };
 
@@ -64,6 +65,12 @@ export async function carregarAula(cursoId, moduloId, aulaId) {
   const docMatricula = await getDoc(doc(db, "matricula", idMatricula));
   if (!docMatricula.exists() || docMatricula.data().liberado !== true) {
     throw erro(ERROS.CURSO_NAO_LIBERADO, "Você ainda não tem acesso a este curso.");
+  }
+
+  // 4) este curso específico não pode estar em manutenção
+  const docCurso = await getDoc(doc(db, "cursos", cursoId));
+  if (docCurso.exists() && docCurso.data().emManutencao === true) {
+    throw erro(ERROS.CURSO_EM_MANUTENCAO, "Este curso está temporariamente em manutenção.");
   }
 
   // Só agora o conteúdo real é buscado.
