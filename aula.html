@@ -42,6 +42,7 @@
       <div class="aula-conteudo" id="aula-conteudo"></div>
       <div class="aula-acoes">
         <button class="auth-button" id="botao-concluir" style="width:auto; padding:11px 24px;">Marcar aula como concluída</button>
+        <a class="auth-button" id="botao-proxima" href="#" style="display:none; width:auto; padding:11px 24px; text-decoration:none; text-align:center;">Próxima aula →</a>
       </div>
     </article>
   </main>
@@ -51,6 +52,7 @@
     import { sairUsuario } from "/assets/js/auth.js";
     import { carregarAula, ERROS } from "/assets/js/content-loader.js";
     import { registrarUltimaAula, marcarAulaConcluida } from "/assets/js/progress.js";
+    import { proximaAula } from "/assets/js/access-control.js";
     import { ativarProtecaoConteudo } from "/assets/js/protecao-conteudo.js";
 
     document.getElementById("botao-sair").addEventListener("click", async () => {
@@ -136,6 +138,18 @@
       try {
         await marcarAulaConcluida(usuario.uid, cursoId, aulaId);
         botao.textContent = "Aula concluída ✓";
+
+        const botaoProxima = document.getElementById("botao-proxima");
+        const proxima = await proximaAula(cursoId, moduloId, aulaId);
+
+        if (proxima) {
+          botaoProxima.href = `/aula.html?curso=${cursoId}&modulo=${proxima.moduloId}&aula=${proxima.aulaId}`;
+          botaoProxima.textContent = "Próxima aula →";
+        } else {
+          botaoProxima.href = `/area-do-aluno.html`;
+          botaoProxima.textContent = "Curso concluído — voltar para minha área";
+        }
+        botaoProxima.style.display = "inline-block";
       } catch {
         botao.disabled = false;
         botao.textContent = "Marcar aula como concluída";
