@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/auth.css" />
+  <script type="module" src="/assets/js/manutencao-check.js"></script>
 </head>
 <!-- Protegida por auth-guard.js. Esta página só mostra TÍTULOS de
      módulos e aulas — o conteúdo de cada aula só é buscado dentro de
@@ -69,6 +70,11 @@
       const curso = await buscarCurso(cursoId);
       if (!curso) {
         container.innerHTML = `<p>Curso não encontrado.</p>`;
+        return;
+      }
+
+      if (curso.emManutencao === true) {
+        window.location.replace("/manutencao.html");
         return;
       }
 

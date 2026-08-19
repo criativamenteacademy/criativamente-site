@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/auth.css" />
+  <script type="module" src="/assets/js/manutencao-check.js"></script>
 </head>
 <!-- Protegida por auth-guard.js: sem login válido e conta ativa,
      redireciona para /login.html antes de qualquer conteúdo aparecer. -->
@@ -101,6 +102,15 @@
       }
 
       const cartoes = await Promise.all(cursos.map(async (curso) => {
+        if (curso.emManutencao === true) {
+          return `
+            <div class="curso-card" style="opacity:0.7;">
+              <h3>${curso.nome}</h3>
+              <p>${curso.descricao || ""}</p>
+              <p class="progresso-texto" style="color:#B5541A; font-weight:600;">🔧 Em manutenção — volte em breve</p>
+            </div>`;
+        }
+
         const progresso = await buscarProgresso(usuario.uid, curso.id);
         const percentual = calcularPercentual(curso, progresso);
         const link = await montarLinkContinuar(usuario.uid, curso, progresso);
