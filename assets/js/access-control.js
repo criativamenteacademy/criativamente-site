@@ -2,9 +2,11 @@
 // ============================================================
 // CONTROLE DE ACESSO A CURSOS — CriativaMente Academy
 // ============================================================
-// VERSÃO TEMPORÁRIA DE DIAGNÓSTICO — cada função avisa no Console
-// exatamente onde falhou, com detalhes. Depois de resolver o
-// problema, trocar de volta pela versão limpa (sem os console.log).
+// Lê a coleção "matricula" para saber quais cursos cada aluno pode
+// ver, e busca os metadados de cursos/módulos/aulas no catálogo
+// público. NUNCA lê o campo "conteudo" de uma aula diretamente —
+// isso é feito exclusivamente por content-loader.js, que aplica as
+// 3 validações de segurança antes de buscar o conteúdo.
 // ============================================================
 
 import { db } from "./firebase-config.js";
@@ -18,22 +20,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 export async function listarMatriculasDoAluno(uid) {
-  console.log("[DIAGNOSTICO] Passo 1: buscando matriculas do uid =", uid);
-  try {
-    const referenciaColecao = collection(db, "matricula");
-    const consulta = query(
-      referenciaColecao,
-      where("uid", "==", uid),
-      where("liberado", "==", true)
-    );
-    const snapshot = await getDocs(consulta);
-    console.log("[DIAGNOSTICO] Passo 1 OK. Matriculas encontradas:", snapshot.docs.length);
-    snapshot.docs.forEach((d) => console.log("[DIAGNOSTICO] Matricula encontrada:", d.id, d.data()));
-    return snapshot.docs.map((d) => d.data());
-  } catch (erro) {
-    console.error("[DIAGNOSTICO] FALHOU no Passo 1 (listar matriculas). Erro:", erro.code, erro.message);
-    throw erro;
-  }
+  const referenciaColecao = collection(db, "matricula");
+  const consulta = query(
+    referenciaColecao,
+    where("uid", "==", uid),
+    where("liberado", "==", true)
+  );
+  const snapshot = await getDocs(consulta);
+  return snapshot.docs.map((d) => d.data());
 }
 
 export async function cursoLiberado(uid, cursoId) {
@@ -43,16 +37,9 @@ export async function cursoLiberado(uid, cursoId) {
 }
 
 export async function buscarCurso(cursoId) {
-  console.log("[DIAGNOSTICO] Passo 2: buscando curso =", cursoId);
-  try {
-    const referencia = doc(db, "cursos", cursoId);
-    const snapshot = await getDoc(referencia);
-    console.log("[DIAGNOSTICO] Passo 2 OK. Curso existe?", snapshot.exists());
-    return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
-  } catch (erro) {
-    console.error("[DIAGNOSTICO] FALHOU no Passo 2 (buscar curso", cursoId, "). Erro:", erro.code, erro.message);
-    throw erro;
-  }
+  const referencia = doc(db, "cursos", cursoId);
+  const snapshot = await getDoc(referencia);
+  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
 }
 
 export async function listarCursosDoAluno(uid) {
@@ -69,33 +56,19 @@ export async function listarCursosDoAluno(uid) {
 }
 
 export async function listarModulos(cursoId) {
-  console.log("[DIAGNOSTICO] Passo 3: buscando modulos do curso =", cursoId);
-  try {
-    const referencia = collection(db, "cursos", cursoId, "modulos");
-    const snapshot = await getDocs(referencia);
-    console.log("[DIAGNOSTICO] Passo 3 OK. Modulos encontrados:", snapshot.docs.length);
-    return snapshot.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
-  } catch (erro) {
-    console.error("[DIAGNOSTICO] FALHOU no Passo 3 (listar modulos do curso", cursoId, "). Erro:", erro.code, erro.message);
-    throw erro;
-  }
+  const referencia = collection(db, "cursos", cursoId, "modulos");
+  const snapshot = await getDocs(referencia);
+  return snapshot.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 }
 
 export async function listarAulas(cursoId, moduloId) {
-  console.log("[DIAGNOSTICO] Passo 4: buscando aulas. curso =", cursoId, "modulo =", moduloId);
-  try {
-    const referencia = collection(db, "cursos", cursoId, "modulos", moduloId, "aulas");
-    const snapshot = await getDocs(referencia);
-    console.log("[DIAGNOSTICO] Passo 4 OK. Aulas encontradas:", snapshot.docs.length);
-    return snapshot.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
-  } catch (erro) {
-    console.error("[DIAGNOSTICO] FALHOU no Passo 4 (listar aulas curso=", cursoId, "modulo=", moduloId, "). Erro:", erro.code, erro.message);
-    throw erro;
-  }
+  const referencia = collection(db, "cursos", cursoId, "modulos", moduloId, "aulas");
+  const snapshot = await getDocs(referencia);
+  return snapshot.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 }
 
 export async function primeiraAula(cursoId) {
@@ -106,4 +79,34 @@ export async function primeiraAula(cursoId) {
   if (aulas.length === 0) return null;
 
   return { moduloId: modulos[0].id, aulaId: aulas[0].id };
+}
+
+/**
+ * Descobre qual é a próxima aula depois da atual — dentro do mesmo
+ * módulo, ou (se a atual for a última do módulo) a primeira aula do
+ * próximo módulo. Retorna null se a aula atual for a última do curso
+ * inteiro (curso concluído).
+ */
+export async function proximaAula(cursoId, moduloIdAtual, aulaIdAtual) {
+  const aulasDoModulo = await listarAulas(cursoId, moduloIdAtual);
+  const indiceAtual = aulasDoModulo.findIndex((a) => a.id === aulaIdAtual);
+
+  if (indiceAtual !== -1 && indiceAtual + 1 < aulasDoModulo.length) {
+    const proxima = aulasDoModulo[indiceAtual + 1];
+    return { moduloId: moduloIdAtual, aulaId: proxima.id };
+  }
+
+  const modulos = await listarModulos(cursoId);
+  const indiceModuloAtual = modulos.findIndex((m) => m.id === moduloIdAtual);
+
+  if (indiceModuloAtual === -1 || indiceModuloAtual + 1 >= modulos.length) {
+    return null;
+  }
+
+  const proximoModulo = modulos[indiceModuloAtual + 1];
+  const aulasDoProximoModulo = await listarAulas(cursoId, proximoModulo.id);
+
+  if (aulasDoProximoModulo.length === 0) return null;
+
+  return { moduloId: proximoModulo.id, aulaId: aulasDoProximoModulo[0].id };
 }
