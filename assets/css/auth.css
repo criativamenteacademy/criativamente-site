@@ -1,0 +1,553 @@
+/* assets/css/auth.css
+   ============================================================
+   Estilos da plataforma do aluno — CriativaMente Academy.
+   Mesma identidade visual do site:
+   Cobre #B5541A | Cobre Claro #E8892A | Preto Quente #0F0A05
+   Creme Marfim #FDF6E3 | Cinza Quente #6B5744
+   Sora (títulos) + Inter (corpo)
+   ============================================================ */
+
+:root {
+  --cobre: #B5541A;
+  --cobre-claro: #E8892A;
+  --preto-quente: #0F0A05;
+  --marfim: #FDF6E3;
+  --cinza-quente: #6B5744;
+}
+
+/* ---------- Telas de autenticação (cadastro, login, recuperação, ação) ---------- */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--marfim);
+  padding: 24px;
+  font-family: "Inter", sans-serif;
+  color: var(--preto-quente);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 10, 5, 0.08);
+  border-radius: 16px;
+  padding: 40px 32px;
+  box-shadow: 0 12px 32px rgba(15, 10, 5, 0.06);
+}
+
+.auth-card__logo {
+  display: block;
+  margin: 0 auto 24px;
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  text-align: center;
+  color: var(--preto-quente);
+  text-decoration: none;
+}
+
+.auth-card__logo span {
+  color: var(--cobre);
+}
+
+.auth-card h1 {
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.auth-card p.auth-subtitle {
+  text-align: center;
+  color: var(--cinza-quente);
+  font-size: 14px;
+  margin: 0 0 28px;
+}
+
+.auth-field {
+  margin-bottom: 18px;
+}
+
+.auth-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--preto-quente);
+}
+
+.auth-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid rgba(15, 10, 5, 0.15);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: "Inter", sans-serif;
+  background: var(--marfim);
+  color: var(--preto-quente);
+}
+
+.auth-field input:focus {
+  outline: 2px solid var(--cobre-claro);
+  outline-offset: 1px;
+}
+
+.auth-button {
+  width: 100%;
+  padding: 13px 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--cobre);
+  color: #ffffff;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.auth-button:hover {
+  background: var(--cobre-claro);
+}
+
+.auth-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-button--secundario {
+  background: transparent;
+  border: 1px solid var(--cobre);
+  color: var(--cobre);
+}
+
+.auth-button--secundario:hover {
+  background: rgba(181, 84, 26, 0.08);
+}
+
+.auth-message {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  display: none;
+}
+
+.auth-message--erro {
+  background: #FBE7E0;
+  color: #8A2C0D;
+  display: block;
+}
+
+.auth-message--sucesso {
+  background: #E7F1E1;
+  color: #2C5C1A;
+  display: block;
+}
+
+.auth-message--aviso {
+  background: #FCEFD7;
+  color: #8A5A0D;
+  display: block;
+}
+
+.auth-footer-link {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 20px;
+  color: var(--cinza-quente);
+}
+
+.auth-footer-link a {
+  color: var(--cobre);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-footer-link a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Esconde o conteúdo até auth-guard.js confirmar login ---- */
+body.auth-checking > *:not(.auth-loading) {
+  display: none !important;
+}
+
+.auth-loading {
+  display: none;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  font-family: "Inter", sans-serif;
+  color: var(--cinza-quente);
+  background: var(--marfim);
+}
+
+body.auth-checking .auth-loading {
+  display: flex;
+}
+
+/* ---------- Cabeçalho comum da plataforma logada ---------- */
+
+.aluno-header {
+  background: var(--preto-quente);
+  color: var(--marfim);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: "Sora", sans-serif;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.aluno-header__logo {
+  text-decoration: none;
+  color: var(--marfim);
+  font-weight: 700;
+}
+
+.aluno-header__logo span {
+  color: var(--cobre-claro);
+}
+
+.aluno-header__acoes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.aluno-header__link {
+  color: var(--marfim);
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.aluno-header__link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.aluno-sair {
+  background: transparent;
+  border: 1px solid var(--marfim);
+  color: var(--marfim);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.aluno-sair:hover {
+  background: var(--cobre);
+  border-color: var(--cobre);
+}
+
+/* ---- Banner de e-mail não verificado ---- */
+.aviso-verificacao {
+  background: #FCEFD7;
+  color: #8A5A0D;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.aviso-verificacao button {
+  background: #8A5A0D;
+  color: #ffffff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+}
+
+/* ---------- Painel do aluno ---------- */
+
+.aluno-conteudo {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  font-family: "Inter", sans-serif;
+}
+
+.aluno-boas-vindas h1 {
+  font-family: "Sora", sans-serif;
+  font-size: 28px;
+  color: var(--preto-quente);
+  margin: 0 0 6px;
+}
+
+.aluno-boas-vindas p {
+  color: var(--cinza-quente);
+  margin: 0 0 32px;
+}
+
+.cursos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.curso-card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 10, 5, 0.08);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.curso-card h3 {
+  font-family: "Sora", sans-serif;
+  font-size: 18px;
+  color: var(--preto-quente);
+  margin: 0 0 8px;
+}
+
+.curso-card p {
+  font-size: 14px;
+  color: var(--cinza-quente);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.curso-card__acao {
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  background: var(--cobre);
+  color: #ffffff;
+}
+
+.curso-card__acao:hover {
+  background: var(--cobre-claro);
+}
+
+.curso-card__vazio {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--cinza-quente);
+  background: #ffffff;
+  border: 1px dashed rgba(15, 10, 5, 0.15);
+  border-radius: 14px;
+}
+
+/* ---- Barra de progresso ---- */
+.barra-progresso {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(15, 10, 5, 0.08);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.barra-progresso__preenchimento {
+  height: 100%;
+  background: var(--cobre);
+}
+
+.progresso-texto {
+  font-size: 12px;
+  color: var(--cinza-quente);
+  margin: 0 0 14px;
+}
+
+/* ---------- Página de curso (módulos/aulas) ---------- */
+
+.curso-cabecalho {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px 8px;
+  font-family: "Inter", sans-serif;
+}
+
+.curso-cabecalho h1 {
+  font-family: "Sora", sans-serif;
+  font-size: 26px;
+  margin: 0 0 8px;
+  color: var(--preto-quente);
+}
+
+.curso-cabecalho p {
+  color: var(--cinza-quente);
+  margin: 0;
+}
+
+.curso-modulos {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 24px 80px;
+  font-family: "Inter", sans-serif;
+}
+
+.modulo-bloco {
+  margin-bottom: 28px;
+}
+
+.modulo-bloco h2 {
+  font-family: "Sora", sans-serif;
+  font-size: 17px;
+  color: var(--preto-quente);
+  margin: 0 0 12px;
+}
+
+.aula-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(15, 10, 5, 0.08);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  background: #ffffff;
+  text-decoration: none;
+  color: var(--preto-quente);
+  font-size: 14px;
+}
+
+.aula-item:hover {
+  border-color: var(--cobre-claro);
+}
+
+.aula-item__status {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cinza-quente);
+  white-space: nowrap;
+}
+
+.aula-item--concluida .aula-item__status {
+  color: #2C5C1A;
+}
+
+/* ---------- Página de aula ---------- */
+
+.aula-pagina {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px 100px;
+  font-family: "Inter", sans-serif;
+  color: var(--preto-quente);
+  line-height: 1.7;
+}
+
+.aula-pagina h1 {
+  font-family: "Sora", sans-serif;
+  font-size: 26px;
+  margin: 0 0 24px;
+}
+
+.aula-conteudo {
+  font-size: 16px;
+}
+
+.aula-conteudo img {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.aula-acoes {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(15, 10, 5, 0.1);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.aula-erro {
+  max-width: 480px;
+  margin: 80px auto;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  color: var(--preto-quente);
+  padding: 0 24px;
+}
+
+.aula-erro h1 {
+  font-family: "Sora", sans-serif;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.aula-erro p {
+  color: var(--cinza-quente);
+  margin-bottom: 24px;
+}
+
+/* ---------- Proteção de conteúdo (aula) ---------- */
+
+.cm-protegido {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.cm-protegido img {
+  pointer-events: none;
+}
+
+.cm-marca-dagua {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: space-around;
+  justify-content: space-around;
+  z-index: 5;
+}
+
+.cm-marca-dagua span {
+  display: inline-block;
+  transform: rotate(-28deg);
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--preto-quente);
+  opacity: 0.06;
+  white-space: nowrap;
+  margin: 24px 12px;
+}
+
+/* Esconde o conteúdo da aula por completo em qualquer tentativa
+   de impressão (Ctrl+P ou "Imprimir" do navegador). */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  body::after {
+    content: "Impressão indisponível — este conteúdo é exclusivo da plataforma CriativaMente Academy.";
+    display: block;
+    visibility: visible !important;
+    text-align: center;
+    margin-top: 100px;
+    font-family: "Inter", sans-serif;
+    font-size: 16px;
+    color: #000;
+  }
+}
+
