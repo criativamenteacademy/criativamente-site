@@ -1,112 +1,85 @@
-// assets/js/access-control.js
+// assets/js/content-loader.js
 // ============================================================
-// CONTROLE DE ACESSO A CURSOS — CriativaMente Academy
+// CARREGADOR DE CONTEÚDO PROTEGIDO — CriativaMente Academy
 // ============================================================
-// Lê a coleção "matricula" para saber quais cursos cada aluno pode
-// ver, e busca os metadados de cursos/módulos/aulas no catálogo
-// público. NUNCA lê o campo "conteudo" de uma aula diretamente —
-// isso é feito exclusivamente por content-loader.js, que aplica as
-// 3 validações de segurança antes de buscar o conteúdo.
+// ÚNICO lugar do sistema autorizado a buscar o campo "conteudo" de
+// uma aula. Antes de qualquer leitura, valida NESTA ORDEM:
+//
+//   1) o aluno está autenticado E com e-mail verificado
+//   2) a conta dele está com status "ativa"
+//   3) o curso desta aula está liberado para ele (matriculas)
+//
+// Só depois das 3 validações passarem é que o Firestore é consultado
+// para trazer o conteúdo real da aula. As mesmas 3 regras também
+// estão reforçadas em firestore.rules — este arquivo é a camada de
+// experiência (mensagens de erro amigáveis), a regra do Firestore é
+// a camada que realmente impede o acesso mesmo que alguém tente
+// pular este arquivo e chamar o Firestore diretamente.
 // ============================================================
 
-import { db } from "./firebase-config.js";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { auth, db } from "./firebase-config.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-export async function listarMatriculasDoAluno(uid) {
-  const referenciaColecao = collection(db, "matricula");
-  const consulta = query(
-    referenciaColecao,
-    where("uid", "==", uid),
-    where("liberado", "==", true)
-  );
-  const snapshot = await getDocs(consulta);
-  return snapshot.docs.map((d) => d.data());
-}
+export const ERROS = {
+  NAO_AUTENTICADO: "NAO_AUTENTICADO",
+  EMAIL_NAO_VERIFICADO: "EMAIL_NAO_VERIFICADO",
+  CONTA_INATIVA: "CONTA_INATIVA",
+  CURSO_NAO_LIBERADO: "CURSO_NAO_LIBERADO",
+  CURSO_EM_MANUTENCAO: "CURSO_EM_MANUTENCAO",
+  CONTEUDO_NAO_ENCONTRADO: "CONTEUDO_NAO_ENCONTRADO"
+};
 
-export async function cursoLiberado(uid, cursoId) {
-  const referencia = doc(db, "matricula", `${uid}_${cursoId}`);
-  const snapshot = await getDoc(referencia);
-  return snapshot.exists() && snapshot.data().liberado === true;
-}
-
-export async function buscarCurso(cursoId) {
-  const referencia = doc(db, "cursos", cursoId);
-  const snapshot = await getDoc(referencia);
-  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
-}
-
-export async function listarCursosDoAluno(uid) {
-  const matriculas = await listarMatriculasDoAluno(uid);
-
-  const cursos = await Promise.all(
-    matriculas.map(async (matricula) => {
-      const curso = await buscarCurso(matricula.cursoId);
-      return curso ? { ...curso, matricula } : null;
-    })
-  );
-
-  return cursos.filter(Boolean);
-}
-
-export async function listarModulos(cursoId) {
-  const referencia = collection(db, "cursos", cursoId, "modulos");
-  const snapshot = await getDocs(referencia);
-  return snapshot.docs
-    .map((d) => ({ id: d.id, ...d.data() }))
-    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
-}
-
-export async function listarAulas(cursoId, moduloId) {
-  const referencia = collection(db, "cursos", cursoId, "modulos", moduloId, "aulas");
-  const snapshot = await getDocs(referencia);
-  return snapshot.docs
-    .map((d) => ({ id: d.id, ...d.data() }))
-    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
-}
-
-export async function primeiraAula(cursoId) {
-  const modulos = await listarModulos(cursoId);
-  if (modulos.length === 0) return null;
-
-  const aulas = await listarAulas(cursoId, modulos[0].id);
-  if (aulas.length === 0) return null;
-
-  return { moduloId: modulos[0].id, aulaId: aulas[0].id };
+function erro(codigo, mensagem) {
+  const e = new Error(mensagem);
+  e.codigo = codigo;
+  return e;
 }
 
 /**
- * Descobre qual é a próxima aula depois da atual — dentro do mesmo
- * módulo, ou (se a atual for a última do módulo) a primeira aula do
- * próximo módulo. Retorna null se a aula atual for a última do curso
- * inteiro (curso concluído).
+ * Carrega o conteúdo completo de uma aula, validando autenticação,
+ * status da conta e matrícula liberada antes de qualquer leitura.
+ *
+ * @param {string} cursoId
+ * @param {string} moduloId
+ * @param {string} aulaId
+ * @returns {Promise<object>} dados da aula, incluindo "conteudo"
  */
-export async function proximaAula(cursoId, moduloIdAtual, aulaIdAtual) {
-  const aulasDoModulo = await listarAulas(cursoId, moduloIdAtual);
-  const indiceAtual = aulasDoModulo.findIndex((a) => a.id === aulaIdAtual);
-
-  if (indiceAtual !== -1 && indiceAtual + 1 < aulasDoModulo.length) {
-    const proxima = aulasDoModulo[indiceAtual + 1];
-    return { moduloId: moduloIdAtual, aulaId: proxima.id };
+export async function carregarAula(cursoId, moduloId, aulaId) {
+  // 1) autenticado + e-mail verificado
+  const usuario = auth.currentUser;
+  if (!usuario) {
+    throw erro(ERROS.NAO_AUTENTICADO, "Você precisa estar logado para ver esta aula.");
+  }
+  if (!usuario.emailVerified) {
+    throw erro(ERROS.EMAIL_NAO_VERIFICADO, "Confirme seu e-mail para acessar o conteúdo das aulas.");
   }
 
-  const modulos = await listarModulos(cursoId);
-  const indiceModuloAtual = modulos.findIndex((m) => m.id === moduloIdAtual);
-
-  if (indiceModuloAtual === -1 || indiceModuloAtual + 1 >= modulos.length) {
-    return null;
+  // 2) conta ativa
+  const docUsuario = await getDoc(doc(db, "usuarios", usuario.uid));
+  if (!docUsuario.exists() || docUsuario.data().status !== "ativa") {
+    throw erro(ERROS.CONTA_INATIVA, "Sua conta não está ativa no momento.");
   }
 
-  const proximoModulo = modulos[indiceModuloAtual + 1];
-  const aulasDoProximoModulo = await listarAulas(cursoId, proximoModulo.id);
+  // 3) curso liberado para este aluno
+  const idMatricula = `${usuario.uid}_${cursoId}`;
+  const docMatricula = await getDoc(doc(db, "matricula", idMatricula));
+  if (!docMatricula.exists() || docMatricula.data().liberado !== true) {
+    throw erro(ERROS.CURSO_NAO_LIBERADO, "Você ainda não tem acesso a este curso.");
+  }
 
-  if (aulasDoProximoModulo.length === 0) return null;
+  // 4) este curso específico não pode estar em manutenção
+  const docCurso = await getDoc(doc(db, "cursos", cursoId));
+  if (docCurso.exists() && docCurso.data().emManutencao === true) {
+    throw erro(ERROS.CURSO_EM_MANUTENCAO, "Este curso está temporariamente em manutenção.");
+  }
 
-  return { moduloId: proximoModulo.id, aulaId: aulasDoProximoModulo[0].id };
+  // Só agora o conteúdo real é buscado.
+  const referenciaAula = doc(db, "cursos", cursoId, "modulos", moduloId, "aulas", aulaId);
+  const docAula = await getDoc(referenciaAula);
+
+  if (!docAula.exists()) {
+    throw erro(ERROS.CONTEUDO_NAO_ENCONTRADO, "Esta aula não foi encontrada.");
+  }
+
+  return { id: docAula.id, ...docAula.data() };
 }
