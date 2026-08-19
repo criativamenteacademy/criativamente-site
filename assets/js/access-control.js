@@ -2,11 +2,9 @@
 // ============================================================
 // CONTROLE DE ACESSO A CURSOS — CriativaMente Academy
 // ============================================================
-// Lê a coleção "matriculas" (separada de "usuarios") para saber quais
-// cursos cada aluno pode ver, e busca os metadados de cursos/módulos/
-// aulas no catálogo público. NUNCA lê o campo "conteudo" de uma aula
-// diretamente — isso é feito exclusivamente por content-loader.js,
-// que aplica as 3 validações de segurança antes de buscar o conteúdo.
+// VERSÃO TEMPORÁRIA DE DIAGNÓSTICO — cada função avisa no Console
+// exatamente onde falhou, com detalhes. Depois de resolver o
+// problema, trocar de volta pela versão limpa (sem os console.log).
 // ============================================================
 
 import { db } from "./firebase-config.js";
@@ -19,47 +17,44 @@ import {
   where
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-/**
- * Busca todas as matrículas ATIVAS (liberado === true) de um aluno.
- * A consulta já filtra por uid == aluno logado, o que é exigido pelas
- * regras do Firestore para autorizar a listagem.
- */
 export async function listarMatriculasDoAluno(uid) {
-  const referenciaColecao = collection(db, "matricula");
-  const consulta = query(
-    referenciaColecao,
-    where("uid", "==", uid),
-    where("liberado", "==", true)
-  );
-  const snapshot = await getDocs(consulta);
-  return snapshot.docs.map((d) => d.data());
+  console.log("[DIAGNOSTICO] Passo 1: buscando matriculas do uid =", uid);
+  try {
+    const referenciaColecao = collection(db, "matricula");
+    const consulta = query(
+      referenciaColecao,
+      where("uid", "==", uid),
+      where("liberado", "==", true)
+    );
+    const snapshot = await getDocs(consulta);
+    console.log("[DIAGNOSTICO] Passo 1 OK. Matriculas encontradas:", snapshot.docs.length);
+    snapshot.docs.forEach((d) => console.log("[DIAGNOSTICO] Matricula encontrada:", d.id, d.data()));
+    return snapshot.docs.map((d) => d.data());
+  } catch (erro) {
+    console.error("[DIAGNOSTICO] FALHOU no Passo 1 (listar matriculas). Erro:", erro.code, erro.message);
+    throw erro;
+  }
 }
 
-/**
- * Verifica se um aluno tem um curso específico liberado.
- * Usado como checagem rápida de UI (a checagem que realmente protege
- * o conteúdo acontece nas regras do Firestore + content-loader.js).
- */
 export async function cursoLiberado(uid, cursoId) {
   const referencia = doc(db, "matricula", `${uid}_${cursoId}`);
   const snapshot = await getDoc(referencia);
   return snapshot.exists() && snapshot.data().liberado === true;
 }
 
-/**
- * Busca os metadados públicos de um curso (nome, descrição, capa).
- * NUNCA contém o conteúdo das aulas.
- */
 export async function buscarCurso(cursoId) {
-  const referencia = doc(db, "cursos", cursoId);
-  const snapshot = await getDoc(referencia);
-  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+  console.log("[DIAGNOSTICO] Passo 2: buscando curso =", cursoId);
+  try {
+    const referencia = doc(db, "cursos", cursoId);
+    const snapshot = await getDoc(referencia);
+    console.log("[DIAGNOSTICO] Passo 2 OK. Curso existe?", snapshot.exists());
+    return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+  } catch (erro) {
+    console.error("[DIAGNOSTICO] FALHOU no Passo 2 (buscar curso", cursoId, "). Erro:", erro.code, erro.message);
+    throw erro;
+  }
 }
 
-/**
- * Lista os cursos que o aluno tem liberados, já combinando os dados
- * do catálogo com o registro de matrícula. Pronta para o painel.
- */
 export async function listarCursosDoAluno(uid) {
   const matriculas = await listarMatriculasDoAluno(uid);
 
@@ -73,35 +68,36 @@ export async function listarCursosDoAluno(uid) {
   return cursos.filter(Boolean);
 }
 
-/**
- * Lista os módulos de um curso (só títulos/ordem, nunca conteúdo de aula).
- */
 export async function listarModulos(cursoId) {
-  const referencia = collection(db, "cursos", cursoId, "modulos");
-  const snapshot = await getDocs(referencia);
-  return snapshot.docs
-    .map((d) => ({ id: d.id, ...d.data() }))
-    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  console.log("[DIAGNOSTICO] Passo 3: buscando modulos do curso =", cursoId);
+  try {
+    const referencia = collection(db, "cursos", cursoId, "modulos");
+    const snapshot = await getDocs(referencia);
+    console.log("[DIAGNOSTICO] Passo 3 OK. Modulos encontrados:", snapshot.docs.length);
+    return snapshot.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  } catch (erro) {
+    console.error("[DIAGNOSTICO] FALHOU no Passo 3 (listar modulos do curso", cursoId, "). Erro:", erro.code, erro.message);
+    throw erro;
+  }
 }
 
-/**
- * Lista as aulas de um módulo (só títulos/ordem/duração — nunca o
- * campo "conteudo"). Se o aluno não tiver o curso liberado, as regras
- * do Firestore já bloqueiam esta leitura.
- */
 export async function listarAulas(cursoId, moduloId) {
-  const referencia = collection(db, "cursos", cursoId, "modulos", moduloId, "aulas");
-  const snapshot = await getDocs(referencia);
-  return snapshot.docs
-    .map((d) => ({ id: d.id, ...d.data() }))
-    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  console.log("[DIAGNOSTICO] Passo 4: buscando aulas. curso =", cursoId, "modulo =", moduloId);
+  try {
+    const referencia = collection(db, "cursos", cursoId, "modulos", moduloId, "aulas");
+    const snapshot = await getDocs(referencia);
+    console.log("[DIAGNOSTICO] Passo 4 OK. Aulas encontradas:", snapshot.docs.length);
+    return snapshot.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  } catch (erro) {
+    console.error("[DIAGNOSTICO] FALHOU no Passo 4 (listar aulas curso=", cursoId, "modulo=", moduloId, "). Erro:", erro.code, erro.message);
+    throw erro;
+  }
 }
 
-/**
- * Retorna { moduloId, aulaId } da primeira aula do curso — usado
- * quando o aluno clica em "Começar curso" e ainda não tem progresso
- * registrado.
- */
 export async function primeiraAula(cursoId) {
   const modulos = await listarModulos(cursoId);
   if (modulos.length === 0) return null;
