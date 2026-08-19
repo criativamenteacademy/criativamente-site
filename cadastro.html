@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Criar conta — CriativaMente Academy</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/auth.css" />
+</head>
+<body class="auth-page">
+
+  <div class="auth-card">
+    <a href="/index.html" class="auth-card__logo">Criativa<span>Mente</span> academy</a>
+    <h1>Criar sua conta</h1>
+    <p class="auth-subtitle">Cadastre-se para acessar sua área de aluno.</p>
+
+    <p id="mensagem" class="auth-message"></p>
+
+    <form id="form-cadastro" novalidate>
+      <div class="auth-field">
+        <label for="nome">Nome completo</label>
+        <input type="text" id="nome" name="nome" autocomplete="name" required />
+      </div>
+
+      <div class="auth-field">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" autocomplete="email" required />
+      </div>
+
+      <div class="auth-field">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" autocomplete="new-password" minlength="6" required />
+      </div>
+
+      <button type="submit" class="auth-button" id="botao-cadastrar">Criar conta</button>
+    </form>
+
+    <p class="auth-footer-link">
+      Já tem conta? <a href="/login.html">Fazer login</a>
+    </p>
+  </div>
+
+  <script type="module">
+    import { cadastrarUsuario, traduzirErroFirebase } from "/assets/js/auth.js";
+
+    const form = document.getElementById("form-cadastro");
+    const mensagem = document.getElementById("mensagem");
+    const botao = document.getElementById("botao-cadastrar");
+
+    function mostrarMensagem(texto, tipo) {
+      mensagem.textContent = texto;
+      mensagem.className = `auth-message auth-message--${tipo}`;
+    }
+
+    form.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      mensagem.className = "auth-message";
+
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+
+      if (!nome || !email || senha.length < 6) {
+        mostrarMensagem("Preencha nome, e-mail e uma senha com pelo menos 6 caracteres.", "erro");
+        return;
+      }
+
+      botao.disabled = true;
+      botao.textContent = "Criando conta...";
+
+      try {
+        await cadastrarUsuario(nome, email, senha);
+        mostrarMensagem("Conta criada! Enviamos um e-mail de confirmação — você já pode acessar sua área.", "sucesso");
+        setTimeout(() => {
+          window.location.href = "/area-do-aluno.html";
+        }, 1200);
+      } catch (erro) {
+        mostrarMensagem(traduzirErroFirebase(erro.code), "erro");
+        botao.disabled = false;
+        botao.textContent = "Criar conta";
+      }
+    });
+  </script>
+</body>
+</html>

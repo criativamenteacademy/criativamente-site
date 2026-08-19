@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrar — CriativaMente Academy</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/auth.css" />
+</head>
+<body class="auth-page">
+
+  <div class="auth-card">
+    <a href="/index.html" class="auth-card__logo">Criativa<span>Mente</span> academy</a>
+    <h1>Entrar</h1>
+    <p class="auth-subtitle">Acesse sua área do aluno.</p>
+
+    <p id="mensagem" class="auth-message"></p>
+
+    <form id="form-login" novalidate>
+      <div class="auth-field">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" autocomplete="email" required />
+      </div>
+
+      <div class="auth-field">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" autocomplete="current-password" required />
+      </div>
+
+      <button type="submit" class="auth-button" id="botao-entrar">Entrar</button>
+    </form>
+
+    <p class="auth-footer-link">
+      <a href="/recuperar-senha.html">Esqueci minha senha</a>
+    </p>
+    <p class="auth-footer-link">
+      Ainda não tem conta? <a href="/cadastro.html">Cadastre-se</a>
+    </p>
+  </div>
+
+  <script type="module">
+    import { entrarUsuario, traduzirErroFirebase } from "/assets/js/auth.js";
+    import { sanitizarRedirect } from "/assets/js/redirect-utils.js";
+
+    const form = document.getElementById("form-login");
+    const mensagem = document.getElementById("mensagem");
+    const botao = document.getElementById("botao-entrar");
+
+    function mostrarMensagem(texto, tipo) {
+      mensagem.textContent = texto;
+      mensagem.className = `auth-message auth-message--${tipo}`;
+    }
+
+    const parametros = new URLSearchParams(window.location.search);
+
+    // O parâmetro "redirect" passa OBRIGATORIAMENTE pela sanitização:
+    // só aceitamos caminhos internos do próprio site (ver auth-guard.js).
+    // Isso evita redirecionamento aberto para sites externos após o login.
+    const destinoAposLogin = sanitizarRedirect(parametros.get("redirect"));
+
+    const motivo = parametros.get("motivo");
+    if (motivo === "conta-inativa") {
+      mostrarMensagem("Sua conta está inativa no momento. Fale com o suporte se isso for um engano.", "aviso");
+    }
+
+    form.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      mensagem.className = "auth-message";
+
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+
+      if (!email || !senha) {
+        mostrarMensagem("Informe e-mail e senha.", "erro");
+        return;
+      }
+
+      botao.disabled = true;
+      botao.textContent = "Entrando...";
+
+      try {
+        await entrarUsuario(email, senha);
+        window.location.href = destinoAposLogin;
+      } catch (erro) {
+        mostrarMensagem(traduzirErroFirebase(erro.code), "erro");
+        botao.disabled = false;
+        botao.textContent = "Entrar";
+      }
+    });
+  </script>
+</body>
+</html>

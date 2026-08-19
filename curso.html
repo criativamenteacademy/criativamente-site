@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curso — CriativaMente Academy</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/auth.css" />
+</head>
+<!-- Protegida por auth-guard.js. Esta página só mostra TÍTULOS de
+     módulos e aulas — o conteúdo de cada aula só é buscado dentro de
+     aula.html, através de content-loader.js. -->
+<body class="auth-checking">
+
+  <div class="auth-loading">Carregando curso...</div>
+
+  <header class="aluno-header">
+    <a href="/area-do-aluno.html" class="aluno-header__logo">Criativa<span>Mente</span> academy</a>
+    <div class="aluno-header__acoes">
+      <a class="aluno-header__link" href="/area-do-aluno.html">Minha área</a>
+      <button class="aluno-sair" id="botao-sair">Sair</button>
+    </div>
+  </header>
+
+  <section class="curso-cabecalho">
+    <h1 id="curso-nome">Carregando...</h1>
+    <p id="curso-descricao"></p>
+  </section>
+
+  <main class="curso-modulos" id="curso-modulos">
+    <!-- Módulos e aulas inseridos aqui via JavaScript -->
+  </main>
+
+  <script type="module">
+    import { sairUsuario } from "/assets/js/auth.js";
+    import {
+      buscarCurso,
+      cursoLiberado,
+      listarModulos,
+      listarAulas
+    } from "/assets/js/access-control.js";
+    import { buscarProgresso } from "/assets/js/progress.js";
+
+    document.getElementById("botao-sair").addEventListener("click", async () => {
+      await sairUsuario();
+      window.location.href = "/login.html";
+    });
+
+    const parametros = new URLSearchParams(window.location.search);
+    const cursoId = parametros.get("curso");
+
+    document.addEventListener("cm-auth-ready", async (evento) => {
+      const usuario = evento.detail.usuario;
+      const container = document.getElementById("curso-modulos");
+
+      if (!cursoId) {
+        window.location.replace("/area-do-aluno.html");
+        return;
+      }
+
+      const liberado = await cursoLiberado(usuario.uid, cursoId);
+      if (!liberado) {
+        container.innerHTML = `<p>Você ainda não tem acesso a este curso.</p>`;
+        return;
+      }
+
+      const curso = await buscarCurso(cursoId);
+      if (!curso) {
+        container.innerHTML = `<p>Curso não encontrado.</p>`;
+        return;
+      }
+
+      document.getElementById("curso-nome").textContent = curso.nome;
+      document.getElementById("curso-descricao").textContent = curso.descricao || "";
+
+      const [modulos, progresso] = await Promise.all([
+        listarModulos(cursoId),
+        buscarProgresso(usuario.uid, cursoId)
+      ]);
+      const aulasConcluidas = (progresso && progresso.aulasConcluidas) || {};
+
+      const blocos = await Promise.all(modulos.map(async (modulo) => {
+        const aulas = await listarAulas(cursoId, modulo.id);
+        const itensAula = aulas.map((aula) => {
+          const concluida = aulasConcluidas[aula.id] === true;
+          return `
+            <a class="aula-item ${concluida ? "aula-item--concluida" : ""}"
+               href="/aula.html?curso=${cursoId}&modulo=${modulo.id}&aula=${aula.id}">
+              <span>${aula.titulo}</span>
+              <span class="aula-item__status">${concluida ? "Concluída" : "Assistir"}</span>
+            </a>`;
+        }).join("");
+
+        return `
+          <div class="modulo-bloco">
+            <h2>${modulo.titulo}</h2>
+            ${itensAula || "<p>Nenhuma aula cadastrada ainda.</p>"}
+          </div>`;
+      }));
+
+      container.innerHTML = blocos.join("");
+    });
+  </script>
+
+  <script type="module" src="/assets/js/auth-guard.js"></script>
+</body>
+</html>

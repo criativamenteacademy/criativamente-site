@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Área do Aluno — CriativaMente Academy</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/auth.css" />
+</head>
+<!-- Protegida por auth-guard.js: sem login válido e conta ativa,
+     redireciona para /login.html antes de qualquer conteúdo aparecer. -->
+<body class="auth-checking">
+
+  <div class="auth-loading">Carregando sua área do aluno...</div>
+
+  <header class="aluno-header">
+    <a href="/area-do-aluno.html" class="aluno-header__logo">Criativa<span>Mente</span> academy</a>
+    <div class="aluno-header__acoes">
+      <a class="aluno-header__link" href="/index.html">Voltar ao site</a>
+      <button class="aluno-sair" id="botao-sair">Sair</button>
+    </div>
+  </header>
+
+  <div id="aviso-verificacao" class="aviso-verificacao" style="display: none;">
+    <span>Confirme seu e-mail para liberar o conteúdo das aulas.</span>
+    <button id="botao-reenviar-verificacao">Reenviar e-mail</button>
+  </div>
+
+  <main class="aluno-conteudo">
+    <div class="aluno-boas-vindas">
+      <h1 id="titulo-boas-vindas">Olá!</h1>
+      <p>Estes são os cursos disponíveis na sua conta.</p>
+    </div>
+
+    <div class="cursos-grid" id="cursos-grid">
+      <!-- Cartões de curso inseridos aqui via JavaScript -->
+    </div>
+  </main>
+
+  <script type="module">
+    import { sairUsuario, reenviarVerificacaoDeEmail } from "/assets/js/auth.js";
+    import { listarCursosDoAluno, primeiraAula } from "/assets/js/access-control.js";
+    import { buscarProgresso } from "/assets/js/progress.js";
+
+    document.getElementById("botao-sair").addEventListener("click", async () => {
+      await sairUsuario();
+      window.location.href = "/login.html";
+    });
+
+    const botaoReenviar = document.getElementById("botao-reenviar-verificacao");
+    botaoReenviar.addEventListener("click", async () => {
+      botaoReenviar.disabled = true;
+      botaoReenviar.textContent = "Enviando...";
+      try {
+        await reenviarVerificacaoDeEmail();
+        botaoReenviar.textContent = "E-mail reenviado!";
+      } catch {
+        botaoReenviar.textContent = "Não foi possível reenviar";
+      }
+    });
+
+    function calcularPercentual(curso, progresso) {
+      const totalAulas = (curso.totalAulas || 0);
+      if (!totalAulas || !progresso || !progresso.aulasConcluidas) return 0;
+      const concluidas = Object.keys(progresso.aulasConcluidas).length;
+      return Math.min(100, Math.round((concluidas / totalAulas) * 100));
+    }
+
+    async function montarLinkContinuar(uid, curso, progresso) {
+      if (progresso && progresso.ultimoModulo && progresso.ultimaAula) {
+        return `/aula.html?curso=${curso.id}&modulo=${progresso.ultimoModulo}&aula=${progresso.ultimaAula}`;
+      }
+      const primeira = await primeiraAula(curso.id);
+      if (primeira) {
+        return `/aula.html?curso=${curso.id}&modulo=${primeira.moduloId}&aula=${primeira.aulaId}`;
+      }
+      return `/curso.html?curso=${curso.id}`;
+    }
+
+    document.addEventListener("cm-auth-ready", async (evento) => {
+      const usuario = evento.detail.usuario;
+
+      const nomeExibido = usuario.displayName ? usuario.displayName.split(" ")[0] : "aluno";
+      document.getElementById("titulo-boas-vindas").textContent = `Olá, ${nomeExibido}!`;
+
+      if (!usuario.emailVerified) {
+        document.getElementById("aviso-verificacao").style.display = "flex";
+      }
+
+      const grid = document.getElementById("cursos-grid");
+      const cursos = await listarCursosDoAluno(usuario.uid);
+
+      if (cursos.length === 0) {
+        grid.innerHTML = `
+          <div class="curso-card__vazio">
+            Você ainda não tem nenhum curso liberado nesta conta.
+          </div>`;
+        return;
+      }
+
+      const cartoes = await Promise.all(cursos.map(async (curso) => {
+        const progresso = await buscarProgresso(usuario.uid, curso.id);
+        const percentual = calcularPercentual(curso, progresso);
+        const link = await montarLinkContinuar(usuario.uid, curso, progresso);
+        const jaComecou = Boolean(progresso && progresso.ultimaAula);
+
+        return `
+          <div class="curso-card">
+            <h3>${curso.nome}</h3>
+            <p>${curso.descricao || ""}</p>
+            <div class="barra-progresso">
+              <div class="barra-progresso__preenchimento" style="width:${percentual}%"></div>
+            </div>
+            <p class="progresso-texto">${percentual}% concluído</p>
+            <a class="curso-card__acao" href="${link}">
+              ${jaComecou ? "Continuar de onde parei" : "Começar curso"}
+            </a>
+          </div>`;
+      }));
+
+      grid.innerHTML = cartoes.join("");
+    });
+  </script>
+
+  <!-- auth-guard.js precisa ser o último script: valida login + conta
+       ativa e só então dispara "cm-auth-ready", usado acima. -->
+  <script type="module" src="/assets/js/auth-guard.js"></script>
+</body>
+</html>

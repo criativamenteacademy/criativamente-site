@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmação — CriativaMente Academy</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/auth.css" />
+</head>
+<!--
+  Esta é a página de destino (actionCodeSettings.url) dos e-mails que
+  o Firebase envia para:
+    - verificação de e-mail (mode=verifyEmail)
+    - redefinição de senha (mode=resetPassword)
+  Não precisa de link nenhum apontando para cá — o próprio Firebase
+  monta a URL completa (com "mode" e "oobCode") ao enviar o e-mail.
+-->
+<body class="auth-page">
+
+  <div class="auth-card">
+    <a href="/index.html" class="auth-card__logo">Criativa<span>Mente</span> academy</a>
+
+    <div id="bloco-carregando">
+      <h1>Verificando...</h1>
+      <p class="auth-subtitle">Um instante enquanto confirmamos seu link.</p>
+    </div>
+
+    <div id="bloco-verificacao" style="display: none;">
+      <h1>E-mail confirmado</h1>
+      <p class="auth-subtitle">Seu e-mail foi verificado com sucesso.</p>
+      <a class="auth-button" style="display:block; text-align:center; text-decoration:none;" href="/area-do-aluno.html">Ir para minha área</a>
+    </div>
+
+    <div id="bloco-redefinir" style="display: none;">
+      <h1>Nova senha</h1>
+      <p class="auth-subtitle">Escolha uma nova senha para sua conta.</p>
+      <p id="mensagem-redefinir" class="auth-message"></p>
+      <form id="form-redefinir" novalidate>
+        <div class="auth-field">
+          <label for="nova-senha">Nova senha</label>
+          <input type="password" id="nova-senha" minlength="6" required autocomplete="new-password" />
+        </div>
+        <button type="submit" class="auth-button" id="botao-redefinir">Salvar nova senha</button>
+      </form>
+    </div>
+
+    <div id="bloco-erro" style="display: none;">
+      <h1>Link inválido</h1>
+      <p class="auth-subtitle" id="texto-erro">Este link expirou ou já foi usado.</p>
+      <a class="auth-button" style="display:block; text-align:center; text-decoration:none;" href="/login.html">Voltar para o login</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth } from "/assets/js/firebase-config.js";
+    import { traduzirErroFirebase } from "/assets/js/auth.js";
+    import {
+      applyActionCode,
+      verifyPasswordResetCode,
+      confirmPasswordReset
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+    const parametros = new URLSearchParams(window.location.search);
+    const modo = parametros.get("mode");
+    const codigo = parametros.get("oobCode");
+
+    const blocoCarregando = document.getElementById("bloco-carregando");
+    const blocoVerificacao = document.getElementById("bloco-verificacao");
+    const blocoRedefinir = document.getElementById("bloco-redefinir");
+    const blocoErro = document.getElementById("bloco-erro");
+    const textoErro = document.getElementById("texto-erro");
+
+    function mostrarApenas(bloco) {
+      [blocoCarregando, blocoVerificacao, blocoRedefinir, blocoErro].forEach((b) => {
+        b.style.display = b === bloco ? "block" : "none";
+      });
+    }
+
+    async function tratarVerificacaoDeEmail() {
+      try {
+        await applyActionCode(auth, codigo);
+        mostrarApenas(blocoVerificacao);
+      } catch (erro) {
+        textoErro.textContent = traduzirErroFirebase(erro.code);
+        mostrarApenas(blocoErro);
+      }
+    }
+
+    async function prepararRedefinicaoDeSenha() {
+      try {
+        await verifyPasswordResetCode(auth, codigo);
+        mostrarApenas(blocoRedefinir);
+      } catch (erro) {
+        textoErro.textContent = traduzirErroFirebase(erro.code);
+        mostrarApenas(blocoErro);
+      }
+    }
+
+    if (modo === "verifyEmail" && codigo) {
+      tratarVerificacaoDeEmail();
+    } else if (modo === "resetPassword" && codigo) {
+      prepararRedefinicaoDeSenha();
+    } else {
+      textoErro.textContent = "Este link é inválido.";
+      mostrarApenas(blocoErro);
+    }
+
+    document.getElementById("form-redefinir").addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      const mensagem = document.getElementById("mensagem-redefinir");
+      const botao = document.getElementById("botao-redefinir");
+      const novaSenha = document.getElementById("nova-senha").value;
+
+      if (novaSenha.length < 6) {
+        mensagem.textContent = "A senha precisa ter pelo menos 6 caracteres.";
+        mensagem.className = "auth-message auth-message--erro";
+        return;
+      }
+
+      botao.disabled = true;
+      botao.textContent = "Salvando...";
+
+      try {
+        await confirmPasswordReset(auth, codigo, novaSenha);
+        mensagem.textContent = "Senha alterada! Redirecionando para o login...";
+        mensagem.className = "auth-message auth-message--sucesso";
+        setTimeout(() => {
+          window.location.href = "/login.html";
+        }, 1500);
+      } catch (erro) {
+        mensagem.textContent = traduzirErroFirebase(erro.code);
+        mensagem.className = "auth-message auth-message--erro";
+        botao.disabled = false;
+        botao.textContent = "Salvar nova senha";
+      }
+    });
+  </script>
+</body>
+</html>

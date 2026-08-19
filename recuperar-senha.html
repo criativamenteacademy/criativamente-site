@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recuperar senha — CriativaMente Academy</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/auth.css" />
+</head>
+<body class="auth-page">
+
+  <div class="auth-card">
+    <a href="/index.html" class="auth-card__logo">Criativa<span>Mente</span> academy</a>
+    <h1>Recuperar senha</h1>
+    <p class="auth-subtitle">Informe seu e-mail. Enviaremos um link para você criar uma nova senha.</p>
+
+    <p id="mensagem" class="auth-message"></p>
+
+    <form id="form-recuperar" novalidate>
+      <div class="auth-field">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" autocomplete="email" required />
+      </div>
+
+      <button type="submit" class="auth-button" id="botao-enviar">Enviar link de recuperação</button>
+    </form>
+
+    <p class="auth-footer-link">
+      <a href="/login.html">Voltar para o login</a>
+    </p>
+  </div>
+
+  <script type="module">
+    import { recuperarSenha, traduzirErroFirebase } from "/assets/js/auth.js";
+
+    const form = document.getElementById("form-recuperar");
+    const mensagem = document.getElementById("mensagem");
+    const botao = document.getElementById("botao-enviar");
+
+    function mostrarMensagem(texto, tipo) {
+      mensagem.textContent = texto;
+      mensagem.className = `auth-message auth-message--${tipo}`;
+    }
+
+    form.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      mensagem.className = "auth-message";
+
+      const email = document.getElementById("email").value.trim();
+      if (!email) {
+        mostrarMensagem("Informe seu e-mail.", "erro");
+        return;
+      }
+
+      botao.disabled = true;
+      botao.textContent = "Enviando...";
+
+      try {
+        await recuperarSenha(email);
+        // Mensagem propositalmente genérica: não confirma nem nega se o
+        // e-mail existe na base, para não vazar quais e-mails têm conta.
+        mostrarMensagem("Se este e-mail estiver cadastrado, você vai receber um link para redefinir a senha.", "sucesso");
+        form.reset();
+      } catch (erro) {
+        if (erro.code === "auth/invalid-email") {
+          mostrarMensagem(traduzirErroFirebase(erro.code), "erro");
+        } else {
+          // Mesmo em erro genérico, não expomos detalhes técnicos.
+          mostrarMensagem("Se este e-mail estiver cadastrado, você vai receber um link para redefinir a senha.", "sucesso");
+        }
+      } finally {
+        botao.disabled = false;
+        botao.textContent = "Enviar link de recuperação";
+      }
+    });
+  </script>
+</body>
+</html>
