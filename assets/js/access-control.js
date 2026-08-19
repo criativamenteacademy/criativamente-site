@@ -25,7 +25,7 @@ import {
  * regras do Firestore para autorizar a listagem.
  */
 export async function listarMatriculasDoAluno(uid) {
-  const referenciaColecao = collection(db, "matriculas");
+  const referenciaColecao = collection(db, "matricula");
   const consulta = query(
     referenciaColecao,
     where("uid", "==", uid),
@@ -41,7 +41,7 @@ export async function listarMatriculasDoAluno(uid) {
  * o conteúdo acontece nas regras do Firestore + content-loader.js).
  */
 export async function cursoLiberado(uid, cursoId) {
-  const referencia = doc(db, "matriculas", `${uid}_${cursoId}`);
+  const referencia = doc(db, "matricula", `${uid}_${cursoId}`);
   const snapshot = await getDoc(referencia);
   return snapshot.exists() && snapshot.data().liberado === true;
 }

@@ -61,7 +61,7 @@ export async function carregarAula(cursoId, moduloId, aulaId) {
 
   // 3) curso liberado para este aluno
   const idMatricula = `${usuario.uid}_${cursoId}`;
-  const docMatricula = await getDoc(doc(db, "matriculas", idMatricula));
+  const docMatricula = await getDoc(doc(db, "matricula", idMatricula));
   if (!docMatricula.exists() || docMatricula.data().liberado !== true) {
     throw erro(ERROS.CURSO_NAO_LIBERADO, "Você ainda não tem acesso a este curso.");
   }
