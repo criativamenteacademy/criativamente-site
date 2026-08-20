@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finalizar inscrição — CriativaMente Academy</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/auth.css" />
+</head>
+<!-- Protegida por auth-guard.js: exige login antes de mostrar o checkout. -->
+<body class="auth-checking">
+
+  <div class="auth-loading">Carregando...</div>
+
+  <div class="auth-page" id="tela-checkout" style="display:none;">
+    <div class="auth-card" style="max-width: 480px;">
+      <a href="/index.html" class="auth-card__logo">Criativa<span>Mente</span> academy</a>
+
+      <h1 id="checkout-titulo" style="font-family:'Sora',sans-serif; font-size:22px; text-align:center; margin: 8px 0 4px;">
+        Finalizar inscrição
+      </h1>
+      <p id="checkout-descricao" style="text-align:center; color: var(--cinza-quente); margin: 0 0 24px; font-size: 14px;">
+        Confirme seus dados para gerar o pagamento.
+      </p>
+
+      <form id="form-checkout">
+        <label for="campo-nome" style="display:block; font-size:13px; margin-bottom:4px;">Nome completo</label>
+        <input id="campo-nome" name="nome" type="text" required
+               style="width:100%; padding:12px; margin-bottom:16px; border:1px solid rgba(15,10,5,0.15); border-radius:8px; font-family:'Inter',sans-serif;" />
+
+        <label for="campo-cpf" style="display:block; font-size:13px; margin-bottom:4px;">CPF</label>
+        <input id="campo-cpf" name="cpf" type="text" required placeholder="000.000.000-00"
+               style="width:100%; padding:12px; margin-bottom:16px; border:1px solid rgba(15,10,5,0.15); border-radius:8px; font-family:'Inter',sans-serif;" />
+
+        <label for="campo-telefone" style="display:block; font-size:13px; margin-bottom:4px;">WhatsApp</label>
+        <input id="campo-telefone" name="telefone" type="text" required placeholder="(00) 00000-0000"
+               style="width:100%; padding:12px; margin-bottom:16px; border:1px solid rgba(15,10,5,0.15); border-radius:8px; font-family:'Inter',sans-serif;" />
+
+        <p style="font-size:12px; color: var(--cinza-quente); margin: 0 0 8px;">Endereço para envio de brindes e materiais físicos</p>
+
+        <label for="campo-cep" style="display:block; font-size:13px; margin-bottom:4px;">CEP</label>
+        <input id="campo-cep" name="cep" type="text" required placeholder="00000-000"
+               style="width:100%; padding:12px; margin-bottom:16px; border:1px solid rgba(15,10,5,0.15); border-radius:8px; font-family:'Inter',sans-serif;" />
+
+        <label for="campo-endereco" style="display:block; font-size:13px; margin-bottom:4px;">Endereço (rua/avenida)</label>
+        <input id="campo-endereco" name="endereco" type="text" required
+               style="width:100%; padding:12px; margin-bottom:16px; border:1px solid rgba(15,10,5,0.15); border-radius:8px; font-family:'Inter',sans-serif;" />
+
+        <div style="display:flex; gap:12px; margin-bottom:16px;">
+          <div style="flex:1;">
+            <label for="campo-numero" style="display:block; font-size:13px; margin-bottom:4px;">Número</label>
+            <input id="campo-numero" name="numero" type="text" required
+                   style="width:100%; padding:12px; border:1px solid rgba(15,10,5,0.15); border-radius:8px; font-family:'Inter',sans-serif;" />
+          </div>
+          <div style="flex:2;">
+            <label for="campo-complemento" style="display:block; font-size:13px; margin-bottom:4px;">Complemento (opcional)</label>
+            <input id="campo-complemento" name="complemento" type="text"
+                   style="width:100%; padding:12px; border:1px solid rgba(15,10,5,0.15); border-radius:8px; font-family:'Inter',sans-serif;" />
+          </div>
+        </div>
+
+        <label for="campo-bairro" style="display:block; font-size:13px; margin-bottom:4px;">Bairro</label>
+        <input id="campo-bairro" name="bairro" type="text" required
+               style="width:100%; padding:12px; margin-bottom:16px; border:1px solid rgba(15,10,5,0.15); border-radius:8px; font-family:'Inter',sans-serif;" />
+
+        <div style="display:flex; gap:12px; margin-bottom:24px;">
+          <div style="flex:2;">
+            <label for="campo-cidade" style="display:block; font-size:13px; margin-bottom:4px;">Cidade</label>
+            <input id="campo-cidade" name="cidade" type="text" required
+                   style="width:100%; padding:12px; border:1px solid rgba(15,10,5,0.15); border-radius:8px; font-family:'Inter',sans-serif;" />
+          </div>
+          <div style="flex:1;">
+            <label for="campo-estado" style="display:block; font-size:13px; margin-bottom:4px;">UF</label>
+            <input id="campo-estado" name="estado" type="text" required maxlength="2" placeholder="PR"
+                   style="width:100%; padding:12px; border:1px solid rgba(15,10,5,0.15); border-radius:8px; font-family:'Inter',sans-serif; text-transform:uppercase;" />
+          </div>
+        </div>
+
+        <div id="checkout-erro" style="display:none; background:#fdeceb; color:#b3261e; padding:12px; border-radius:8px; margin-bottom:16px; font-size:14px;"></div>
+
+        <button type="submit" id="botao-pagar" class="btn btn-primary" style="width:100%; text-align:center; border:none; cursor:pointer;">
+          Inscrever-se
+        </button>
+      </form>
+
+      <p style="text-align:center; font-size:12px; color: var(--cinza-quente); margin-top:16px;">
+        Pagamento processado com segurança pelo Asaas. Você poderá escolher entre Pix, cartão ou boleto na próxima tela.
+      </p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth } from "/assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    import { sanitizarRedirect } from "/assets/js/redirect-utils.js";
+
+    const URL_WORKER = "https://criativamente-pagamentos.contatojhonisilva.workers.dev";
+
+    const CATALOGO = {
+      "posicionamento-estrategico": {
+        titulo: "Posicionamento Estratégico",
+        descricao: "Da ideia à marca com identidade real",
+      },
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const cursoId = params.get("curso");
+    const curso = CATALOGO[cursoId];
+
+    if (!curso) {
+      document.querySelector(".auth-loading").textContent =
+        "Curso não encontrado. Volte à página do curso e tente novamente.";
+    } else {
+      document.getElementById("checkout-titulo").textContent = curso.titulo;
+      document.getElementById("checkout-descricao").textContent = curso.descricao;
+    }
+
+    let usuarioAtual = null;
+
+    onAuthStateChanged(auth, (usuario) => {
+      if (!usuario) {
+        const destino = sanitizarRedirect(window.location.pathname + window.location.search);
+        window.location.replace(`/login.html?redirect=${encodeURIComponent(destino)}`);
+        return;
+      }
+      usuarioAtual = usuario;
+      document.getElementById("campo-nome").value = usuario.displayName || "";
+      document.body.classList.remove("auth-checking");
+      document.querySelector(".auth-loading").style.display = "none";
+      document.getElementById("tela-checkout").style.display = "flex";
+    });
+
+    document.getElementById("form-checkout").addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      if (!curso || !usuarioAtual) return;
+
+      const botao = document.getElementById("botao-pagar");
+      const caixaErro = document.getElementById("checkout-erro");
+      caixaErro.style.display = "none";
+      botao.disabled = true;
+      botao.textContent = "Gerando pagamento...";
+
+      const dados = {
+        uid: usuarioAtual.uid,
+        nome: document.getElementById("campo-nome").value.trim(),
+        email: usuarioAtual.email,
+        cpf: document.getElementById("campo-cpf").value.trim(),
+        telefone: document.getElementById("campo-telefone").value.trim(),
+        cursoId,
+        endereco: {
+          cep: document.getElementById("campo-cep").value.trim(),
+          endereco: document.getElementById("campo-endereco").value.trim(),
+          numero: document.getElementById("campo-numero").value.trim(),
+          complemento: document.getElementById("campo-complemento").value.trim(),
+          bairro: document.getElementById("campo-bairro").value.trim(),
+          cidade: document.getElementById("campo-cidade").value.trim(),
+          estado: document.getElementById("campo-estado").value.trim().toUpperCase(),
+        },
+      };
+
+      try {
+        const resposta = await fetch(`${URL_WORKER}/criar-cobranca`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dados),
+        });
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+          throw new Error(resultado.erro || "Não foi possível gerar o pagamento.");
+        }
+
+        window.location.href = resultado.invoiceUrl;
+      } catch (erro) {
+        caixaErro.textContent = erro.message;
+        caixaErro.style.display = "block";
+        botao.disabled = false;
+        botao.textContent = "Inscrever-se";
+      }
+    });
+  </script>
+</body>
+</html>
