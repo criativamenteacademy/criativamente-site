@@ -48,11 +48,15 @@ export async function registrarUltimaAula(uid, cursoId, moduloId, aulaId) {
 
 /**
  * Marca uma aula como concluída (usado pelo botão "Concluir aula").
+ * A chave usada é "moduloId_aulaId" (ex: "modulo-2_aula-1"), não só
+ * "aulaId" — isso evita que a Aula 1 de módulos diferentes sejam
+ * tratadas como a mesma aula concluída.
  */
-export async function marcarAulaConcluida(uid, cursoId, aulaId) {
+export async function marcarAulaConcluida(uid, cursoId, moduloId, aulaId) {
   const progressoAtual = await buscarProgresso(uid, cursoId);
   const aulasConcluidas = (progressoAtual && progressoAtual.aulasConcluidas) || {};
-  aulasConcluidas[aulaId] = true;
+  const chave = `${moduloId}_${aulaId}`;
+  aulasConcluidas[chave] = true;
 
   const referencia = doc(db, "progresso", idProgresso(uid, cursoId));
   await setDoc(
