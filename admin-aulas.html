@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -661,13 +662,34 @@
       return;
     }
 
+    const caminho = `cursos/${curso}/modulos/modulo-${modulo}/aulas/aula-${aula}`;
+    const ref = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`, 'aulas', `aula-${aula}`);
+    const estaEditando = document.getElementById('avisoEditando').style.display === 'block';
+
+    if (!estaEditando) {
+      try {
+        const existente = await getDoc(ref);
+        if (existente.exists()) {
+          const tituloExistente = existente.data().titulo || '(sem título)';
+          const confirmar = window.confirm(
+            `Atenção: já existe uma aula salva em "${caminho}" com o título "${tituloExistente}".\n\nSe continuar, ela será SUBSTITUÍDA por esta nova aula ("${titulo}").\n\nClique OK só se isso for intencional (ex: corrigindo essa mesma aula). Clique Cancelar se você queria criar uma aula diferente — nesse caso, ajuste o número da aula antes de salvar.`
+          );
+          if (!confirmar) {
+            statusDiv.className = '';
+            statusDiv.style.display = 'none';
+            return;
+          }
+        }
+      } catch (erroCheck) {
+        // Se a checagem falhar por algum motivo, segue o salvamento normalmente
+        console.warn('Não foi possível checar aula existente antes de salvar:', erroCheck);
+      }
+    }
+
     botao.disabled = true;
     botao.textContent = 'Salvando...';
 
     try {
-      const caminho = `cursos/${curso}/modulos/modulo-${modulo}/aulas/aula-${aula}`;
-      const ref = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`, 'aulas', `aula-${aula}`);
-
       await setDoc(ref, {
         titulo: titulo,
         ordem: Number(aula),
@@ -676,12 +698,17 @@
       });
 
       statusDiv.className = 'sucesso';
-      statusDiv.textContent = `Aula salva com sucesso em: ${caminho}`;
+      statusDiv.textContent = `Aula salva com sucesso em: ${caminho}. Já avancei o número da aula para a próxima — confira antes de colar o novo conteúdo.`;
 
       document.getElementById('titulo').value = '';
       document.getElementById('conteudo').innerHTML = '';
       document.getElementById('linkImagem').value = '';
       document.getElementById('avisoEditando').style.display = 'none';
+
+      // Avança automaticamente para a próxima aula, pra não sobrescrever por engano
+      const proximaAula = Number(aula) + 1;
+      document.getElementById('aula').value = proximaAula;
+      document.getElementById('conteudo').focus();
 
     } catch (erro) {
       statusDiv.className = 'erro';
