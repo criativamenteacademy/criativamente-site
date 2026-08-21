@@ -42,7 +42,7 @@
 
   <script type="module">
     import { sairUsuario, reenviarVerificacaoDeEmail } from "/assets/js/auth.js";
-    import { listarCursosDoAluno, primeiraAula } from "/assets/js/access-control.js";
+    import { listarCursosDoAluno, primeiraAula, listarModulos, listarAulas } from "/assets/js/access-control.js";
     import { buscarProgresso } from "/assets/js/progress.js";
 
     document.getElementById("botao-sair").addEventListener("click", async () => {
@@ -62,8 +62,15 @@
       }
     });
 
-    function calcularPercentual(curso, progresso) {
-      const totalAulas = (curso.totalAulas || 0);
+    async function contarTotalAulas(cursoId) {
+      const modulos = await listarModulos(cursoId);
+      const contagens = await Promise.all(
+        modulos.map((modulo) => listarAulas(cursoId, modulo.id))
+      );
+      return contagens.reduce((total, aulas) => total + aulas.length, 0);
+    }
+
+    function calcularPercentual(totalAulas, progresso) {
       if (!totalAulas || !progresso || !progresso.aulasConcluidas) return 0;
       const concluidas = Object.keys(progresso.aulasConcluidas).length;
       return Math.min(100, Math.round((concluidas / totalAulas) * 100));
@@ -112,7 +119,8 @@
         }
 
         const progresso = await buscarProgresso(usuario.uid, curso.id);
-        const percentual = calcularPercentual(curso, progresso);
+        const totalAulas = await contarTotalAulas(curso.id);
+        const percentual = calcularPercentual(totalAulas, progresso);
         const link = await montarLinkContinuar(usuario.uid, curso, progresso);
         const jaComecou = Boolean(progresso && progresso.ultimaAula);
 
