@@ -269,6 +269,12 @@
     </div>
   </div>
 
+  <label for="nomeModulo">Nome do módulo</label>
+  <input type="text" id="nomeModulo" placeholder="Ex: Personalidade e Voz de Marca">
+  <p class="ajuda">Preenche automaticamente o nome desse módulo (aparece pro aluno como título da seção). Só precisa preencher uma vez por módulo — nas próximas aulas do mesmo módulo, deixa em branco que ele não sobrescreve.</p>
+  <button type="button" class="botao-imagem" onclick="salvarNomeModuloAvulso()">💾 Só corrigir o nome deste módulo (sem mexer em aulas)</button>
+  <p class="ajuda">Use este botão pra módulos que já têm todas as aulas prontas e só precisam do nome corrigido — preenche "Número do módulo" e "Nome do módulo" acima, clica aqui, e pronto.</p>
+
   <button type="button" class="botao-imagem" onclick="listarAulasDoModulo()">🔍 Ver aulas já existentes neste módulo (pra editar)</button>
   <p class="ajuda">Escolha o curso e o número do módulo acima, depois clique aqui. Vai aparecer a lista das aulas já salvas nesse módulo — clique em uma pra carregar ela no formulário e editar.</p>
   <div id="listaAulas"></div>
@@ -645,6 +651,40 @@
     document.execCommand(comando, false, valor || null);
   };
 
+  window.salvarNomeModuloAvulso = async function() {
+    const curso = document.getElementById('curso').value;
+    const modulo = document.getElementById('modulo').value.trim();
+    const nomeModulo = document.getElementById('nomeModulo').value.trim();
+    const statusDiv = document.getElementById('status');
+
+    statusDiv.className = '';
+    statusDiv.style.display = 'none';
+
+    if (!modulo || !nomeModulo) {
+      statusDiv.className = 'erro';
+      statusDiv.style.display = 'block';
+      statusDiv.textContent = 'Preencha o número do módulo e o nome do módulo antes de salvar.';
+      return;
+    }
+
+    try {
+      const refModulo = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`);
+      await setDoc(refModulo, {
+        titulo: nomeModulo,
+        ordem: Number(modulo)
+      }, { merge: true });
+
+      statusDiv.className = 'sucesso';
+      statusDiv.style.display = 'block';
+      statusDiv.textContent = `Nome do Módulo ${modulo} salvo: "${nomeModulo}". As aulas desse módulo não foram alteradas.`;
+      document.getElementById('nomeModulo').value = '';
+    } catch (erro) {
+      statusDiv.className = 'erro';
+      statusDiv.style.display = 'block';
+      statusDiv.textContent = 'Erro ao salvar nome do módulo: ' + erro.message;
+    }
+  };
+
   window.salvarAula = async function() {
     const curso = document.getElementById('curso').value;
     const modulo = document.getElementById('modulo').value.trim();
@@ -691,6 +731,17 @@
     botao.textContent = 'Salvando...';
 
     try {
+      const nomeModulo = document.getElementById('nomeModulo').value.trim();
+
+      // Garante que o módulo existe como registro próprio (não só a aula dentro dele)
+      if (nomeModulo) {
+        const refModulo = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`);
+        await setDoc(refModulo, {
+          titulo: nomeModulo,
+          ordem: Number(modulo)
+        }, { merge: true });
+      }
+
       await setDoc(ref, {
         titulo: titulo,
         ordem: Number(aula),
@@ -704,6 +755,7 @@
       document.getElementById('titulo').value = '';
       document.getElementById('conteudo').innerHTML = '';
       document.getElementById('linkImagem').value = '';
+      document.getElementById('nomeModulo').value = '';
       document.getElementById('avisoEditando').style.display = 'none';
 
       // Avança automaticamente para a próxima aula, pra não sobrescrever por engano
