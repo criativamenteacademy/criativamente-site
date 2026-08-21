@@ -546,6 +546,10 @@
     const clipboard = e.clipboardData || window.clipboardData;
     if (!clipboard) return; // deixa o navegador colar normal se não conseguir ler
 
+    // Reseta a posição salva do cursor: o conteúdo vai mudar agora,
+    // então qualquer posição antiga não serve mais
+    ultimaPosicaoCursor = null;
+
     let html = clipboard.getData('text/html');
     const texto = clipboard.getData('text/plain');
 
@@ -616,9 +620,8 @@
 
   document.getElementById('conteudo').addEventListener('mouseup', salvarPosicaoCursor);
   document.getElementById('conteudo').addEventListener('keyup', salvarPosicaoCursor);
-  // (Removido o listener de 'focus' de propósito: o botão "Inserir imagem"
-  // chama editor.focus() antes de restaurar a posição salva, e isso disparava
-  // esse mesmo listener, sobrescrevendo a posição certa por uma errada.)
+  document.getElementById('conteudo').addEventListener('input', salvarPosicaoCursor);
+  document.getElementById('conteudo').addEventListener('focus', salvarPosicaoCursor);
 
   // -------- Ver / carregar aulas já existentes (edição) --------
 
@@ -665,6 +668,10 @@
     document.getElementById('titulo').value = dados.titulo || '';
     document.getElementById('conteudo').innerHTML = dados.conteudo || '';
     document.getElementById('listaAulas').innerHTML = '';
+
+    // Reseta a posição salva do cursor: o conteúdo trocou, então
+    // qualquer posição de outra aula não serve mais
+    ultimaPosicaoCursor = null;
 
     const aviso = document.getElementById('avisoEditando');
     aviso.style.display = 'block';
@@ -868,6 +875,10 @@
       document.getElementById('linkImagem').value = '';
       document.getElementById('nomeModulo').value = '';
       document.getElementById('avisoEditando').style.display = 'none';
+
+      // Reseta a posição salva do cursor: a aula mudou, o conteúdo foi
+      // limpo, então a posição antiga não serve mais pra próxima aula
+      ultimaPosicaoCursor = null;
 
       // Avança automaticamente para a próxima aula, pra não sobrescrever por engano
       const proximaAula = Number(aula) + 1;
