@@ -598,6 +598,26 @@
 
   document.getElementById('conteudo').addEventListener('paste', processarColagem);
 
+  // -------- Guardar a posição do cursor no editor, pra não perder o lugar --------
+  // (necessário porque clicar em outro campo, como "Link da imagem", faz o
+  // navegador esquecer onde estava o cursor dentro do texto)
+  let ultimaPosicaoCursor = null;
+
+  function salvarPosicaoCursor() {
+    const selecao = window.getSelection();
+    if (selecao.rangeCount > 0) {
+      const range = selecao.getRangeAt(0);
+      const editor = document.getElementById('conteudo');
+      if (editor.contains(range.commonAncestorContainer)) {
+        ultimaPosicaoCursor = range.cloneRange();
+      }
+    }
+  }
+
+  document.getElementById('conteudo').addEventListener('mouseup', salvarPosicaoCursor);
+  document.getElementById('conteudo').addEventListener('keyup', salvarPosicaoCursor);
+  document.getElementById('conteudo').addEventListener('focus', salvarPosicaoCursor);
+
   // -------- Ver / carregar aulas já existentes (edição) --------
 
   window.listarAulasDoModulo = async function() {
@@ -659,7 +679,23 @@
     }
     const editor = document.getElementById('conteudo');
     editor.focus();
+
+    // Restaura a posição exata onde o cursor estava antes de clicar no campo de link
+    const selecao = window.getSelection();
+    selecao.removeAllRanges();
+    if (ultimaPosicaoCursor) {
+      selecao.addRange(ultimaPosicaoCursor);
+    } else {
+      // Se não tem posição salva (ex: acabou de carregar a aula sem clicar no texto),
+      // coloca o cursor no final do conteúdo, pra não sumir a imagem em lugar nenhum
+      const range = document.createRange();
+      range.selectNodeContents(editor);
+      range.collapse(false);
+      selecao.addRange(range);
+    }
+
     document.execCommand('insertHTML', false, `<img src="${link}" style="max-width:100%; border-radius:8px; margin:16px 0;"><br>`);
+    salvarPosicaoCursor();
   };
 
   window.formatar = function(comando, valor) {
