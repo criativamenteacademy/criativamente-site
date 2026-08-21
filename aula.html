@@ -42,6 +42,7 @@
       <h1 id="aula-titulo"></h1>
       <div class="aula-conteudo" id="aula-conteudo"></div>
       <div class="aula-acoes">
+        <a class="auth-button" id="botao-anterior" href="#" style="display:none; width:auto; padding:11px 24px; text-decoration:none; text-align:center; background:transparent; border:1px solid #B5541A; color:#B5541A;">← Aula anterior</a>
         <button class="auth-button" id="botao-concluir" style="width:auto; padding:11px 24px;">Marcar aula como concluída</button>
         <a class="auth-button" id="botao-proxima" href="#" style="display:none; width:auto; padding:11px 24px; text-decoration:none; text-align:center;">Próxima aula →</a>
       </div>
@@ -54,7 +55,7 @@
     import { sairUsuario } from "/assets/js/auth.js";
     import { carregarAula, ERROS } from "/assets/js/content-loader.js";
     import { registrarUltimaAula, marcarAulaConcluida } from "/assets/js/progress.js";
-    import { proximaAula } from "/assets/js/access-control.js";
+    import { proximaAula, aulaAnterior } from "/assets/js/access-control.js";
     import { ativarProtecaoConteudo } from "/assets/js/protecao-conteudo.js";
 
     document.getElementById("botao-sair").addEventListener("click", async () => {
@@ -134,6 +135,20 @@
         // Guarda esta como a última aula acessada, para o botão
         // "Continuar de onde parei" no painel.
         registrarUltimaAula(usuario.uid, cursoId, moduloId, aulaId);
+
+        // Configura o botão "Aula anterior", se existir uma
+        try {
+          const anterior = await aulaAnterior(cursoId, moduloId, aulaId);
+          const botaoAnterior = document.getElementById("botao-anterior");
+          if (anterior) {
+            botaoAnterior.href = `/aula.html?curso=${cursoId}&modulo=${anterior.moduloId}&aula=${anterior.aulaId}`;
+            botaoAnterior.style.display = "inline-block";
+          } else {
+            botaoAnterior.style.display = "none";
+          }
+        } catch (erroAnterior) {
+          console.warn("Não foi possível carregar a aula anterior:", erroAnterior);
+        }
       } catch (erro) {
         mostrarErro(erro.codigo);
       }
