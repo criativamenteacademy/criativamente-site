@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -301,6 +302,23 @@
   <button class="botao-salvar" id="botaoSalvar" onclick="salvarAula()">Salvar aula</button>
 
   <div id="status"></div>
+
+  <hr style="margin: 40px 0 20px; border: none; border-top: 2px solid #ccc;">
+
+  <div style="border: 2px solid #c0392b; border-radius: 8px; padding: 16px; background: #fdecea;">
+    <h2 style="color: #c0392b; margin-top: 0;">⚠️ Zona de perigo</h2>
+    <p class="ajuda" style="color: #7a1f1f;">Apaga TODOS os módulos e TODAS as aulas do curso selecionado abaixo. Não apaga a matrícula dos alunos nem a página de vendas — só o conteúdo (módulos e aulas). <strong>Não tem como desfazer.</strong> Use só se quiser recomeçar o conteúdo de um curso do zero.</p>
+
+    <label for="cursoParaApagar">Curso a apagar por completo</label>
+    <select id="cursoParaApagar">
+      <option value="posicionamento-estrategico">Posicionamento Estratégico</option>
+      <option value="ia-para-imobiliarias">IA para Imobiliárias</option>
+    </select>
+
+    <button type="button" style="background:#c0392b; color:#fff; border:none; padding:10px 16px; border-radius:6px; cursor:pointer; margin-top:10px;" onclick="apagarCursoCompleto()">🗑️ Apagar todo o conteúdo deste curso</button>
+
+    <div id="statusApagar" style="margin-top:10px;"></div>
+  </div>
 </div>
 
 <script type="module">
@@ -309,7 +327,7 @@
     getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
   } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, getDoc, collection, getDocs
+    getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs
   } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
   import {
     getStorage, ref as storageRef, uploadBytes, uploadString, getDownloadURL
@@ -682,6 +700,62 @@
       statusDiv.className = 'erro';
       statusDiv.style.display = 'block';
       statusDiv.textContent = 'Erro ao salvar nome do módulo: ' + erro.message;
+    }
+  };
+
+  window.apagarCursoCompleto = async function() {
+    const curso = document.getElementById('cursoParaApagar').value;
+    const nomeCursoSelect = document.getElementById('cursoParaApagar');
+    const nomeCursoLegivel = nomeCursoSelect.options[nomeCursoSelect.selectedIndex].text;
+    const statusDiv = document.getElementById('statusApagar');
+
+    statusDiv.textContent = '';
+
+    // Primeira confirmação: janela de aviso clara
+    const confirmar1 = window.confirm(
+      `ATENÇÃO — isso vai apagar TODOS os módulos e TODAS as aulas do curso "${nomeCursoLegivel}".\n\nIsso NÃO tem volta.\n\nTem certeza que quer continuar?`
+    );
+    if (!confirmar1) return;
+
+    // Segunda confirmação: precisa digitar o nome do curso certinho
+    const digitado = window.prompt(
+      `Pra confirmar de vez, digite exatamente o nome do curso como aparece na lista:\n\n"${nomeCursoLegivel}"`
+    );
+    if (digitado !== nomeCursoLegivel) {
+      statusDiv.className = 'erro';
+      statusDiv.textContent = 'Nome digitado não confere. Nada foi apagado.';
+      return;
+    }
+
+    statusDiv.className = '';
+    statusDiv.textContent = '⏳ Apagando... isso pode levar alguns segundos, não feche a página.';
+
+    try {
+      const colModulos = collection(db, 'cursos', curso, 'modulos');
+      const snapModulos = await getDocs(colModulos);
+
+      let totalAulasApagadas = 0;
+      let totalModulosApagados = 0;
+
+      for (const moduloDoc of snapModulos.docs) {
+        const colAulas = collection(db, 'cursos', curso, 'modulos', moduloDoc.id, 'aulas');
+        const snapAulas = await getDocs(colAulas);
+
+        for (const aulaDoc of snapAulas.docs) {
+          await deleteDoc(doc(db, 'cursos', curso, 'modulos', moduloDoc.id, 'aulas', aulaDoc.id));
+          totalAulasApagadas++;
+        }
+
+        await deleteDoc(doc(db, 'cursos', curso, 'modulos', moduloDoc.id));
+        totalModulosApagados++;
+      }
+
+      statusDiv.className = 'sucesso';
+      statusDiv.textContent = `Curso "${nomeCursoLegivel}" apagado: ${totalModulosApagados} módulo(s) e ${totalAulasApagadas} aula(s) removidos. Pode recomeçar do zero quando quiser.`;
+
+    } catch (erro) {
+      statusDiv.className = 'erro';
+      statusDiv.textContent = 'Erro ao apagar: ' + erro.message;
     }
   };
 
