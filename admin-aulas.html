@@ -616,7 +616,9 @@
 
   document.getElementById('conteudo').addEventListener('mouseup', salvarPosicaoCursor);
   document.getElementById('conteudo').addEventListener('keyup', salvarPosicaoCursor);
-  document.getElementById('conteudo').addEventListener('focus', salvarPosicaoCursor);
+  // (Removido o listener de 'focus' de propósito: o botão "Inserir imagem"
+  // chama editor.focus() antes de restaurar a posição salva, e isso disparava
+  // esse mesmo listener, sobrescrevendo a posição certa por uma errada.)
 
   // -------- Ver / carregar aulas já existentes (edição) --------
 
