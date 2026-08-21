@@ -38,6 +38,7 @@
     </div>
 
     <article class="aula-pagina" id="bloco-aula" style="display: none;">
+      <p id="modulo-nome" style="color:#B5541A; font-weight:600; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;"></p>
       <h1 id="aula-titulo"></h1>
       <div class="aula-conteudo" id="aula-conteudo"></div>
       <div class="aula-acoes">
@@ -48,7 +49,8 @@
   </main>
 
   <script type="module">
-    import { auth } from "/assets/js/firebase-config.js";
+    import { auth, db } from "/assets/js/firebase-config.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
     import { sairUsuario } from "/assets/js/auth.js";
     import { carregarAula, ERROS } from "/assets/js/content-loader.js";
     import { registrarUltimaAula, marcarAulaConcluida } from "/assets/js/progress.js";
@@ -102,6 +104,16 @@
         // verificado → conta ativa → curso liberado. Só depois disso
         // o conteúdo real da aula é retornado.
         const aula = await carregarAula(cursoId, moduloId, aulaId);
+
+        // Busca o nome do módulo pra mostrar como contexto acima do título da aula
+        try {
+          const refModulo = doc(db, "cursos", cursoId, "modulos", moduloId);
+          const snapModulo = await getDoc(refModulo);
+          const nomeModulo = snapModulo.exists() ? snapModulo.data().titulo : "";
+          document.getElementById("modulo-nome").textContent = nomeModulo || "";
+        } catch (erroModulo) {
+          console.warn("Não foi possível carregar o nome do módulo:", erroModulo);
+        }
 
         document.getElementById("aula-titulo").textContent = aula.titulo || "Aula";
         // O HTML da aula é escrito por você (via ChatGPT/briefing e
