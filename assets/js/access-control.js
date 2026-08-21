@@ -110,3 +110,33 @@ export async function proximaAula(cursoId, moduloIdAtual, aulaIdAtual) {
 
   return { moduloId: proximoModulo.id, aulaId: aulasDoProximoModulo[0].id };
 }
+
+/**
+ * Descobre qual é a aula anterior à atual — dentro do mesmo módulo,
+ * ou (se a atual for a primeira do módulo) a última aula do módulo
+ * anterior. Retorna null se a aula atual for a primeira do curso inteiro.
+ */
+export async function aulaAnterior(cursoId, moduloIdAtual, aulaIdAtual) {
+  const aulasDoModulo = await listarAulas(cursoId, moduloIdAtual);
+  const indiceAtual = aulasDoModulo.findIndex((a) => a.id === aulaIdAtual);
+
+  if (indiceAtual > 0) {
+    const anterior = aulasDoModulo[indiceAtual - 1];
+    return { moduloId: moduloIdAtual, aulaId: anterior.id };
+  }
+
+  const modulos = await listarModulos(cursoId);
+  const indiceModuloAtual = modulos.findIndex((m) => m.id === moduloIdAtual);
+
+  if (indiceModuloAtual <= 0) {
+    return null;
+  }
+
+  const moduloAnterior = modulos[indiceModuloAtual - 1];
+  const aulasDoModuloAnterior = await listarAulas(cursoId, moduloAnterior.id);
+
+  if (aulasDoModuloAnterior.length === 0) return null;
+
+  const ultimaAula = aulasDoModuloAnterior[aulasDoModuloAnterior.length - 1];
+  return { moduloId: moduloAnterior.id, aulaId: ultimaAula.id };
+}
