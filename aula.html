@@ -163,7 +163,7 @@
       botao.textContent = "Salvando...";
 
       try {
-        await marcarAulaConcluida(usuario.uid, cursoId, aulaId);
+        await marcarAulaConcluida(usuario.uid, cursoId, moduloId, aulaId);
         botao.textContent = "Aula concluída ✓";
 
         const botaoProxima = document.getElementById("botao-proxima");
