@@ -90,7 +90,7 @@
       const blocos = await Promise.all(modulos.map(async (modulo) => {
         const aulas = await listarAulas(cursoId, modulo.id);
         const itensAula = aulas.map((aula) => {
-          const concluida = aulasConcluidas[aula.id] === true;
+          const concluida = aulasConcluidas[`${modulo.id}_${aula.id}`] === true;
           return `
             <a class="aula-item ${concluida ? "aula-item--concluida" : ""}"
                href="/aula.html?curso=${cursoId}&modulo=${modulo.id}&aula=${aula.id}">
