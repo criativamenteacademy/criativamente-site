@@ -1,0 +1,12 @@
+name = "criativamente-pagamentos"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# Variáveis de ambiente que NÃO são segredo (públicas no worker).
+# Para trocar de sandbox para produção, mude ASAAS_ENV para "production".
+[vars]
+ASAAS_ENV = "production"
+
+# Os segredos abaixo NÃO ficam neste arquivo — são configurados separadamente
+# com `wrangler secret put NOME` (ou pelo painel da Cloudflare, aba "Configurações"
+# > "Variáveis e Segredos"). Ver README.md para a lista completa.
