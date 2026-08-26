@@ -1,0 +1,13 @@
+{
+  "name": "criativamente-pagamentos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Worker: ponte entre o checkout da CriativaMente Academy e a Asaas (criação de cobrança + webhook de confirmação de pagamento, com liberação de matrícula no Firestore).",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
