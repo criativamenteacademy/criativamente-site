@@ -172,6 +172,26 @@
   }
   .tela-login button:hover { background: var(--cobre-claro); }
   .tela-login button:disabled { background: #ccc; cursor: not-allowed; }
+  .campo-senha { position: relative; }
+  .campo-senha input { padding-right: 44px !important; margin-bottom: 0 !important; }
+  .campo-senha { margin-bottom: 16px; }
+  .botao-mostrar-senha {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--cinza);
+    padding: 0;
+  }
+  .botao-mostrar-senha:hover { color: var(--cobre); }
+  .botao-mostrar-senha svg { width: 18px; height: 18px; }
   #erro-login {
     display: none;
     margin-top: 14px;
@@ -323,7 +343,10 @@
   <label for="login-email">E-mail</label>
   <input type="text" id="login-email" placeholder="seu@email.com">
   <label for="login-senha">Senha</label>
-  <input type="password" id="login-senha" placeholder="Sua senha">
+  <div class="campo-senha">
+    <input type="password" id="login-senha" placeholder="Sua senha">
+    <button type="button" class="botao-mostrar-senha" data-alvo="login-senha" aria-label="Mostrar senha"></button>
+  </div>
   <button type="button" id="botao-login" onclick="fazerLogin()">Entrar</button>
   <div id="erro-login"></div>
 </div>
@@ -457,6 +480,25 @@
   const painelAdmin = document.getElementById('painel-admin');
   const barraAdmin = document.getElementById('barra-admin');
   const erroLogin = document.getElementById('erro-login');
+
+  // -------- Botão de mostrar/ocultar senha --------
+  (function ativarBotaoMostrarSenha() {
+    const ICONE_OLHO_ABERTO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const ICONE_OLHO_FECHADO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.5 18.5 0 0 1 4.22-5.2"/><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a18.51 18.51 0 0 1-2.16 3.19"/><path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg>';
+
+    document.querySelectorAll('.botao-mostrar-senha').forEach((botao) => {
+      botao.innerHTML = ICONE_OLHO_ABERTO;
+      botao.addEventListener('click', () => {
+        const input = document.getElementById(botao.dataset.alvo);
+        if (!input) return;
+        const estaMostrando = input.type === 'text';
+        input.type = estaMostrando ? 'password' : 'text';
+        botao.innerHTML = estaMostrando ? ICONE_OLHO_ABERTO : ICONE_OLHO_FECHADO;
+        botao.setAttribute('aria-label', estaMostrando ? 'Mostrar senha' : 'Ocultar senha');
+        input.focus();
+      });
+    });
+  })();
 
   onAuthStateChanged(auth, async (usuario) => {
     if (usuario && usuario.email === EMAIL_ADMIN) {
