@@ -97,6 +97,42 @@
   outline-offset: 1px;
 }
 
+/* ---------- Botão de mostrar/ocultar senha ---------- */
+
+.campo-senha {
+  position: relative;
+}
+
+.campo-senha input {
+  padding-right: 44px;
+}
+
+.botao-mostrar-senha {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--cinza-quente);
+  padding: 0;
+}
+
+.botao-mostrar-senha:hover {
+  color: var(--cobre);
+}
+
+.botao-mostrar-senha svg {
+  width: 20px;
+  height: 20px;
+}
+
 .auth-button {
   width: 100%;
   padding: 13px 14px;
