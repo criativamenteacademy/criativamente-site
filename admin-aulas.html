@@ -227,6 +227,92 @@
     color: #1c5c9c;
     font-size: 13px;
   }
+  .banner-rascunho {
+    display: none;
+    max-width: 720px;
+    margin: 0 auto 12px auto;
+    background: #fff4e0;
+    border: 1px solid var(--cobre-claro);
+    color: var(--preto);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .banner-rascunho .acoes-rascunho {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+  }
+  .banner-rascunho button {
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .banner-rascunho .botao-restaurar {
+    background: var(--cobre);
+    color: #fff;
+  }
+  .banner-rascunho .botao-descartar {
+    background: #e5e0d5;
+    color: var(--preto);
+  }
+  .linha-curso {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .linha-curso select { flex: 1; }
+  .botao-secundario {
+    background: var(--cobre);
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .botao-secundario:hover { background: var(--cobre-claro); }
+  .botao-preview {
+    background: none;
+    border: 2px solid var(--cobre);
+    color: var(--cobre);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 12px;
+  }
+  .botao-preview:hover { background: rgba(181,84,26,0.08); }
+  .botao-apagar-aula {
+    display: none;
+    background: none;
+    border: 1px solid #c0392b;
+    color: #c0392b;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .botao-apagar-aula:hover { background: #fdecea; }
+  .dashboard-curso {
+    margin-top: 10px;
+    display: none;
+  }
+  .item-modulo-resumo {
+    background: #f0ece2;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 6px;
+    font-size: 13px;
+  }
+  .item-modulo-resumo strong { color: var(--cobre); }
 </style>
 </head>
 <body>
@@ -248,15 +334,25 @@
   <button type="button" onclick="fazerLogout()">Sair</button>
 </div>
 
+<div class="banner-rascunho" id="banner-rascunho">
+  <span id="banner-rascunho-texto"></span>
+  <div class="acoes-rascunho">
+    <button type="button" class="botao-restaurar" onclick="restaurarRascunho()">Restaurar rascunho</button>
+    <button type="button" class="botao-descartar" onclick="descartarRascunho()">Descartar</button>
+  </div>
+</div>
+
 <div class="container" id="painel-admin" style="display:none;">
   <h1>Enviar / Editar Aula — CriativaMente Academy</h1>
   <p class="sub">Pra aula nova: preencha os campos e clique em "Salvar aula". Pra editar uma aula que já existe: use o botão "Ver aulas já existentes" abaixo.</p>
 
   <label for="curso">Curso</label>
-  <select id="curso">
-    <option value="posicionamento-estrategico">Posicionamento Estratégico</option>
-    <option value="ia-para-imobiliarias">IA para Imobiliárias</option>
-  </select>
+  <div class="linha-curso">
+    <select id="curso">
+      <option value="">Carregando cursos...</option>
+    </select>
+    <button type="button" class="botao-secundario" style="margin-top:0;" onclick="adicionarNovoCurso()">+ Novo curso</button>
+  </div>
 
   <div class="linha-dupla">
     <div>
@@ -279,17 +375,26 @@
   <p class="ajuda">Escolha o curso e o número do módulo acima, depois clique aqui. Vai aparecer a lista das aulas já salvas nesse módulo — clique em uma pra carregar ela no formulário e editar.</p>
   <div id="listaAulas"></div>
   <div class="aviso-editando" id="avisoEditando"></div>
+  <button type="button" class="botao-apagar-aula" id="botaoApagarAula" onclick="apagarAulaAtual()">🗑️ Apagar esta aula</button>
+
+  <button type="button" class="botao-imagem" onclick="alternarVisaoGeralCurso()">📊 Ver visão geral deste curso</button>
+  <div class="dashboard-curso" id="dashboardCurso"></div>
 
   <label for="titulo">Título da aula</label>
   <input type="text" id="titulo" placeholder="Ex: Como analisar a concorrência">
 
   <label for="conteudo">Conteúdo da aula</label>
   <p class="ajuda">Cole o texto do Word/Google Docs direto aqui dentro (Ctrl+V) — formatação (negrito, títulos, listas) <strong>e imagens</strong> são inseridas automaticamente, igual na Hotmart. Se o texto tiver imagem, ela sobe sozinha e aparece no lugar certo — só espera o aviso "Enviando imagem..." sumir antes de continuar.</p>
+  <button type="button" class="botao-secundario" onclick="inserirModeloAula()">📋 Inserir modelo de aula (estrutura pronta)</button>
   <div class="barra-ferramentas">
     <button type="button" onclick="formatar('bold')"><b>N</b></button>
     <button type="button" onclick="formatar('italic')"><i>I</i></button>
     <button type="button" onclick="formatar('formatBlock', 'H3')">Título</button>
+    <button type="button" onclick="formatar('formatBlock', 'H2')">Subtítulo</button>
     <button type="button" onclick="formatar('insertUnorderedList')">Lista</button>
+    <button type="button" onclick="formatar('insertOrderedList')">Lista numerada</button>
+    <button type="button" onclick="formatar('formatBlock', 'BLOCKQUOTE')">Destaque</button>
+    <button type="button" onclick="inserirLink()">Link</button>
   </div>
   <div id="conteudo" contenteditable="true" class="editor" data-placeholder="Cole aqui o texto completo da aula..."></div>
   <div id="carregandoImagem">⏳ Enviando imagem, aguarde...</div>
@@ -299,6 +404,7 @@
   <button type="button" class="botao-imagem" onclick="inserirImagem()">Inserir imagem no texto</button>
 
   <button class="botao-salvar" id="botaoSalvar" onclick="salvarAula()">Salvar aula</button>
+  <button type="button" class="botao-preview" onclick="previewComoAluno()">👁️ Pré-visualizar como aluno</button>
 
   <div id="status"></div>
 
@@ -310,8 +416,7 @@
 
     <label for="cursoParaApagar">Curso a apagar por completo</label>
     <select id="cursoParaApagar">
-      <option value="posicionamento-estrategico">Posicionamento Estratégico</option>
-      <option value="ia-para-imobiliarias">IA para Imobiliárias</option>
+      <option value="">Carregando cursos...</option>
     </select>
 
     <button type="button" style="background:#c0392b; color:#fff; border:none; padding:10px 16px; border-radius:6px; cursor:pointer; margin-top:10px;" onclick="apagarCursoCompleto()">🗑️ Apagar todo o conteúdo deste curso</button>
@@ -358,8 +463,10 @@
       telaLogin.style.display = 'none';
       painelAdmin.style.display = 'block';
       barraAdmin.style.display = 'flex';
+      await popularSelectsDeCursos();
       await atualizarBotaoManutencaoGeral();
       await atualizarBotaoManutencaoCurso();
+      verificarRascunhoSalvo();
     } else if (usuario) {
       // Logado, mas não é a conta de administrador — nega o acesso.
       signOut(auth);
@@ -376,6 +483,88 @@
   });
 
   const REF_CONFIG_PLATAFORMA = doc(db, 'config', 'plataforma');
+
+  // -------- Lista de cursos (dinâmica, lida do Firestore) --------
+
+  // Nomes conhecidos dos cursos criados antes desta melhoria, pra continuar
+  // mostrando um nome legível mesmo que o documento "cursos/{id}" deles
+  // ainda não tenha o campo "titulo" preenchido.
+  const NOMES_CURSOS_CONHECIDOS = {
+    'posicionamento-estrategico': 'Posicionamento Estratégico',
+    'ia-para-imobiliarias': 'IA para Imobiliárias'
+  };
+
+  async function popularSelectsDeCursos() {
+    const selectCurso = document.getElementById('curso');
+    const selectApagar = document.getElementById('cursoParaApagar');
+    const valorAnteriorCurso = selectCurso.value;
+    const valorAnteriorApagar = selectApagar.value;
+
+    let cursos = [];
+    try {
+      const snap = await getDocs(collection(db, 'cursos'));
+      snap.forEach(d => {
+        const dados = d.data() || {};
+        cursos.push({
+          id: d.id,
+          titulo: dados.titulo || NOMES_CURSOS_CONHECIDOS[d.id] || d.id
+        });
+      });
+    } catch (erro) {
+      console.warn('Não foi possível carregar a lista de cursos do Firestore:', erro);
+    }
+
+    // Garante que os dois cursos originais sempre apareçam, mesmo que
+    // ainda não tenham nenhum documento "cursos/{id}" criado no Firestore
+    // (isso só acontece quando um módulo já foi salvo nele).
+    for (const [id, titulo] of Object.entries(NOMES_CURSOS_CONHECIDOS)) {
+      if (!cursos.some(c => c.id === id)) {
+        cursos.push({ id, titulo });
+      }
+    }
+
+    cursos.sort((a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'));
+
+    const opcoesHtml = cursos.map(c => `<option value="${c.id}">${c.titulo}</option>`).join('');
+    selectCurso.innerHTML = opcoesHtml;
+    selectApagar.innerHTML = opcoesHtml;
+
+    if (cursos.some(c => c.id === valorAnteriorCurso)) selectCurso.value = valorAnteriorCurso;
+    if (cursos.some(c => c.id === valorAnteriorApagar)) selectApagar.value = valorAnteriorApagar;
+  }
+
+  window.adicionarNovoCurso = async function() {
+    const nome = window.prompt('Nome do novo curso (como os alunos vão ver, ex: "Marketing de Conteúdo"):');
+    if (!nome || !nome.trim()) return;
+
+    const slugSugerido = nome
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+    const slug = window.prompt(
+      'Identificador técnico do curso (usado nos links e no banco de dados — sem espaços ou acentos). Sugestão já preenchida abaixo, pode manter ou ajustar:',
+      slugSugerido
+    );
+    if (!slug || !slug.trim()) return;
+
+    const slugValido = /^[a-z0-9-]+$/.test(slug);
+    if (!slugValido) {
+      alert('O identificador só pode ter letras minúsculas, números e hífen (sem espaços, acentos ou símbolos). Tente de novo.');
+      return;
+    }
+
+    try {
+      await setDoc(doc(db, 'cursos', slug), { titulo: nome.trim() }, { merge: true });
+      await popularSelectsDeCursos();
+      document.getElementById('curso').value = slug;
+      atualizarBotaoManutencaoCurso();
+      alert(`Curso "${nome.trim()}" criado! Já pode preencher módulo, aula e conteúdo pra começar a adicionar aulas nele.`);
+    } catch (erro) {
+      alert('Não foi possível criar o curso: ' + erro.message);
+    }
+  };
 
   // -------- Manutenção GERAL (bloqueia toda a Área do Aluno) --------
 
@@ -630,6 +819,8 @@
     const modulo = document.getElementById('modulo').value.trim();
     const lista = document.getElementById('listaAulas');
     document.getElementById('avisoEditando').style.display = 'none';
+    document.getElementById('botaoApagarAula').style.display = 'none';
+    aulaEmEdicao = null;
 
     if (!modulo) {
       alert('Preencha o número do módulo primeiro.');
@@ -662,6 +853,9 @@
     }
   };
 
+  // Guarda qual aula está sendo editada agora (pra permitir apagar só ela)
+  let aulaEmEdicao = null; // { moduloId, aulaId }
+
   function carregarAulaParaEdicao(aulaId, dados) {
     const numeroAula = aulaId.replace('aula-', '');
     document.getElementById('aula').value = numeroAula;
@@ -673,12 +867,42 @@
     // qualquer posição de outra aula não serve mais
     ultimaPosicaoCursor = null;
 
+    const moduloAtual = document.getElementById('modulo').value.trim();
+    aulaEmEdicao = { moduloId: `modulo-${moduloAtual}`, aulaId };
+
     const aviso = document.getElementById('avisoEditando');
     aviso.style.display = 'block';
     aviso.textContent = `✏️ Editando a Aula ${numeroAula}. Faça as alterações no texto acima e clique em "Salvar aula" pra atualizar (não cria uma aula duplicada).`;
 
+    document.getElementById('botaoApagarAula').style.display = 'inline-block';
+
     document.getElementById('conteudo').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
+
+  window.apagarAulaAtual = async function() {
+    if (!aulaEmEdicao) return;
+    const curso = document.getElementById('curso').value;
+    const titulo = document.getElementById('titulo').value.trim() || '(sem título)';
+
+    const confirmar = window.confirm(
+      `Apagar a aula "${titulo}" (${aulaEmEdicao.aulaId}) do módulo ${aulaEmEdicao.moduloId}?\n\nSó essa aula é apagada — as outras aulas do módulo continuam intactas. Não tem como desfazer.`
+    );
+    if (!confirmar) return;
+
+    try {
+      await deleteDoc(doc(db, 'cursos', curso, 'modulos', aulaEmEdicao.moduloId, 'aulas', aulaEmEdicao.aulaId));
+      alert('Aula apagada.');
+
+      document.getElementById('titulo').value = '';
+      document.getElementById('conteudo').innerHTML = '';
+      document.getElementById('avisoEditando').style.display = 'none';
+      document.getElementById('botaoApagarAula').style.display = 'none';
+      aulaEmEdicao = null;
+      descartarRascunho(true);
+    } catch (erro) {
+      alert('Não foi possível apagar a aula: ' + erro.message);
+    }
+  };
 
   window.inserirImagem = function() {
     const link = document.getElementById('linkImagem').value.trim();
@@ -711,6 +935,251 @@
     const editor = document.getElementById('conteudo');
     editor.focus();
     document.execCommand(comando, false, valor || null);
+  };
+
+  window.inserirLink = function() {
+    const editor = document.getElementById('conteudo');
+    editor.focus();
+    const selecao = window.getSelection();
+    if (!selecao || selecao.isCollapsed) {
+      alert('Selecione o texto que vai virar o link antes de clicar aqui.');
+      return;
+    }
+    const url = window.prompt('Cole o endereço (link) completo, começando com https://');
+    if (!url || !url.trim()) return;
+    document.execCommand('createLink', false, url.trim());
+  };
+
+  // -------- Modelo pronto de aula (estrutura em blocos) --------
+
+  window.inserirModeloAula = function() {
+    const editor = document.getElementById('conteudo');
+    if (editor.innerHTML.trim() && !window.confirm('Já tem conteúdo no editor. Inserir o modelo vai adicionar os blocos no final do que já está escrito. Continuar?')) {
+      return;
+    }
+    const modelo = `
+      <h3>🎯 Objetivo</h3>
+      <p>O que o aluno vai saber fazer depois desta aula.</p>
+      <h3>🧱 O que vamos construir</h3>
+      <p>Descrição do entregável prático desta aula.</p>
+      <h3>🪜 Passo a passo</h3>
+      <p>Explicação prática, dividida em passos.</p>
+      <h3>🔁 Generalize isso</h3>
+      <p>Como adaptar o que foi ensinado para outros contextos/negócios.</p>
+      <h3>✅ Teste</h3>
+      <p>Uma checagem rápida pro aluno confirmar que entendeu.</p>
+      <h3>📦 Entrega da aula</h3>
+      <p>O que o aluno deve ter pronto ao final desta aula.</p>
+      <h3>📝 Resumo</h3>
+      <p>Recapitulação em 2-3 frases dos pontos principais.</p>
+    `;
+    editor.focus();
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+    const selecao = window.getSelection();
+    selecao.removeAllRanges();
+    selecao.addRange(range);
+    document.execCommand('insertHTML', false, modelo);
+    salvarPosicaoCursor();
+  };
+
+  // -------- Pré-visualizar como o aluno vai ver --------
+
+  window.previewComoAluno = function() {
+    const titulo = document.getElementById('titulo').value.trim() || '(sem título)';
+    const conteudo = document.getElementById('conteudo').innerHTML.trim();
+    const nomeModulo = document.getElementById('nomeModulo').value.trim();
+
+    if (!conteudo) {
+      alert('Escreva o conteúdo da aula antes de pré-visualizar.');
+      return;
+    }
+
+    const janela = window.open('', '_blank');
+    if (!janela) {
+      alert('O navegador bloqueou a janela de pré-visualização. Permita pop-ups pra este site e tente de novo.');
+      return;
+    }
+
+    const palavras = conteudo.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+    const minutos = Math.max(1, Math.round(palavras / 200));
+
+    janela.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Pré-visualização — ${titulo}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/auth.css">
+<style>
+  body { background: #fff; }
+  .aviso-preview {
+    background: #fff4e0;
+    color: #7a4a0d;
+    text-align: center;
+    padding: 10px;
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+  <div class="aviso-preview">👁️ Isto é uma pré-visualização — não é a página real do aluno, e nada aqui foi salvo.</div>
+  <header class="aluno-header">
+    <span class="aluno-header__logo">Criativa<span>Mente</span> academy</span>
+  </header>
+  <main>
+    <article class="aula-pagina">
+      ${nomeModulo ? `<p style="color:#B5541A; font-weight:600; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">${nomeModulo}</p>` : ''}
+      <h1>${titulo}</h1>
+      <p class="aula-meta"><span>Leitura de ${minutos} min</span></p>
+      <div class="aula-conteudo">${conteudo}</div>
+    </article>
+  </main>
+</body>
+</html>`);
+    janela.document.close();
+  };
+
+  // -------- Visão geral do curso (módulos + quantidade de aulas) --------
+
+  window.alternarVisaoGeralCurso = async function() {
+    const painel = document.getElementById('dashboardCurso');
+    if (painel.style.display === 'block') {
+      painel.style.display = 'none';
+      return;
+    }
+
+    const curso = document.getElementById('curso').value;
+    painel.innerHTML = '<p class="ajuda">Carregando visão geral...</p>';
+    painel.style.display = 'block';
+
+    try {
+      const colModulos = collection(db, 'cursos', curso, 'modulos');
+      const snapModulos = await getDocs(colModulos);
+
+      if (snapModulos.empty) {
+        painel.innerHTML = '<p class="ajuda">Nenhum módulo salvo ainda neste curso.</p>';
+        return;
+      }
+
+      const modulos = [];
+      for (const moduloDoc of snapModulos.docs) {
+        const dadosModulo = moduloDoc.data() || {};
+        const colAulas = collection(db, 'cursos', curso, 'modulos', moduloDoc.id, 'aulas');
+        const snapAulas = await getDocs(colAulas);
+        modulos.push({
+          id: moduloDoc.id,
+          ordem: dadosModulo.ordem ?? 0,
+          titulo: dadosModulo.titulo || '(módulo sem nome)',
+          totalAulas: snapAulas.size
+        });
+      }
+      modulos.sort((a, b) => a.ordem - b.ordem);
+
+      const totalAulasCurso = modulos.reduce((soma, m) => soma + m.totalAulas, 0);
+
+      painel.innerHTML =
+        `<p class="ajuda"><strong>${modulos.length}</strong> módulo(s), <strong>${totalAulasCurso}</strong> aula(s) no total.</p>` +
+        modulos.map(m =>
+          `<div class="item-modulo-resumo"><strong>Módulo ${m.ordem}</strong> — ${m.titulo} — ${m.totalAulas} aula(s)</div>`
+        ).join('');
+    } catch (erro) {
+      painel.innerHTML = `<p class="ajuda">Erro ao carregar visão geral: ${erro.message}</p>`;
+    }
+  };
+
+  // -------- Rascunho automático (autosave local) --------
+
+  const CHAVE_RASCUNHO = 'cm-admin-rascunho';
+  let temporizadorRascunho = null;
+
+  function lerFormularioParaRascunho() {
+    return {
+      curso: document.getElementById('curso').value,
+      modulo: document.getElementById('modulo').value,
+      aula: document.getElementById('aula').value,
+      nomeModulo: document.getElementById('nomeModulo').value,
+      titulo: document.getElementById('titulo').value,
+      conteudo: document.getElementById('conteudo').innerHTML,
+      salvoEm: Date.now()
+    };
+  }
+
+  function agendarSalvarRascunho() {
+    clearTimeout(temporizadorRascunho);
+    temporizadorRascunho = setTimeout(() => {
+      const dados = lerFormularioParaRascunho();
+      // Só vale a pena guardar rascunho se tiver título ou conteúdo de verdade
+      if (!dados.titulo.trim() && !dados.conteudo.trim()) return;
+      try {
+        localStorage.setItem(CHAVE_RASCUNHO, JSON.stringify(dados));
+      } catch (erro) {
+        console.warn('Não foi possível salvar rascunho local:', erro);
+      }
+    }, 1500);
+  }
+
+  ['modulo', 'aula', 'nomeModulo', 'titulo'].forEach(id => {
+    document.getElementById(id).addEventListener('input', agendarSalvarRascunho);
+  });
+  document.getElementById('conteudo').addEventListener('input', agendarSalvarRascunho);
+  document.getElementById('curso').addEventListener('change', agendarSalvarRascunho);
+
+  function verificarRascunhoSalvo() {
+    let bruto;
+    try {
+      bruto = localStorage.getItem(CHAVE_RASCUNHO);
+    } catch {
+      return;
+    }
+    if (!bruto) return;
+
+    let dados;
+    try {
+      dados = JSON.parse(bruto);
+    } catch {
+      localStorage.removeItem(CHAVE_RASCUNHO);
+      return;
+    }
+    if (!dados || (!dados.titulo && !dados.conteudo)) return;
+
+    const horario = new Date(dados.salvoEm || Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const banner = document.getElementById('banner-rascunho');
+    document.getElementById('banner-rascunho-texto').textContent =
+      `📝 Encontramos um rascunho não salvo de ${horario}${dados.titulo ? ` ("${dados.titulo}")` : ''}. Quer continuar de onde parou?`;
+    banner.style.display = 'block';
+    banner.dataset.rascunho = bruto;
+  }
+
+  window.restaurarRascunho = function() {
+    const banner = document.getElementById('banner-rascunho');
+    let dados;
+    try {
+      dados = JSON.parse(banner.dataset.rascunho || '{}');
+    } catch {
+      dados = {};
+    }
+    if (dados.curso) document.getElementById('curso').value = dados.curso;
+    if (dados.modulo) document.getElementById('modulo').value = dados.modulo;
+    if (dados.aula) document.getElementById('aula').value = dados.aula;
+    if (dados.nomeModulo) document.getElementById('nomeModulo').value = dados.nomeModulo;
+    if (dados.titulo) document.getElementById('titulo').value = dados.titulo;
+    if (dados.conteudo) document.getElementById('conteudo').innerHTML = dados.conteudo;
+    banner.style.display = 'none';
+    document.getElementById('conteudo').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  window.descartarRascunho = function(silencioso) {
+    try {
+      localStorage.removeItem(CHAVE_RASCUNHO);
+    } catch {}
+    document.getElementById('banner-rascunho').style.display = 'none';
+    if (!silencioso) {
+      // nada mais a fazer — só limpa o aviso
+    }
   };
 
   window.salvarNomeModuloAvulso = async function() {
@@ -875,6 +1344,9 @@
       document.getElementById('linkImagem').value = '';
       document.getElementById('nomeModulo').value = '';
       document.getElementById('avisoEditando').style.display = 'none';
+      document.getElementById('botaoApagarAula').style.display = 'none';
+      aulaEmEdicao = null;
+      descartarRascunho(true);
 
       // Reseta a posição salva do cursor: a aula mudou, o conteúdo foi
       // limpo, então a posição antiga não serve mais pra próxima aula
