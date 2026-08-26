@@ -15,6 +15,7 @@
 (function () {
   "use strict";
 
+  const WIDGET_ATIVO = false; // Mude para true quando a automação no n8n estiver pronta
   const WEBHOOK_URL = ""; // Ex: "https://seu-n8n.onrender.com/webhook/chat-site"
   const WHATSAPP_NUMERO = "554391337845";
   const MENSAGEM_BOAS_VINDAS =
@@ -94,6 +95,7 @@
   }
 
   function iniciar() {
+    if (!WIDGET_ATIVO) return;
     injetarCSS();
     const { bolha, janela } = montarHTML();
 
