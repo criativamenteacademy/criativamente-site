@@ -40,7 +40,10 @@
       <form id="form-redefinir" novalidate>
         <div class="auth-field">
           <label for="nova-senha">Nova senha</label>
-          <input type="password" id="nova-senha" minlength="6" required autocomplete="new-password" />
+          <div class="campo-senha">
+            <input type="password" id="nova-senha" minlength="6" required autocomplete="new-password" />
+            <button type="button" class="botao-mostrar-senha" data-alvo="nova-senha" aria-label="Mostrar senha"></button>
+          </div>
         </div>
         <button type="submit" class="auth-button" id="botao-redefinir">Salvar nova senha</button>
       </form>
@@ -56,11 +59,14 @@
   <script type="module">
     import { auth } from "/assets/js/firebase-config.js";
     import { traduzirErroFirebase } from "/assets/js/auth.js";
+    import { ativarBotoesMostrarSenha } from "/assets/js/mostrar-senha.js";
     import {
       applyActionCode,
       verifyPasswordResetCode,
       confirmPasswordReset
     } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+    ativarBotoesMostrarSenha();
 
     const parametros = new URLSearchParams(window.location.search);
     const modo = parametros.get("mode");
