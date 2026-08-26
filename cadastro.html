@@ -31,7 +31,10 @@
 
       <div class="auth-field">
         <label for="senha">Senha</label>
-        <input type="password" id="senha" name="senha" autocomplete="new-password" minlength="6" required />
+        <div class="campo-senha">
+          <input type="password" id="senha" name="senha" autocomplete="new-password" minlength="6" required />
+          <button type="button" class="botao-mostrar-senha" data-alvo="senha" aria-label="Mostrar senha"></button>
+        </div>
       </div>
 
       <button type="submit" class="auth-button" id="botao-cadastrar">Criar conta</button>
@@ -44,6 +47,9 @@
 
   <script type="module">
     import { cadastrarUsuario, traduzirErroFirebase } from "/assets/js/auth.js";
+    import { ativarBotoesMostrarSenha } from "/assets/js/mostrar-senha.js";
+
+    ativarBotoesMostrarSenha();
 
     const form = document.getElementById("form-cadastro");
     const mensagem = document.getElementById("mensagem");
