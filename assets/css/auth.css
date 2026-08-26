@@ -496,6 +496,98 @@ body.auth-checking .auth-loading {
   margin-bottom: 24px;
 }
 
+/* ---------- Barra de progresso de leitura ---------- */
+
+.leitura-progress-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(15, 10, 5, 0.08);
+  z-index: 200;
+}
+
+.leitura-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--cobre);
+}
+
+/* ---------- Metadados da aula (tempo de leitura) ---------- */
+
+.aula-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--cinza-quente);
+  margin-bottom: 24px;
+}
+
+.aula-meta svg {
+  flex-shrink: 0;
+}
+
+/* ---------- Índice da aula (sumário) ---------- */
+
+.aula-toc {
+  background: rgba(181, 84, 26, 0.05);
+  border: 1px solid rgba(181, 84, 26, 0.15);
+  border-radius: 10px;
+  padding: 14px 20px;
+  margin-bottom: 32px;
+}
+
+.aula-toc summary {
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--preto-quente);
+  list-style: none;
+}
+
+.aula-toc summary::-webkit-details-marker {
+  display: none;
+}
+
+.aula-toc summary::before {
+  content: "▸";
+  color: var(--cobre);
+  margin-right: 8px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.aula-toc[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.aula-toc ol {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aula-toc a {
+  color: var(--cinza-quente);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.aula-toc a:hover {
+  color: var(--cobre);
+  text-decoration: underline;
+}
+
+.aula-toc a.is-active {
+  color: var(--cobre);
+  font-weight: 600;
+}
+
 /* ---------- Proteção de conteúdo (aula) ---------- */
 
 .cm-protegido {
