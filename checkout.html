@@ -142,8 +142,19 @@
       botao.disabled = true;
       botao.textContent = "Gerando pagamento...";
 
+      // NOVO: pega o token de login atual da pessoa, pra provar pro Worker que ela está autenticada
+      let tokenLogin;
+      try {
+        tokenLogin = await usuarioAtual.getIdToken();
+      } catch (erroToken) {
+        caixaErro.textContent = "Sua sessão expirou. Atualize a página e faça login novamente.";
+        caixaErro.style.display = "block";
+        botao.disabled = false;
+        botao.textContent = "Inscrever-se";
+        return;
+      }
+
       const dados = {
-        uid: usuarioAtual.uid,
         nome: document.getElementById("campo-nome").value.trim(),
         email: usuarioAtual.email,
         cpf: document.getElementById("campo-cpf").value.trim(),
@@ -163,7 +174,11 @@
       try {
         const resposta = await fetch(`${URL_WORKER}/criar-cobranca`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            // NOVO: envia o token no header, é isso que o Worker agora exige
+            "Authorization": `Bearer ${tokenLogin}`,
+          },
           body: JSON.stringify(dados),
         });
         const resultado = await resposta.json();
