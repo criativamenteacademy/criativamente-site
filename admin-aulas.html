@@ -1379,6 +1379,7 @@
       });
 
       statusDiv.className = 'sucesso';
+      statusDiv.style.display = 'block';
       statusDiv.textContent = `Aula salva com sucesso em: ${caminho}. Já avancei o número da aula para a próxima — confira antes de colar o novo conteúdo.`;
 
       document.getElementById('titulo').value = '';
@@ -1404,6 +1405,7 @@
 
     } catch (erro) {
       statusDiv.className = 'erro';
+      statusDiv.style.display = 'block';
       statusDiv.textContent = 'Erro ao salvar: ' + erro.message + ' (pode ser necessário liberar permissão nas regras do Firestore — me chama que eu te ajudo).';
     } finally {
       botao.disabled = false;
