@@ -419,6 +419,7 @@
     <button type="button" onclick="formatar('insertOrderedList')">Lista numerada</button>
     <button type="button" onclick="formatar('formatBlock', 'BLOCKQUOTE')">Destaque</button>
     <button type="button" onclick="inserirLink()">Link</button>
+    <button type="button" onclick="limparFormatacaoSelecao()" style="background:#fde3e3; border-color:#c0392b;">🧹 Limpar negrito/estilo grudado</button>
   </div>
   <div id="conteudo" contenteditable="true" class="editor" data-placeholder="Cole aqui o texto completo da aula..."></div>
   <div id="carregandoImagem">⏳ Enviando imagem, aguarde...</div>
@@ -978,6 +979,37 @@
     const editor = document.getElementById('conteudo');
     editor.focus();
     document.execCommand(comando, false, valor || null);
+  };
+
+  // Remove negrito/cor/tamanho de fonte "grudados" no texto colado
+  // (comum ao colar do Google Docs/Word) — aplica no texto selecionado,
+  // ou em tudo se nada estiver selecionado.
+  window.limparFormatacaoSelecao = function() {
+    const editor = document.getElementById('conteudo');
+    editor.focus();
+    const selecao = window.getSelection();
+    const semSelecao = !selecao || selecao.isCollapsed;
+
+    if (semSelecao) {
+      const range = document.createRange();
+      range.selectNodeContents(editor);
+      selecao.removeAllRanges();
+      selecao.addRange(range);
+    }
+
+    // removeFormat tira a maior parte do estilo grudado (bold, cor, fonte)
+    document.execCommand('removeFormat');
+
+    // Limpa qualquer atributo style ou tag <b>/<strong>/<font> que ainda tenha sobrado
+    const varredura = editor.querySelectorAll('[style], b, strong, font');
+    varredura.forEach((el) => {
+      el.removeAttribute('style');
+      if (el.tagName === 'B' || el.tagName === 'STRONG' || el.tagName === 'FONT') {
+        el.replaceWith(...el.childNodes);
+      }
+    });
+
+    if (semSelecao) selecao.removeAllRanges();
   };
 
   window.inserirLink = function() {
