@@ -403,9 +403,9 @@
   <button type="button" class="botao-imagem" onclick="alternarVisaoGeralCurso()">📊 Ver visão geral deste curso</button>
   <div class="dashboard-curso" id="dashboardCurso"></div>
 
-  <label for="titulo" style="display:none;">Título da aula</label>
-  <input type="text" id="titulo" placeholder="Ex: Como analisar a concorrência" style="display:none;">
-  <p class="ajuda">O título da aula é extraído automaticamente do &lt;h2&gt; do conteúdo colado abaixo — não precisa preencher separado.</p>
+  <label for="titulo">Título da aula (preenchido automaticamente ao colar o conteúdo — confira antes de salvar)</label>
+  <input type="text" id="titulo" placeholder="Preenche sozinho quando você cola o conteúdo abaixo">
+  <p class="ajuda">Puxa o título automaticamente do &lt;h2&gt; do conteúdo colado. Se ficar vazio ou errado, digite/corrija aqui na mão antes de salvar.</p>
 
   <label for="conteudo">Conteúdo da aula</label>
   <p class="ajuda">Cole o texto do Word/Google Docs direto aqui dentro (Ctrl+V) — formatação (negrito, títulos, listas) <strong>e imagens</strong> são inseridas automaticamente, igual na Hotmart. Se o texto tiver imagem, ela sobe sozinha e aparece no lugar certo — só espera o aviso "Enviando imagem..." sumir antes de continuar.</p>
@@ -1315,6 +1315,34 @@
     }
   };
 
+  // Auto-preenche o Título da aula assim que o conteúdo é colado,
+  // extraindo o texto do primeiro <h2>. Só sobrescreve se o campo
+  // de título ainda estiver vazio (não atropela edição manual).
+  function extrairTituloDoConteudo(html) {
+    const match = html.match(/<h2[^>]*>(.*?)<\/h2>/i);
+    if (match) {
+      return match[1].replace(/<[^>]+>/g, '').trim();
+    }
+    return '';
+  }
+  document.getElementById('conteudo').addEventListener('input', () => {
+    const campoTitulo = document.getElementById('titulo');
+    if (!campoTitulo.value.trim()) {
+      const extraido = extrairTituloDoConteudo(document.getElementById('conteudo').innerHTML);
+      if (extraido) campoTitulo.value = extraido;
+    }
+  });
+  document.getElementById('conteudo').addEventListener('paste', () => {
+    // Espera o navegador terminar de processar o paste antes de checar o conteúdo
+    setTimeout(() => {
+      const campoTitulo = document.getElementById('titulo');
+      if (!campoTitulo.value.trim()) {
+        const extraido = extrairTituloDoConteudo(document.getElementById('conteudo').innerHTML);
+        if (extraido) campoTitulo.value = extraido;
+      }
+    }, 50);
+  });
+
   window.salvarAula = async function() {
     const curso = document.getElementById('curso').value;
     const modulo = document.getElementById('modulo').value.trim();
@@ -1330,11 +1358,8 @@
     // Se o campo manual já tiver algo digitado, ele tem prioridade.
     let titulo = document.getElementById('titulo').value.trim();
     if (!titulo && conteudo) {
-      const matchTitulo = conteudo.match(/<h2[^>]*>(.*?)<\/h2>/i);
-      if (matchTitulo) {
-        titulo = matchTitulo[1].replace(/<[^>]+>/g, '').trim();
-        document.getElementById('titulo').value = titulo;
-      }
+      titulo = extrairTituloDoConteudo(conteudo);
+      if (titulo) document.getElementById('titulo').value = titulo;
     }
 
     if (!modulo || !aula || !titulo || !conteudo) {
