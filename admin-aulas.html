@@ -175,22 +175,22 @@
   .campo-senha { position: relative; }
   .campo-senha input { padding-right: 44px !important; margin-bottom: 0 !important; }
   .campo-senha { margin-bottom: 16px; }
-  .botao-mostrar-senha {
+  .campo-senha .botao-mostrar-senha {
     position: absolute;
     right: 4px;
     top: 4px;
-    width: 32px;
+    width: 32px !important;
     height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: none;
+    background: none !important;
     border: none;
     cursor: pointer;
     color: var(--cinza);
-    padding: 0;
+    padding: 0 !important;
   }
-  .botao-mostrar-senha:hover { color: var(--cobre); }
+  .campo-senha .botao-mostrar-senha:hover { color: var(--cobre); background: none !important; }
   .botao-mostrar-senha svg { width: 18px; height: 18px; }
   #erro-login {
     display: none;
