@@ -1355,8 +1355,27 @@
         totalModulosApagados++;
       }
 
+      // Apaga também o registro do curso em si (nome/título), pra ele sumir
+      // de vez das listas em vez de ficar "fantasma" mesmo sem conteúdo.
+      // Matrícula dos alunos e página de vendas continuam intactas —
+      // isso só remove o registro de conteúdo administrativo.
+      await deleteDoc(doc(db, 'cursos', curso));
+
+      // Limpa o formulário de cima (módulo, aula, nome, título, conteúdo)
+      // pra não sobrar nada de um curso que acabou de ser apagado
+      document.getElementById('modulo').value = '';
+      document.getElementById('aula').value = '';
+      document.getElementById('nomeModulo').value = '';
+      document.getElementById('titulo').value = '';
+      document.getElementById('conteudo').innerHTML = '';
+      document.getElementById('linkImagem').value = '';
+      document.getElementById('avisoEditando').style.display = 'none';
+      document.getElementById('botaoApagarAula').style.display = 'none';
+
+      await popularSelectsDeCursos();
+
       statusDiv.className = 'sucesso';
-      statusDiv.textContent = `Curso "${nomeCursoLegivel}" apagado: ${totalModulosApagados} módulo(s) e ${totalAulasApagadas} aula(s) removidos. Pode recomeçar do zero quando quiser.`;
+      statusDiv.textContent = `Curso "${nomeCursoLegivel}" apagado por completo: ${totalModulosApagados} módulo(s) e ${totalAulasApagadas} aula(s) removidos, e o registro do curso foi removido das listas. Use "+ Novo curso" quando quiser recomeçar.`;
 
     } catch (erro) {
       statusDiv.className = 'erro';
