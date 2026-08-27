@@ -775,6 +775,27 @@
     return await getDownloadURL(snapshot.ref);
   }
 
+  // Limpa estilos/classes "grudados" que vêm junto ao colar (comum de
+  // Word/Google Docs/páginas abertas localmente) — remove negrito, cor,
+  // fonte e classes escondidas, mantendo apenas a formatação de verdade
+  // (tags como <h2>, <strong> intencional, <ul>, <img>).
+  function sanitizarHtmlColado(htmlBruto) {
+    const temp = document.createElement('div');
+    temp.innerHTML = htmlBruto;
+    temp.querySelectorAll('style, script, meta, link').forEach((el) => el.remove());
+    temp.querySelectorAll('*').forEach((el) => {
+      el.removeAttribute('class');
+      el.removeAttribute('id');
+      if (el.tagName !== 'IMG') {
+        el.removeAttribute('style');
+      }
+      if (el.tagName === 'FONT') {
+        el.replaceWith(...el.childNodes);
+      }
+    });
+    return temp.innerHTML;
+  }
+
   async function processarColagem(e) {
     const clipboard = e.clipboardData || window.clipboardData;
     if (!clipboard) return; // deixa o navegador colar normal se não conseguir ler
@@ -807,6 +828,7 @@
         }
         mostrarCarregandoImagem(false);
       }
+      html = sanitizarHtmlColado(html);
       document.execCommand('insertHTML', false, html);
       return;
     }
@@ -1000,14 +1022,9 @@
     // removeFormat tira a maior parte do estilo grudado (bold, cor, fonte)
     document.execCommand('removeFormat');
 
-    // Limpa qualquer atributo style ou tag <b>/<strong>/<font> que ainda tenha sobrado
-    const varredura = editor.querySelectorAll('[style], b, strong, font');
-    varredura.forEach((el) => {
-      el.removeAttribute('style');
-      if (el.tagName === 'B' || el.tagName === 'STRONG' || el.tagName === 'FONT') {
-        el.replaceWith(...el.childNodes);
-      }
-    });
+    // Limpa qualquer atributo style/class ou tag <b>/<strong>/<font> que ainda tenha sobrado
+    const html = sanitizarHtmlColado(editor.innerHTML);
+    editor.innerHTML = html;
 
     if (semSelecao) selecao.removeAllRanges();
   };
