@@ -1328,6 +1328,7 @@
 
     if (!modulo || !aula || !titulo || !conteudo) {
       statusDiv.className = 'erro';
+      statusDiv.style.display = 'block';
       statusDiv.textContent = 'Preencha módulo, aula, título e conteúdo antes de salvar.';
       return;
     }
