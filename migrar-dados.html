@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Migração de segurança — uso único</title>
+  <meta name="robots" content="noindex" />
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 480px; margin: 60px auto; padding: 0 20px;">
+  <h1 style="font-size: 20px;">Migração de dados antigos</h1>
+  <p style="color: #555; font-size: 14px;">
+    Isso vai criptografar o CPF e o endereço de todos os pedidos e matrículas
+    que ainda estão salvos sem proteção. Só precisa rodar uma vez.
+  </p>
+
+  <button id="botao-migrar" style="padding: 12px 20px; background:#0f0a05; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px;">
+    Rodar migração
+  </button>
+
+  <div id="resultado" style="margin-top: 20px; font-size: 14px; white-space: pre-wrap;"></div>
+
+  <script type="module">
+    import { auth } from "/assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+    const URL_WORKER = "https://criativamente-pagamentos.contatojhonisilva.workers.dev";
+    const resultado = document.getElementById("resultado");
+    const botao = document.getElementById("botao-migrar");
+
+    let usuarioAtual = null;
+
+    onAuthStateChanged(auth, (usuario) => {
+      if (!usuario) {
+        resultado.textContent = "Você precisa estar logado como administrador. Faça login primeiro.";
+        botao.disabled = true;
+        return;
+      }
+      usuarioAtual = usuario;
+    });
+
+    botao.addEventListener("click", async () => {
+      if (!usuarioAtual) return;
+      botao.disabled = true;
+      botao.textContent = "Migrando...";
+      resultado.textContent = "";
+
+      try {
+        const token = await usuarioAtual.getIdToken();
+        const resposta = await fetch(`${URL_WORKER}/migrar-dados-antigos`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+          throw new Error(dados.erro || "Falha na migração.");
+        }
+
+        resultado.textContent =
+          `Concluído!\n\n` +
+          `Pedidos verificados: ${dados.resultado.pedidos.verificados}\n` +
+          `Pedidos migrados: ${dados.resultado.pedidos.migrados}\n\n` +
+          `Matrículas verificadas: ${dados.resultado.matricula.verificados}\n` +
+          `Matrículas migradas: ${dados.resultado.matricula.migrados}`;
+        botao.textContent = "Concluído";
+      } catch (erro) {
+        resultado.textContent = "Erro: " + erro.message;
+        botao.disabled = false;
+        botao.textContent = "Rodar migração";
+      }
+    });
+  </script>
+</body>
+</html>
