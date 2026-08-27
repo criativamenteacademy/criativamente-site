@@ -1362,6 +1362,17 @@
       if (titulo) document.getElementById('titulo').value = titulo;
     }
 
+    // Remove o <h2> do conteúdo salvo quando ele foi a fonte do título,
+    // pra não aparecer repetido (uma vez no cabeçalho, outra dentro do texto)
+    let conteudoParaSalvar = conteudo;
+    const matchH2Completo = conteudo.match(/<h2[^>]*>.*?<\/h2>/i);
+    if (matchH2Completo) {
+      const textoH2 = matchH2Completo[0].replace(/<[^>]+>/g, '').trim();
+      if (textoH2 === titulo) {
+        conteudoParaSalvar = conteudo.replace(matchH2Completo[0], '').replace(/^\s+/, '');
+      }
+    }
+
     if (!modulo || !aula || !titulo || !conteudo) {
       statusDiv.className = 'erro';
       statusDiv.style.display = 'block';
@@ -1411,7 +1422,7 @@
       await setDoc(ref, {
         titulo: titulo,
         ordem: Number(aula),
-        conteudo: conteudo,
+        conteudo: conteudoParaSalvar,
         ativo: true
       });
 
