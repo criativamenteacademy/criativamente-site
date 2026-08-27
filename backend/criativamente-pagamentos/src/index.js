@@ -12,6 +12,11 @@ var ORIGENS_PERMITIDAS = /* @__PURE__ */ new Set([
   "https://criativamenteacademy.com",
   "https://www.criativamenteacademy.com"
 ]);
+
+// Chave pública do Firebase, usada só para validar o login da pessoa.
+// Não é segredo — pode ficar direto no código.
+var FIREBASE_WEB_API_KEY = "AIzaSyAoKHp6riW1htvqBXRU0YBSGkajErqdeJw";
+
 var index_default = {
   async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
@@ -41,7 +46,7 @@ var index_default = {
 function construirCorsHeaders(origin) {
   const headers = {
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
+    "Access-Control-Allow-Headers": "Content-Type, Authorization"
   };
   if (ORIGENS_PERMITIDAS.has(origin)) {
     headers["Access-Control-Allow-Origin"] = origin;
@@ -68,12 +73,82 @@ function limparCep(cep) {
   return (cep || "").replace(/\D/g, "");
 }
 __name(limparCep, "limparCep");
+
+// Confirma junto ao Firebase que o token enviado é válido e devolve o uid real da pessoa logada.
+async function verificarTokenFirebase(idToken) {
+  if (!idToken) {
+    return null;
+  }
+  const resp = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_WEB_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken })
+    }
+  );
+  if (!resp.ok) {
+    return null;
+  }
+  const dados = await resp.json();
+  const usuario = dados?.users?.[0];
+  return usuario?.localId || null;
+}
+__name(verificarTokenFirebase, "verificarTokenFirebase");
+
+// ============================================================
+// CRIPTOGRAFIA (AES-GCM) — protege CPF e endereço no Firestore
+// ============================================================
+async function obterChaveCripto(env) {
+  const bytes = Uint8Array.from(atob(env.CHAVE_CRIPTOGRAFIA), (c) => c.charCodeAt(0));
+  return crypto.subtle.importKey("raw", bytes, { name: "AES-GCM" }, false, [
+    "encrypt",
+    "decrypt"
+  ]);
+}
+__name(obterChaveCripto, "obterChaveCripto");
+
+async function criptografar(textoPlano, env) {
+  if (textoPlano === null || textoPlano === void 0) return null;
+  const chave = await obterChaveCripto(env);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const bytesTexto = new TextEncoder().encode(String(textoPlano));
+  const cifrado = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, chave, bytesTexto);
+  const ivBase64 = btoa(String.fromCharCode(...iv));
+  const cifradoBase64 = btoa(String.fromCharCode(...new Uint8Array(cifrado)));
+  return `${ivBase64}:${cifradoBase64}`;
+}
+__name(criptografar, "criptografar");
+
+async function descriptografar(valorCriptografado, env) {
+  if (!valorCriptografado || !valorCriptografado.includes(":")) return null;
+  const [ivBase64, cifradoBase64] = valorCriptografado.split(":");
+  const chave = await obterChaveCripto(env);
+  const iv = Uint8Array.from(atob(ivBase64), (c) => c.charCodeAt(0));
+  const cifrado = Uint8Array.from(atob(cifradoBase64), (c) => c.charCodeAt(0));
+  const decifrado = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, chave, cifrado);
+  return new TextDecoder().decode(decifrado);
+}
+__name(descriptografar, "descriptografar");
+
 async function criarCobranca(request, env, corsHeaders) {
+  const authHeader = request.headers.get("Authorization") || "";
+  const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  const uidVerificado = await verificarTokenFirebase(idToken);
+  if (!uidVerificado) {
+    return jsonResponse(
+      { erro: "Sess\xE3o inv\xE1lida ou expirada. Fa\xE7a login novamente." },
+      401,
+      corsHeaders
+    );
+  }
+
   const body = await request.json().catch(() => null);
   if (!body) {
     return jsonResponse({ erro: "Corpo da requisi\xE7\xE3o inv\xE1lido." }, 400, corsHeaders);
   }
-  const { uid, nome, email, cpf, telefone, cursoId, endereco } = body;
+  const uid = uidVerificado;
+  const { nome, email, cpf, telefone, cursoId, endereco } = body;
   const curso = CURSOS[cursoId];
   if (!uid || !nome || !email || !cpf || !cursoId) {
     return jsonResponse(
@@ -99,6 +174,9 @@ async function criarCobranca(request, env, corsHeaders) {
     access_token: env.ASAAS_API_KEY
   };
 
+  // OBS: o CPF/endereço enviados aqui pra Asaas continuam em texto normal —
+  // é obrigatório, a Asaas precisa deles legíveis pra emitir a cobrança.
+  // A criptografia entra só na hora de gravar no NOSSO Firestore, mais abaixo.
   const buscaResp = await fetch(
     `${baseUrlAsaas(env)}/customers?cpfCnpj=${cpfLimpo}`,
     { headers: headersAsaas }
@@ -178,6 +256,9 @@ async function criarCobranca(request, env, corsHeaders) {
   }
   try {
     const accessToken = await obterTokenGoogle(env);
+    // NOVO: CPF e endereço vão criptografados pro Firestore.
+    const cpfCriptografado = await criptografar(cpfLimpo, env);
+    const enderecoCriptografado = await criptografar(JSON.stringify(endereco), env);
     await firestoreEscrever({
       projectId: env.FIREBASE_PROJECT_ID,
       accessToken,
@@ -187,9 +268,9 @@ async function criarCobranca(request, env, corsHeaders) {
         cursoId,
         nome,
         email,
-        cpf: cpfLimpo,
+        cpfCriptografado,
         telefone,
-        endereco,
+        enderecoCriptografado,
         valor: curso.valor,
         status: "pendente",
         criadoEm: (/* @__PURE__ */ new Date()).toISOString()
@@ -228,6 +309,8 @@ async function receberWebhook(request, env) {
     accessToken,
     caminho: `pedidos/${paymentId}`
   });
+  // NOVO: os campos vêm criptografados do "pedidos" — passamos adiante como estão,
+  // sem precisar descriptografar aqui (só quem for exibir os dados precisa decifrar).
   await firestoreEscrever({
     projectId: env.FIREBASE_PROJECT_ID,
     accessToken,
@@ -243,7 +326,7 @@ async function receberWebhook(request, env) {
       liberadoEm: (/* @__PURE__ */ new Date()).toISOString(),
       nome: pedido?.nome || null,
       telefone: pedido?.telefone || null,
-      endereco: pedido?.endereco || null
+      enderecoCriptografado: pedido?.enderecoCriptografado || null
     }
   });
   if (pedido) {
