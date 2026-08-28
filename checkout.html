@@ -102,12 +102,18 @@
       "posicionamento-estrategico": {
         titulo: "Posicionamento Estratégico",
         descricao: "Da ideia à marca com identidade real",
+        valor: 397,
       },
       "patrimonio-protegido": {
         titulo: "Patrimônio Protegido",
         descricao: "Holding, Sucessão e Tributação na Prática",
+        valor: 497,
       },
     };
+
+    function formatarValor(valor) {
+      return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
 
     const params = new URLSearchParams(window.location.search);
     const cursoId = params.get("curso");
@@ -146,7 +152,6 @@
       botao.disabled = true;
       botao.textContent = "Gerando pagamento...";
 
-      // NOVO: pega o token de login atual da pessoa, pra provar pro Worker que ela está autenticada
       let tokenLogin;
       try {
         tokenLogin = await usuarioAtual.getIdToken();
@@ -180,7 +185,6 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // NOVO: envia o token no header, é isso que o Worker agora exige
             "Authorization": `Bearer ${tokenLogin}`,
           },
           body: JSON.stringify(dados),
@@ -191,7 +195,15 @@
           throw new Error(resultado.erro || "Não foi possível gerar o pagamento.");
         }
 
-        window.location.href = resultado.invoiceUrl;
+        // NOVO: em vez de ir direto pro pagamento, guarda os dados e manda
+        // pra telinha de confirmação, onde a pessoa pode cancelar se quiser.
+        sessionStorage.setItem("pedidoPendente", JSON.stringify({
+          paymentId: resultado.paymentId,
+          invoiceUrl: resultado.invoiceUrl,
+          cursoTitulo: curso.titulo,
+          valorFormatado: formatarValor(curso.valor),
+        }));
+        window.location.href = "/confirmar-pagamento.html";
       } catch (erro) {
         caixaErro.textContent = erro.message;
         caixaErro.style.display = "block";
