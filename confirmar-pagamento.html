@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmar inscrição — CriativaMente Academy</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/auth.css" />
+</head>
+<!-- Protegida por auth-guard: exige login antes de mostrar a tela. -->
+<body class="auth-checking">
+
+  <div class="auth-loading">Carregando...</div>
+
+  <div class="auth-page" id="tela-confirmacao" style="display:none;">
+    <div class="auth-card" style="max-width: 480px;">
+      <a href="/index.html" class="auth-card__logo"><img src="/brand-mark.png" srcset="/brand-mark.png 1x, /brand-mark@2x.png 2x" alt="" aria-hidden="true"> Criativa<span>Mente</span> academy</a>
+
+      <h1 style="font-family:'Sora',sans-serif; font-size:22px; text-align:center; margin: 8px 0 4px;">
+        Quase lá!
+      </h1>
+      <p id="confirmacao-descricao" style="text-align:center; color: var(--cinza-quente); margin: 0 0 24px; font-size: 14px;">
+        Sua inscrição foi reservada. Confirme abaixo.
+      </p>
+
+      <div style="background:#f7f3ee; border-radius:8px; padding:16px; margin-bottom:24px;">
+        <p style="margin:0 0 4px; font-size:13px; color: var(--cinza-quente);">Curso</p>
+        <p id="resumo-curso" style="margin:0 0 12px; font-weight:600;">—</p>
+        <p style="margin:0 0 4px; font-size:13px; color: var(--cinza-quente);">Valor</p>
+        <p id="resumo-valor" style="margin:0; font-weight:600;">—</p>
+      </div>
+
+      <div id="confirmacao-erro" style="display:none; background:#fdeceb; color:#b3261e; padding:12px; border-radius:8px; margin-bottom:16px; font-size:14px;"></div>
+      <div id="confirmacao-sucesso" style="display:none; background:#eaf7ec; color:#1e7a34; padding:12px; border-radius:8px; margin-bottom:16px; font-size:14px;"></div>
+
+      <button type="button" id="botao-pagar" class="btn btn-primary" style="width:100%; text-align:center; border:none; cursor:pointer; margin-bottom:12px;">
+        Ir para pagamento
+      </button>
+
+      <button type="button" id="botao-cancelar" style="width:100%; text-align:center; cursor:pointer; background:transparent; border:1px solid rgba(179,38,30,0.4); color:#b3261e; padding:0.9rem 1.75rem; border-radius:8px; font-family:'Inter',sans-serif; font-weight:600; font-size:14px;">
+        Cancelar minha inscrição
+      </button>
+
+      <p style="text-align:center; font-size:12px; color: var(--cinza-quente); margin-top:16px;">
+        Se você cancelar, a cobrança é removida e nada será cobrado de você.
+      </p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth } from "/assets/js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    import { sanitizarRedirect } from "/assets/js/redirect-utils.js";
+
+    const URL_WORKER = "https://criativamente-pagamentos.contatojhonisilva.workers.dev";
+
+    // Os dados do pedido chegam aqui salvos pelo checkout.html, antes de redirecionar pra esta página.
+    const pedidoBruto = sessionStorage.getItem("pedidoPendente");
+    const pedido = pedidoBruto ? JSON.parse(pedidoBruto) : null;
+
+    if (!pedido || !pedido.paymentId || !pedido.invoiceUrl) {
+      document.querySelector(".auth-loading").textContent =
+        "Não encontramos uma inscrição pendente. Volte à página do curso e tente novamente.";
+    } else {
+      document.getElementById("resumo-curso").textContent = pedido.cursoTitulo || "—";
+      document.getElementById("resumo-valor").textContent = pedido.valorFormatado || "—";
+    }
+
+    let usuarioAtual = null;
+
+    onAuthStateChanged(auth, (usuario) => {
+      if (!usuario) {
+        const destino = sanitizarRedirect(window.location.pathname + window.location.search);
+        window.location.replace(`/login.html?redirect=${encodeURIComponent(destino)}`);
+        return;
+      }
+      usuarioAtual = usuario;
+      document.body.classList.remove("auth-checking");
+      document.querySelector(".auth-loading").style.display = "none";
+      if (pedido && pedido.paymentId) {
+        document.getElementById("tela-confirmacao").style.display = "flex";
+      }
+    });
+
+    document.getElementById("botao-pagar").addEventListener("click", () => {
+      if (!pedido) return;
+      window.location.href = pedido.invoiceUrl;
+    });
+
+    document.getElementById("botao-cancelar").addEventListener("click", async () => {
+      if (!pedido || !usuarioAtual) return;
+      const confirmou = window.confirm("Tem certeza que quer cancelar sua inscrição? A cobrança será removida.");
+      if (!confirmou) return;
+
+      const botaoCancelar = document.getElementById("botao-cancelar");
+      const botaoPagar = document.getElementById("botao-pagar");
+      const caixaErro = document.getElementById("confirmacao-erro");
+      const caixaSucesso = document.getElementById("confirmacao-sucesso");
+      caixaErro.style.display = "none";
+      botaoCancelar.disabled = true;
+      botaoPagar.disabled = true;
+      botaoCancelar.textContent = "Cancelando...";
+
+      try {
+        const tokenLogin = await usuarioAtual.getIdToken();
+        const resposta = await fetch(`${URL_WORKER}/cancelar-cobranca`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${tokenLogin}`,
+          },
+          body: JSON.stringify({ paymentId: pedido.paymentId }),
+        });
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+          throw new Error(resultado.erro || "Não foi possível cancelar. Tente novamente.");
+        }
+
+        sessionStorage.removeItem("pedidoPendente");
+        caixaSucesso.textContent = "Inscrição cancelada. Você já pode fechar esta página.";
+        caixaSucesso.style.display = "block";
+        botaoCancelar.style.display = "none";
+        botaoPagar.style.display = "none";
+      } catch (erro) {
+        caixaErro.textContent = erro.message;
+        caixaErro.style.display = "block";
+        botaoCancelar.disabled = false;
+        botaoPagar.disabled = false;
+        botaoCancelar.textContent = "Cancelar minha inscrição";
+      }
+    });
+  </script>
+</body>
+</html>
