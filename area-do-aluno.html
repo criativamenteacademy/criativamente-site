@@ -76,6 +76,24 @@
       return Math.min(100, Math.round((concluidas / totalAulas) * 100));
     }
 
+    function corProgresso(percentual) {
+      const paradas = [
+        { p: 0,   cor: [232, 137, 42] },
+        { p: 50,  cor: [181, 84, 26] },
+        { p: 100, cor: [107, 87, 68] }
+      ];
+      let a = paradas[0], b = paradas[1];
+      for (let i = 0; i < paradas.length - 1; i++) {
+        if (percentual >= paradas[i].p && percentual <= paradas[i + 1].p) {
+          a = paradas[i]; b = paradas[i + 1];
+          break;
+        }
+      }
+      const t = (percentual - a.p) / (b.p - a.p || 1);
+      const rgb = a.cor.map((c, i) => Math.round(c + (b.cor[i] - c) * t));
+      return `rgb(${rgb.join(",")})`;
+    }
+
     async function montarLinkContinuar(uid, curso, progresso) {
       if (progresso && progresso.ultimoModulo && progresso.ultimaAula) {
         return `/aula.html?curso=${curso.id}&modulo=${progresso.ultimoModulo}&aula=${progresso.ultimaAula}`;
@@ -129,7 +147,7 @@
             <h3>${curso.nome}</h3>
             <p>${curso.descricao || ""}</p>
             <div class="barra-progresso">
-              <div class="barra-progresso__preenchimento" style="width:${percentual}%"></div>
+              <div class="barra-progresso__preenchimento" style="width:${percentual}%; background:${corProgresso(percentual)};"></div>
             </div>
             <p class="progresso-texto">${percentual}% concluído</p>
             <a class="curso-card__acao" href="${link}">
