@@ -69,8 +69,8 @@
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
     import { sairUsuario } from "/assets/js/auth.js";
     import { carregarAula, ERROS } from "/assets/js/content-loader.js";
-    import { registrarUltimaAula, marcarAulaConcluida } from "/assets/js/progress.js";
-    import { proximaAula, aulaAnterior } from "/assets/js/access-control.js";
+    import { registrarUltimaAula, marcarAulaConcluida, verificarEMarcarConclusao } from "/assets/js/progress.js";
+    import { proximaAula, aulaAnterior, listarModulos, listarAulas } from "/assets/js/access-control.js";
     import { ativarProtecaoConteudo } from "/assets/js/protecao-conteudo.js";
 
     document.getElementById("botao-sair").addEventListener("click", async () => {
@@ -268,6 +268,16 @@
       }
     }
 
+    // Conta quantas aulas o curso tem no total, somando todos os módulos
+    // — usado só pra saber se o aluno acabou de concluir o curso inteiro.
+    async function contarTotalAulas(cursoIdAlvo) {
+      const modulos = await listarModulos(cursoIdAlvo);
+      const contagens = await Promise.all(
+        modulos.map((modulo) => listarAulas(cursoIdAlvo, modulo.id))
+      );
+      return contagens.reduce((total, aulas) => total + aulas.length, 0);
+    }
+
     document.getElementById("botao-concluir").addEventListener("click", async () => {
       const usuario = auth.currentUser;
       if (!usuario || !cursoId || !aulaId) return;
@@ -287,8 +297,25 @@
           botaoProxima.href = `/aula.html?curso=${cursoId}&modulo=${proxima.moduloId}&aula=${proxima.aulaId}`;
           botaoProxima.textContent = "Próxima aula →";
         } else {
-          botaoProxima.href = `/area-do-aluno.html`;
-          botaoProxima.textContent = "Curso concluído — voltar para minha área";
+          // Não há próxima aula — pode ser o fim do curso de verdade.
+          // Confere o total de aulas concluídas contra o total do curso
+          // antes de decidir se leva pro certificado.
+          try {
+            const totalAulas = await contarTotalAulas(cursoId);
+            const cursoConcluido = await verificarEMarcarConclusao(usuario.uid, cursoId, totalAulas);
+
+            if (cursoConcluido) {
+              botaoProxima.href = `/certificado.html?curso=${cursoId}`;
+              botaoProxima.textContent = "Ver meu certificado →";
+            } else {
+              botaoProxima.href = `/area-do-aluno.html`;
+              botaoProxima.textContent = "Voltar para minha área";
+            }
+          } catch (erroConclusao) {
+            console.warn("Não foi possível verificar a conclusão do curso:", erroConclusao);
+            botaoProxima.href = `/area-do-aluno.html`;
+            botaoProxima.textContent = "Curso concluído — voltar para minha área";
+          }
         }
         botaoProxima.style.display = "inline-block";
       } catch {
