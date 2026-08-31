@@ -141,6 +141,12 @@
         const percentual = calcularPercentual(totalAulas, progresso);
         const link = await montarLinkContinuar(usuario.uid, curso, progresso);
         const jaComecou = Boolean(progresso && progresso.ultimaAula);
+        const concluido = percentual === 100;
+
+        const linkAcao = concluido ? `/certificado.html?curso=${curso.id}` : link;
+        const textoAcao = concluido
+          ? "Ver meu certificado"
+          : (jaComecou ? "Continuar de onde parei" : "Começar curso");
 
         return `
           <div class="curso-card">
@@ -149,9 +155,9 @@
             <div class="barra-progresso">
               <div class="barra-progresso__preenchimento" style="width:${percentual}%; background:${corProgresso(percentual)};"></div>
             </div>
-            <p class="progresso-texto">${percentual}% concluído</p>
-            <a class="curso-card__acao" href="${link}">
-              ${jaComecou ? "Continuar de onde parei" : "Começar curso"}
+            <p class="progresso-texto">${percentual}% concluído${concluido ? " 🎓" : ""}</p>
+            <a class="curso-card__acao" href="${linkAcao}">
+              ${textoAcao}
             </a>
           </div>`;
       }));
