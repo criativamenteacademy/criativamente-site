@@ -69,4 +69,40 @@ export async function marcarAulaConcluida(uid, cursoId, moduloId, aulaId) {
     },
     { merge: true }
   );
+
+  return aulasConcluidas;
+}
+
+/**
+ * Confere se o aluno concluiu TODAS as aulas do curso (recebe o total
+ * já contado por quem chamou) e, se sim, grava a data de conclusão
+ * (campo "concluidoEm") — só na primeira vez, sem sobrescrever se já
+ * existir. É esse campo que libera a página do certificado.
+ * Retorna true se o curso está (ou acabou de ficar) concluído.
+ */
+export async function verificarEMarcarConclusao(uid, cursoId, totalAulas) {
+  const progressoAtual = await buscarProgresso(uid, cursoId);
+  const aulasConcluidas = (progressoAtual && progressoAtual.aulasConcluidas) || {};
+  const concluidas = Object.keys(aulasConcluidas).length;
+
+  if (!totalAulas || concluidas < totalAulas) {
+    return false;
+  }
+
+  if (progressoAtual && progressoAtual.concluidoEm) {
+    return true;
+  }
+
+  const referencia = doc(db, "progresso", idProgresso(uid, cursoId));
+  await setDoc(
+    referencia,
+    {
+      uid,
+      cursoId,
+      concluidoEm: serverTimestamp()
+    },
+    { merge: true }
+  );
+
+  return true;
 }
