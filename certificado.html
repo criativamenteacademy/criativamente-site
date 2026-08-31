@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certificado — CriativaMente Academy</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/auth.css" />
+  <style>
+    /* Estilos exclusivos desta página — não afeta o resto do site */
+    .certificado-tela {
+      min-height: 100vh;
+      background: var(--marfim, #FDF6E3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 80px;
+    }
+
+    .certificado-acoes {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      font-family: "Inter", sans-serif;
+    }
+
+    .certificado-voltar {
+      color: var(--preto-quente, #0F0A05);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .certificado-imprimir {
+      background: var(--cobre, #B5541A);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: "Inter", sans-serif;
+    }
+
+    .certificado-imprimir:hover {
+      background: var(--cobre-claro, #E8892A);
+    }
+
+    .certificado-folha {
+      width: 100%;
+      max-width: 900px;
+      background: #ffffff;
+      border: 10px solid var(--preto-quente, #0F0A05);
+      outline: 2px solid var(--cobre, #B5541A);
+      outline-offset: -18px;
+      padding: 64px 56px;
+      text-align: center;
+      font-family: "Inter", sans-serif;
+      color: var(--preto-quente, #0F0A05);
+    }
+
+    .certificado-marca {
+      font-family: "Sora", sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      color: var(--cobre, #B5541A);
+      margin: 0 0 40px;
+    }
+
+    .certificado-marca span {
+      color: var(--preto-quente, #0F0A05);
+    }
+
+    .certificado-titulo {
+      font-family: "Sora", sans-serif;
+      font-size: 15px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--cinza-quente, #6B5744);
+      margin: 0 0 8px;
+    }
+
+    .certificado-texto {
+      font-size: 17px;
+      line-height: 1.7;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .certificado-aluno {
+      font-family: "Sora", sans-serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--preto-quente, #0F0A05);
+      margin: 22px 0;
+    }
+
+    .certificado-curso {
+      font-family: "Sora", sans-serif;
+      font-weight: 700;
+      color: var(--cobre, #B5541A);
+    }
+
+    .certificado-data {
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--cinza-quente, #6B5744);
+    }
+
+    .certificado-assinatura {
+      margin-top: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .certificado-assinatura img {
+      height: 70px;
+      object-fit: contain;
+      margin-bottom: 6px;
+    }
+
+    .certificado-assinatura-linha {
+      width: 220px;
+      border-top: 1px solid var(--preto-quente, #0F0A05);
+      padding-top: 8px;
+      font-size: 13px;
+    }
+
+    .certificado-assinatura-nome {
+      font-weight: 600;
+    }
+
+    .certificado-assinatura-cargo {
+      color: var(--cinza-quente, #6B5744);
+      font-size: 12px;
+    }
+
+    .certificado-aviso {
+      max-width: 480px;
+      margin: 100px auto;
+      text-align: center;
+      font-family: "Inter", sans-serif;
+      color: var(--preto-quente, #0F0A05);
+      padding: 0 24px;
+    }
+
+    .certificado-aviso h1 {
+      font-family: "Sora", sans-serif;
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .certificado-aviso p {
+      color: var(--cinza-quente, #6B5744);
+      margin-bottom: 24px;
+    }
+
+    /* Layout de impressão: some com cabeçalho/botões, só a folha aparece */
+    @media print {
+      .certificado-acoes { display: none !important; }
+      .certificado-tela { padding: 0; background: #fff; }
+      .certificado-folha { border-width: 6px; outline-offset: -14px; box-shadow: none; }
+      @page { size: landscape; margin: 0; }
+    }
+  </style>
+</head>
+<body class="auth-checking">
+
+  <div class="auth-loading">Carregando certificado...</div>
+
+  <div class="certificado-tela" id="tela-certificado" style="display:none;">
+    <div class="certificado-acoes">
+      <a class="certificado-voltar" id="link-voltar" href="/area-do-aluno.html">← Voltar para minha área</a>
+      <button class="certificado-imprimir" id="botao-imprimir">Baixar / imprimir certificado</button>
+    </div>
+
+    <div class="certificado-folha">
+      <p class="certificado-marca">Criativa<span>Mente</span> Academy</p>
+      <p class="certificado-titulo">Certificado de conclusão</p>
+      <p class="certificado-texto">Certificamos que</p>
+      <p class="certificado-aluno" id="certificado-nome-aluno"></p>
+      <p class="certificado-texto">
+        concluiu com dedicação o curso
+        <span class="certificado-curso" id="certificado-nome-curso"></span>
+      </p>
+      <p class="certificado-data" id="certificado-data"></p>
+
+      <div class="certificado-assinatura">
+        <img src="/assinatura-jhoni.png" alt="Assinatura de Jhoni Guilherme da Silva" />
+        <div class="certificado-assinatura-linha">
+          <p class="certificado-assinatura-nome">Jhoni Guilherme da Silva</p>
+          <p class="certificado-assinatura-cargo">Fundador — CriativaMente Academy</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="certificado-aviso" id="bloco-aviso" style="display:none;">
+    <h1 id="aviso-titulo">Certificado não disponível</h1>
+    <p id="aviso-texto"></p>
+    <a class="auth-button" href="/area-do-aluno.html" style="display:inline-block; width:auto; text-decoration:none; padding:11px 24px;">Voltar para minha área</a>
+  </div>
+
+  <script type="module">
+    import { auth } from "/assets/js/firebase-config.js";
+    import { cursoLiberado, buscarCurso } from "/assets/js/access-control.js";
+    import { buscarProgresso } from "/assets/js/progress.js";
+
+    const parametros = new URLSearchParams(window.location.search);
+    const cursoId = parametros.get("curso");
+
+    document.getElementById("link-voltar").href = cursoId
+      ? "/area-do-aluno.html"
+      : "/area-do-aluno.html";
+
+    function mostrarAviso(titulo, texto) {
+      document.getElementById("tela-certificado").style.display = "none";
+      document.getElementById("bloco-aviso").style.display = "block";
+      document.getElementById("aviso-titulo").textContent = titulo;
+      document.getElementById("aviso-texto").textContent = texto;
+    }
+
+    function formatarData(timestamp) {
+      if (!timestamp || !timestamp.toDate) return "";
+      const data = timestamp.toDate();
+      return data.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    document.addEventListener("cm-auth-ready", async (evento) => {
+      const usuario = evento.detail.usuario;
+
+      if (!cursoId) {
+        mostrarAviso("Certificado não encontrado", "Não identificamos qual curso você quer ver o certificado.");
+        return;
+      }
+
+      try {
+        const liberado = await cursoLiberado(usuario.uid, cursoId);
+        if (!liberado) {
+          mostrarAviso("Curso não encontrado", "Você não tem acesso a este curso nesta conta.");
+          return;
+        }
+
+        const progresso = await buscarProgresso(usuario.uid, cursoId);
+        if (!progresso || !progresso.concluidoEm) {
+          mostrarAviso(
+            "Ainda não concluído",
+            "Você precisa concluir todas as aulas deste curso para liberar o certificado."
+          );
+          return;
+        }
+
+        const curso = await buscarCurso(cursoId);
+
+        document.getElementById("certificado-nome-aluno").textContent =
+          usuario.displayName || "Aluno(a)";
+        document.getElementById("certificado-nome-curso").textContent =
+          (curso && curso.nome) || "curso";
+        document.getElementById("certificado-data").textContent =
+          `Concluído em ${formatarData(progresso.concluidoEm)}`;
+
+        document.getElementById("tela-certificado").style.display = "flex";
+        document.getElementById("bloco-aviso").style.display = "none";
+      } catch (erro) {
+        console.error("Erro ao carregar certificado:", erro);
+        mostrarAviso("Não foi possível carregar", "Tente novamente em instantes.");
+      }
+    });
+
+    document.getElementById("botao-imprimir").addEventListener("click", () => {
+      window.print();
+    });
+  </script>
+
+  <script type="module" src="/assets/js/auth-guard.js"></script>
+</body>
+</html>
