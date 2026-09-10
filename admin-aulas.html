@@ -1474,7 +1474,7 @@
   };
 
   window.salvarMesmoAssim = function() {
-    if (!window.confirm('O auditor encontrou problema bloqueador nesta aula.\n\nSalvar mesmo assim?')) return;
+    if (!window.confirm('Esta aula nao passou 100% na auditoria.\n\nSalvar mesmo assim?')) return;
     auditoriaLiberada = true;
     document.getElementById('painelAuditoria').style.display = 'none';
     window.salvarAula();
@@ -1556,11 +1556,12 @@
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const r = await resp.json();
 
-      if (r.veredito === 'REPROVADA') {
+      // So passa direto quem esta 100%: qualquer achado trava o salvamento
+      if (r.veredito !== 'APROVADA' && !r.erro) {
         mostrarRelatorio(r, true);
         return false;
       }
-      if ((r.problemas || []).length || r.erro) {
+      if (r.erro) {
         mostrarRelatorio(r, false);
       } else {
         document.getElementById('painelAuditoria').style.display = 'none';
