@@ -1516,9 +1516,21 @@
 
     L.push('---');
     L.push('');
-    L.push('## Texto atual da aula');
+    L.push('## Texto atual da aula (so para leitura)');
     L.push('');
     L.push(r.conteudo_aula || '');
+    L.push('');
+    L.push('---');
+    L.push('');
+    L.push('## HTML ORIGINAL DA AULA — use este para corrigir');
+    L.push('');
+    L.push('> Atencao: esta aula ja esta publicada e pode conter imagens.');
+    L.push('> As correcoes devem ser feitas sobre o HTML abaixo, preservando');
+    L.push('> todas as tags de imagem e seus links exatamente como estao.');
+    L.push('');
+    L.push('~~~html');
+    L.push(r.conteudo_html || '');
+    L.push('~~~');
 
     return L.join('\n');
   }
@@ -1660,6 +1672,7 @@
       const r = await resp.json();
       r.identificacao = identificacao;
       r.conteudo_aula = htmlParaTexto(conteudoHtml);
+      r.conteudo_html = conteudoHtml;
 
       // So passa direto quem esta 100%: qualquer achado trava o salvamento
       if (r.veredito !== 'APROVADA' && !r.erro) {
