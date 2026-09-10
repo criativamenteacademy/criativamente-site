@@ -132,6 +132,9 @@
   #painelAuditoria .acoes { margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; }
   #painelAuditoria .acoes button { padding:10px 16px; border-radius:6px; border:none; cursor:pointer; font-size:14px; }
   #btnSalvarMesmoAssim { background:#fff; color:#9c1c1c; border:1px solid #9c1c1c !important; }
+  #btnAplicarCorrecoes { background:#1e6b1e; color:#fff; }
+  #painelAuditoria .aviso-correcao { margin-top:12px; padding:10px 12px; border-radius:6px; font-size:14px; background:#e3f5e1; color:#1e6b1e; }
+  #painelAuditoria .aviso-correcao.erro { background:#fde3e3; color:#9c1c1c; }
   #btnCopiarAuditoria { background:#B5541A; color:#fff; }
   #btnBaixarAuditoria { background:#fff; color:#B5541A; border:1px solid #B5541A !important; }
   #btnFecharAuditoria { background:#6B5744; color:#fff; }
@@ -1455,6 +1458,7 @@
   // o texto seja corrigido (ou liberado manualmente no botao).
   // ============================================================
   const URL_AUDITOR = 'https://n8n.criativamenteacademy.com/webhook/auditar-aula';
+  const URL_CORRETOR = 'https://n8n.criativamenteacademy.com/webhook/corrigir-aula';
   let auditoriaLiberada = false;
 
   function htmlParaTexto(html) {
@@ -1534,6 +1538,60 @@
 
     return L.join('\n');
   }
+
+  window.aplicarCorrecoes = async function() {
+    if (!ultimoRelatorio || !(ultimoRelatorio.problemas || []).length) return;
+    const btn = document.getElementById('btnAplicarCorrecoes');
+    const original = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Corrigindo...'; }
+
+    const aviso = document.getElementById('avisoCorrecao');
+    if (aviso) { aviso.style.display = 'none'; aviso.textContent = ''; }
+
+    function mostrarAviso(texto, erro) {
+      const el = document.getElementById('avisoCorrecao');
+      if (!el) return;
+      el.textContent = texto;
+      el.className = erro ? 'aviso-correcao erro' : 'aviso-correcao';
+      el.style.display = 'block';
+    }
+
+    try {
+      const resp = await fetch(URL_CORRETOR, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identificacao: ultimoRelatorio.identificacao || '',
+          conteudo_html: ultimoRelatorio.conteudo_html || '',
+          problemas: JSON.stringify(ultimoRelatorio.problemas || []),
+          pontos_fortes: JSON.stringify(ultimoRelatorio.pontos_fortes || [])
+        })
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const r = await resp.json();
+
+      if (!r.ok) {
+        mostrarAviso(r.motivo || 'Nao foi possivel aplicar as correcoes. Nada foi alterado.', true);
+        return;
+      }
+
+      // Substitui o conteudo do editor, mas NAO salva: voce revisa antes
+      document.getElementById('conteudo').innerHTML = r.html_corrigido;
+
+      let msg = 'Correcoes aplicadas no editor (' + (r.aplicadas || []).length + '). '
+              + 'Nada foi salvo ainda — revise e clique em Salvar aula.';
+      if ((r.nao_aplicadas || []).length) {
+        msg += ' Ficaram de fora: ' + r.nao_aplicadas.join('; ');
+      }
+      mostrarAviso(msg, false);
+      document.getElementById('conteudo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      console.warn('Corretor indisponivel:', e);
+      mostrarAviso('Nao consegui falar com o corretor agora. Nada foi alterado.', true);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = original; }
+    }
+  };
 
   window.copiarAuditoria = async function() {
     const texto = montarMarkdownAuditoria();
@@ -1634,7 +1692,11 @@
       }
     }
 
+    html += '<div id="avisoCorrecao" class="aviso-correcao" style="display:none;"></div>';
     html += '<div class="acoes">';
+    if (!r.erro && (r.problemas || []).length) {
+      html += '<button type="button" id="btnAplicarCorrecoes" onclick="aplicarCorrecoes()">Aplicar correcoes</button>';
+    }
     if (!r.erro) {
       html += '<button type="button" id="btnCopiarAuditoria" onclick="copiarAuditoria()">Copiar relatorio</button>';
       html += '<button type="button" id="btnBaixarAuditoria" onclick="baixarAuditoria()">Baixar</button>';
