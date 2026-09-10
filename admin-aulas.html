@@ -1736,25 +1736,25 @@
       r.conteudo_aula = htmlParaTexto(conteudoHtml);
       r.conteudo_html = conteudoHtml;
 
-      // So passa direto quem esta 100%: qualquer achado trava o salvamento
-      if (r.veredito !== 'APROVADA' && !r.erro) {
+      // So passa direto quem esta 100% aprovada. Qualquer achado, erro ou
+      // resposta ilegivel do auditor TRAVA o salvamento — nunca salva sem
+      // auditoria de verdade. O unico jeito de seguir e clicar em
+      // "Salvar mesmo assim", que pede confirmacao explicita.
+      if (r.veredito !== 'APROVADA') {
         mostrarRelatorio(r, true);
         return false;
       }
-      if (r.erro) {
-        mostrarRelatorio(r, false);
-      } else {
-        document.getElementById('painelAuditoria').style.display = 'none';
-      }
+      document.getElementById('painelAuditoria').style.display = 'none';
       return true;
     } catch (e) {
       console.warn('Auditor indisponivel:', e);
-      // Auditor fora do ar nao pode impedir o trabalho: avisa e deixa salvar
+      // Auditor fora do ar TRAVA o salvamento tambem — a aula so sai
+      // sem auditoria se voce clicar em "Salvar mesmo assim" e confirmar.
       mostrarRelatorio({
         veredito: 'INDISPONIVEL',
-        erro: 'Nao consegui falar com o auditor agora. A aula sera salva sem auditoria.'
-      }, false);
-      return true;
+        erro: 'Nao consegui falar com o auditor agora. A aula NAO foi salva.'
+      }, true);
+      return false;
     } finally {
       botao.disabled = false;
       botao.textContent = textoOriginal;
