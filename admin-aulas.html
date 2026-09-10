@@ -132,6 +132,7 @@
   #painelAuditoria .acoes { margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; }
   #painelAuditoria .acoes button { padding:10px 16px; border-radius:6px; border:none; cursor:pointer; font-size:14px; }
   #btnSalvarMesmoAssim { background:#fff; color:#9c1c1c; border:1px solid #9c1c1c !important; }
+  #btnBaixarAuditoria { background:#B5541A; color:#fff; }
   #btnFecharAuditoria { background:#6B5744; color:#fff; }
   .ajuda {
     font-size: 12px;
@@ -1469,6 +1470,78 @@
     ));
   }
 
+  let ultimoRelatorio = null;
+
+  function montarMarkdownAuditoria() {
+    if (!ultimoRelatorio) return '';
+    const r = ultimoRelatorio;
+    const rotulos = { bloqueador:'BLOQUEADOR', grave:'GRAVE', moderado:'MODERADO', melhoria:'MELHORIA' };
+    const ordem = { bloqueador:0, grave:1, moderado:2, melhoria:3 };
+    const L = [];
+
+    L.push('# Auditoria de aula — CriativaMente Academy');
+    L.push('');
+    L.push('**Aula:** ' + r.identificacao);
+    L.push('**Veredito:** ' + r.veredito);
+    if (r.terminou_a_aula === false && r.onde_travei) {
+      L.push('**Onde a execucao travou:** ' + r.onde_travei);
+    }
+    if (r.teste_do_iniciante) L.push('**Teste do iniciante:** ' + r.teste_do_iniciante);
+    L.push('');
+    L.push('## Problemas a corrigir');
+    L.push('');
+
+    const problemas = (r.problemas || []).slice().sort(
+      (a, b) => (ordem[a.gravidade] ?? 9) - (ordem[b.gravidade] ?? 9)
+    );
+    if (!problemas.length) {
+      L.push('Nenhum problema encontrado.');
+    } else {
+      problemas.forEach((pr, i) => {
+        L.push('### ' + (i + 1) + '. [' + (rotulos[pr.gravidade] || pr.gravidade) + '] ' + (pr.titulo || ''));
+        if (pr.onde) L.push('- **Onde:** ' + pr.onde);
+        if (pr.porque) L.push('- **Por que:** ' + pr.porque);
+        if (pr.correcao) L.push('- **Como corrigir:** ' + pr.correcao);
+        L.push('');
+      });
+    }
+
+    if ((r.pontos_fortes || []).length) {
+      L.push('## O que esta bom (nao mexer)');
+      L.push('');
+      r.pontos_fortes.forEach(pt => L.push('- ' + pt));
+      L.push('');
+    }
+
+    L.push('---');
+    L.push('');
+    L.push('## Texto atual da aula');
+    L.push('');
+    L.push(r.conteudo_aula || '');
+
+    return L.join('\n');
+  }
+
+  window.baixarAuditoria = function() {
+    const texto = montarMarkdownAuditoria();
+    if (!texto) return;
+    const nome = 'auditoria-' + String(ultimoRelatorio.identificacao || 'aula')
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 70) + '.md';
+    const blob = new Blob([texto], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nome;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   window.fecharAuditoria = function() {
     document.getElementById('painelAuditoria').style.display = 'none';
   };
@@ -1481,6 +1554,7 @@
   };
 
   function mostrarRelatorio(r, permitirForcar) {
+    ultimoRelatorio = r;
     const painel = document.getElementById('painelAuditoria');
     const rotulos = { bloqueador:'BLOQUEADOR', grave:'GRAVE', moderado:'MODERADO', melhoria:'MELHORIA' };
     const ordem = { bloqueador:0, grave:1, moderado:2, melhoria:3 };
@@ -1524,6 +1598,9 @@
     }
 
     html += '<div class="acoes">';
+    if (!r.erro) {
+      html += '<button type="button" id="btnBaixarAuditoria" onclick="baixarAuditoria()">Baixar relatorio</button>';
+    }
     if (permitirForcar) {
       html += '<button type="button" id="btnSalvarMesmoAssim" onclick="salvarMesmoAssim()">Salvar mesmo assim</button>';
     }
@@ -1555,6 +1632,8 @@
       });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const r = await resp.json();
+      r.identificacao = identificacao;
+      r.conteudo_aula = htmlParaTexto(conteudoHtml);
 
       // So passa direto quem esta 100%: qualquer achado trava o salvamento
       if (r.veredito !== 'APROVADA' && !r.erro) {
