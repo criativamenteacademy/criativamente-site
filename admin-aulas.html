@@ -102,7 +102,17 @@
   #status.erro { display: block; background: #fde3e3; color: #9c1c1c; }
 
   /* ===== Auditor de conteudo ===== */
-  #painelAuditoria { display:none; margin-top:16px; border:2px solid #B5541A; border-radius:8px; background:#FDF6E3; padding:16px; }
+  #painelAuditoria {
+    display:none; position:fixed; top:70px; right:20px; width:390px;
+    max-height:calc(100vh - 100px); overflow-y:auto; z-index:9998;
+    border:2px solid #B5541A; border-radius:8px; background:#FDF6E3; padding:16px;
+    box-shadow:0 8px 28px rgba(15,10,5,.28);
+  }
+  #painelAuditoria .acoes { position:sticky; bottom:-16px; background:#FDF6E3; padding-top:10px; }
+  @media (max-width:1400px) {
+    #painelAuditoria { position:static; width:auto; max-height:none; margin-top:16px; box-shadow:none; }
+    #painelAuditoria .acoes { position:static; }
+  }
   #painelAuditoria h3 { margin:0 0 6px; font-size:17px; color:#0F0A05; }
   #painelAuditoria .veredito { display:inline-block; padding:4px 10px; border-radius:20px; font-weight:700; font-size:14px; margin-bottom:10px; }
   #painelAuditoria .veredito.aprovada { background:#e3f5e1; color:#1e6b1e; }
@@ -1522,7 +1532,10 @@
 
     painel.innerHTML = html;
     painel.style.display = 'block';
-    painel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    painel.scrollTop = 0;
+    if (window.innerWidth <= 1400) {
+      painel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
 
   // Devolve true se o salvamento pode continuar
