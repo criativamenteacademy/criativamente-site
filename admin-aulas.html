@@ -109,6 +109,7 @@
   #painelAuditoria .veredito.correcoes { background:#fdf3d7; color:#8a6100; }
   #painelAuditoria .veredito.reprovada { background:#fde3e3; color:#9c1c1c; }
   #painelAuditoria .teste { font-style:italic; color:#6B5744; margin-bottom:12px; }
+  #painelAuditoria .travou { background:#fde3e3; color:#9c1c1c; padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:14px; }
   #painelAuditoria .achado { border-left:4px solid #6B5744; padding:8px 12px; margin-bottom:10px; background:#fff; border-radius:0 6px 6px 0; }
   #painelAuditoria .achado.bloqueador { border-left-color:#c0392b; }
   #painelAuditoria .achado.grave { border-left-color:#e67e22; }
@@ -1484,6 +1485,9 @@
     if (r.erro) {
       html += '<p>' + escaparHtml(r.erro) + '</p>';
     } else {
+      if (r.terminou_a_aula === false && r.onde_travei) {
+        html += '<p class="travou"><strong>Travei aqui:</strong> ' + escaparHtml(r.onde_travei) + '</p>';
+      }
       if (r.teste_do_iniciante) {
         html += '<p class="teste">Teste do iniciante: ' + escaparHtml(r.teste_do_iniciante) + '</p>';
       }
