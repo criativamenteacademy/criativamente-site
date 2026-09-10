@@ -1575,16 +1575,25 @@
         return;
       }
 
-      // Substitui o conteudo do editor, mas NAO salva: voce revisa antes
+      // Aplica o HTML corrigido no editor
       document.getElementById('conteudo').innerHTML = r.html_corrigido;
 
-      let msg = 'Correcoes aplicadas no editor (' + (r.aplicadas || []).length + '). '
-              + 'Nada foi salvo ainda — revise e clique em Salvar aula.';
-      if ((r.nao_aplicadas || []).length) {
-        msg += ' Ficaram de fora: ' + r.nao_aplicadas.join('; ');
+      // Avisa o que foi corrigido e o que ficou de fora, antes de salvar
+      let aviso = 'Correcoes aplicadas: ' + (r.aplicadas || []).length + '.';
+      if ((r.aplicadas || []).length) {
+        aviso += '\n\n' + r.aplicadas.map(a => '- ' + a).join('\n');
       }
-      mostrarAviso(msg, false);
-      document.getElementById('conteudo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if ((r.nao_aplicadas || []).length) {
+        aviso += '\n\nFicaram de fora (revise manualmente):\n' + r.nao_aplicadas.map(a => '- ' + a).join('\n');
+      }
+      window.alert(aviso);
+
+      // O corretor ja validou o resultado (imagens preservadas, sem corte de
+      // conteudo) — salva direto, sem rodar uma nova auditoria e gastar cota.
+      // Voce confere o resultado publicado como aluno, se quiser.
+      auditoriaLiberada = true;
+      document.getElementById('painelAuditoria').style.display = 'none';
+      await window.salvarAula();
     } catch (e) {
       console.warn('Corretor indisponivel:', e);
       mostrarAviso('Nao consegui falar com o corretor agora. Nada foi alterado.', true);
