@@ -132,7 +132,8 @@
   #painelAuditoria .acoes { margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; }
   #painelAuditoria .acoes button { padding:10px 16px; border-radius:6px; border:none; cursor:pointer; font-size:14px; }
   #btnSalvarMesmoAssim { background:#fff; color:#9c1c1c; border:1px solid #9c1c1c !important; }
-  #btnBaixarAuditoria { background:#B5541A; color:#fff; }
+  #btnCopiarAuditoria { background:#B5541A; color:#fff; }
+  #btnBaixarAuditoria { background:#fff; color:#B5541A; border:1px solid #B5541A !important; }
   #btnFecharAuditoria { background:#6B5744; color:#fff; }
   .ajuda {
     font-size: 12px;
@@ -1522,6 +1523,30 @@
     return L.join('\n');
   }
 
+  window.copiarAuditoria = async function() {
+    const texto = montarMarkdownAuditoria();
+    if (!texto) return;
+    const btn = document.getElementById('btnCopiarAuditoria');
+    const original = btn ? btn.textContent : '';
+    try {
+      await navigator.clipboard.writeText(texto);
+    } catch (e) {
+      // Navegador bloqueou a area de transferencia: usa o metodo antigo
+      const ta = document.createElement('textarea');
+      ta.value = texto;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e2) { /* ignora */ }
+      document.body.removeChild(ta);
+    }
+    if (btn) {
+      btn.textContent = 'Copiado!';
+      setTimeout(() => { btn.textContent = original; }, 1800);
+    }
+  };
+
   window.baixarAuditoria = function() {
     const texto = montarMarkdownAuditoria();
     if (!texto) return;
@@ -1599,7 +1624,8 @@
 
     html += '<div class="acoes">';
     if (!r.erro) {
-      html += '<button type="button" id="btnBaixarAuditoria" onclick="baixarAuditoria()">Baixar relatorio</button>';
+      html += '<button type="button" id="btnCopiarAuditoria" onclick="copiarAuditoria()">Copiar relatorio</button>';
+      html += '<button type="button" id="btnBaixarAuditoria" onclick="baixarAuditoria()">Baixar</button>';
     }
     if (permitirForcar) {
       html += '<button type="button" id="btnSalvarMesmoAssim" onclick="salvarMesmoAssim()">Salvar mesmo assim</button>';
