@@ -100,6 +100,28 @@
   }
   #status.sucesso { display: block; background: #e3f5e1; color: #1e6b1e; }
   #status.erro { display: block; background: #fde3e3; color: #9c1c1c; }
+
+  /* ===== Auditor de conteudo ===== */
+  #painelAuditoria { display:none; margin-top:16px; border:2px solid #B5541A; border-radius:8px; background:#FDF6E3; padding:16px; }
+  #painelAuditoria h3 { margin:0 0 6px; font-size:17px; color:#0F0A05; }
+  #painelAuditoria .veredito { display:inline-block; padding:4px 10px; border-radius:20px; font-weight:700; font-size:14px; margin-bottom:10px; }
+  #painelAuditoria .veredito.aprovada { background:#e3f5e1; color:#1e6b1e; }
+  #painelAuditoria .veredito.correcoes { background:#fdf3d7; color:#8a6100; }
+  #painelAuditoria .veredito.reprovada { background:#fde3e3; color:#9c1c1c; }
+  #painelAuditoria .teste { font-style:italic; color:#6B5744; margin-bottom:12px; }
+  #painelAuditoria .achado { border-left:4px solid #6B5744; padding:8px 12px; margin-bottom:10px; background:#fff; border-radius:0 6px 6px 0; }
+  #painelAuditoria .achado.bloqueador { border-left-color:#c0392b; }
+  #painelAuditoria .achado.grave { border-left-color:#e67e22; }
+  #painelAuditoria .achado.moderado { border-left-color:#d4a017; }
+  #painelAuditoria .achado.melhoria { border-left-color:#2980b9; }
+  #painelAuditoria .achado strong.tit { display:block; margin-bottom:4px; color:#0F0A05; }
+  #painelAuditoria .achado p { margin:3px 0; font-size:14px; line-height:1.45; }
+  #painelAuditoria .rotulo { font-weight:700; color:#6B5744; }
+  #painelAuditoria ul { margin:6px 0 0 18px; font-size:14px; }
+  #painelAuditoria .acoes { margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; }
+  #painelAuditoria .acoes button { padding:10px 16px; border-radius:6px; border:none; cursor:pointer; font-size:14px; }
+  #btnSalvarMesmoAssim { background:#fff; color:#9c1c1c; border:1px solid #9c1c1c !important; }
+  #btnFecharAuditoria { background:#6B5744; color:#fff; }
   .ajuda {
     font-size: 12px;
     color: var(--cinza);
@@ -432,6 +454,8 @@
   <button type="button" class="botao-preview" onclick="previewComoAluno()">👁️ Pré-visualizar como aluno</button>
 
   <div id="status"></div>
+
+  <div id="painelAuditoria"></div>
 
   <hr style="margin: 40px 0 20px; border: none; border-top: 2px solid #ccc;">
 
@@ -1411,6 +1435,134 @@
     }, 50);
   });
 
+  // ============================================================
+  // AUDITOR DE CONTEUDO
+  // Antes de salvar, a aula e enviada ao auditor (Gemini via n8n).
+  // Se houver problema bloqueador, o salvamento e travado ate que
+  // o texto seja corrigido (ou liberado manualmente no botao).
+  // ============================================================
+  const URL_AUDITOR = 'https://n8n.criativamenteacademy.com/webhook/auditar-aula';
+  let auditoriaLiberada = false;
+
+  function htmlParaTexto(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    tmp.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+    tmp.querySelectorAll('p, div, li, h1, h2, h3, h4, tr').forEach(el => el.append('\n'));
+    return (tmp.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  function escaparHtml(txt) {
+    return String(txt ?? '').replace(/[&<>"']/g, c => (
+      { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+    ));
+  }
+
+  window.fecharAuditoria = function() {
+    document.getElementById('painelAuditoria').style.display = 'none';
+  };
+
+  window.salvarMesmoAssim = function() {
+    if (!window.confirm('O auditor encontrou problema bloqueador nesta aula.\n\nSalvar mesmo assim?')) return;
+    auditoriaLiberada = true;
+    document.getElementById('painelAuditoria').style.display = 'none';
+    window.salvarAula();
+  };
+
+  function mostrarRelatorio(r, permitirForcar) {
+    const painel = document.getElementById('painelAuditoria');
+    const rotulos = { bloqueador:'BLOQUEADOR', grave:'GRAVE', moderado:'MODERADO', melhoria:'MELHORIA' };
+    const ordem = { bloqueador:0, grave:1, moderado:2, melhoria:3 };
+
+    let classe = 'aprovada';
+    if (r.veredito === 'REPROVADA') classe = 'reprovada';
+    else if (r.veredito !== 'APROVADA') classe = 'correcoes';
+
+    let html = '<h3>Auditoria da aula</h3>';
+    html += '<span class="veredito ' + classe + '">' + escaparHtml(r.veredito) + '</span>';
+
+    if (r.erro) {
+      html += '<p>' + escaparHtml(r.erro) + '</p>';
+    } else {
+      if (r.teste_do_iniciante) {
+        html += '<p class="teste">Teste do iniciante: ' + escaparHtml(r.teste_do_iniciante) + '</p>';
+      }
+      const problemas = (r.problemas || []).slice().sort(
+        (a, b) => (ordem[a.gravidade] ?? 9) - (ordem[b.gravidade] ?? 9)
+      );
+      if (!problemas.length) {
+        html += '<p>Nenhum problema encontrado.</p>';
+      } else {
+        problemas.forEach(pr => {
+          html += '<div class="achado ' + escaparHtml(pr.gravidade) + '">';
+          html += '<strong class="tit">' + escaparHtml(rotulos[pr.gravidade] || pr.gravidade) + ' — ' + escaparHtml(pr.titulo) + '</strong>';
+          if (pr.onde) html += '<p><span class="rotulo">Onde:</span> ' + escaparHtml(pr.onde) + '</p>';
+          if (pr.porque) html += '<p><span class="rotulo">Por que:</span> ' + escaparHtml(pr.porque) + '</p>';
+          if (pr.correcao) html += '<p><span class="rotulo">Como corrigir:</span> ' + escaparHtml(pr.correcao) + '</p>';
+          html += '</div>';
+        });
+      }
+      if ((r.pontos_fortes || []).length) {
+        html += '<p class="rotulo" style="margin-top:12px;">O que esta bom</p><ul>';
+        r.pontos_fortes.forEach(pt => { html += '<li>' + escaparHtml(pt) + '</li>'; });
+        html += '</ul>';
+      }
+    }
+
+    html += '<div class="acoes">';
+    if (permitirForcar) {
+      html += '<button type="button" id="btnSalvarMesmoAssim" onclick="salvarMesmoAssim()">Salvar mesmo assim</button>';
+    }
+    html += '<button type="button" id="btnFecharAuditoria" onclick="fecharAuditoria()">Fechar</button>';
+    html += '</div>';
+
+    painel.innerHTML = html;
+    painel.style.display = 'block';
+    painel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Devolve true se o salvamento pode continuar
+  async function auditarAntesDeSalvar(identificacao, conteudoHtml) {
+    const botao = document.getElementById('botaoSalvar');
+    const textoOriginal = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Auditando a aula...';
+    try {
+      const resp = await fetch(URL_AUDITOR, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identificacao: identificacao,
+          conteudo: htmlParaTexto(conteudoHtml)
+        })
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const r = await resp.json();
+
+      if (r.veredito === 'REPROVADA') {
+        mostrarRelatorio(r, true);
+        return false;
+      }
+      if ((r.problemas || []).length || r.erro) {
+        mostrarRelatorio(r, false);
+      } else {
+        document.getElementById('painelAuditoria').style.display = 'none';
+      }
+      return true;
+    } catch (e) {
+      console.warn('Auditor indisponivel:', e);
+      // Auditor fora do ar nao pode impedir o trabalho: avisa e deixa salvar
+      mostrarRelatorio({
+        veredito: 'INDISPONIVEL',
+        erro: 'Nao consegui falar com o auditor agora. A aula sera salva sem auditoria.'
+      }, false);
+      return true;
+    } finally {
+      botao.disabled = false;
+      botao.textContent = textoOriginal;
+    }
+  }
+
   window.salvarAula = async function() {
     const curso = document.getElementById('curso').value;
     const modulo = document.getElementById('modulo').value.trim();
@@ -1447,6 +1599,15 @@
       statusDiv.textContent = 'Preencha módulo, aula e conteúdo antes de salvar (o título é extraído automaticamente do <h2> do texto colado — confira se o conteúdo colado tem um <h2> com o título da aula).';
       return;
     }
+
+    if (!auditoriaLiberada) {
+      const aprovado = await auditarAntesDeSalvar(
+        `${curso} — Modulo ${modulo}, Aula ${aula}${titulo ? ' — ' + titulo : ''}`,
+        conteudo
+      );
+      if (!aprovado) return;
+    }
+    auditoriaLiberada = false;
 
     const caminho = `cursos/${curso}/modulos/modulo-${modulo}/aulas/aula-${aula}`;
     const ref = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`, 'aulas', `aula-${aula}`);
