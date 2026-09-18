@@ -1463,6 +1463,29 @@
   const URL_CORRETOR = 'https://n8n.criativamenteacademy.com/webhook/corrigir-aula';
   const URL_REPROCESSAR = 'https://n8n.criativamenteacademy.com/webhook/reprocessar-relatorio';
   const URL_FINALIZAR_CURSO = 'https://n8n.criativamenteacademy.com/webhook/finalizar-curso';
+  const URL_VERIFICAR = 'https://n8n.criativamenteacademy.com/webhook/verificar-relatorio';
+
+  // Se a conexão cair antes da resposta chegar (mas a auditoria continuar
+  // rodando do lado do n8n), fica perguntando de tempos em tempos se já
+  // terminou, em vez de desistir na hora.
+  async function verificarRelatorioFinal(identificacao, tentativas = 20) {
+    for (let i = 0; i < tentativas; i++) {
+      await new Promise(r => setTimeout(r, 3000));
+      try {
+        const resp = await fetch(URL_VERIFICAR, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identificacao })
+        });
+        if (!resp.ok) continue;
+        const r = await resp.json();
+        if (r.pronto) return r.relatorio;
+      } catch (e) {
+        // ignora e tenta de novo
+      }
+    }
+    return null;
+  }
 
   window.finalizarCurso = async function() {
     const select = document.getElementById('curso');
@@ -1870,7 +1893,20 @@
       document.getElementById('painelAuditoria').style.display = 'none';
       return true;
     } catch (e) {
-      console.warn('Auditor indisponivel:', e);
+      console.warn('Conexao caiu, verificando se a auditoria terminou do outro lado:', e);
+      botao.textContent = 'Conexão caiu, verificando se a auditoria terminou...';
+      const r = await verificarRelatorioFinal(identificacao);
+      if (r) {
+        r.identificacao = identificacao;
+        r.conteudo_aula = htmlParaTexto(conteudoHtml);
+        r.conteudo_html = conteudoHtml;
+        if (r.veredito !== 'APROVADA') {
+          mostrarRelatorio(r, true);
+          return false;
+        }
+        document.getElementById('painelAuditoria').style.display = 'none';
+        return true;
+      }
       // Auditor fora do ar TRAVA o salvamento tambem — a aula so sai
       // sem auditoria se voce clicar em "Salvar mesmo assim" e confirmar.
       mostrarRelatorio({
