@@ -1800,7 +1800,7 @@
     const botao = document.getElementById('botaoSalvar');
     const textoOriginal = botao.textContent;
     botao.disabled = true;
-    botao.textContent = 'Auditando a aula...';
+    botao.textContent = 'Auditando a aula (pode levar até 1 min, é normal)...';
     try {
       const resp = await fetch(URL_AUDITOR, {
         method: 'POST',
