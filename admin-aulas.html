@@ -413,7 +413,9 @@
       <option value="">Carregando cursos...</option>
     </select>
     <button type="button" class="botao-secundario" style="margin-top:0;" onclick="adicionarNovoCurso()">+ Novo curso</button>
+    <button type="button" class="botao-secundario" style="margin-top:0; background:#6B5744;" onclick="finalizarCurso()">🏁 Finalizar curso</button>
   </div>
+  <p class="ajuda">"Finalizar curso" não apaga aulas nem desmatricula ninguém — só limpa a memória temporária do Auditor de Conteúdo referente a esse curso (usada só pro botão "Tentar de novo sem gastar no Auditor"), preparando espaço pro próximo curso. Use quando terminar de produzir todo o conteúdo de um curso.</p>
 
   <div class="linha-dupla">
     <div>
@@ -1460,6 +1462,35 @@
   const URL_AUDITOR = 'https://n8n.criativamenteacademy.com/webhook/auditar-aula';
   const URL_CORRETOR = 'https://n8n.criativamenteacademy.com/webhook/corrigir-aula';
   const URL_REPROCESSAR = 'https://n8n.criativamenteacademy.com/webhook/reprocessar-relatorio';
+  const URL_FINALIZAR_CURSO = 'https://n8n.criativamenteacademy.com/webhook/finalizar-curso';
+
+  window.finalizarCurso = async function() {
+    const select = document.getElementById('curso');
+    const cursoId = select.value;
+    const cursoNome = select.selectedOptions[0] ? select.selectedOptions[0].textContent : cursoId;
+    if (!cursoId) {
+      alert('Escolha um curso no campo acima antes de finalizar.');
+      return;
+    }
+    const confirmar = window.confirm(
+      `Finalizar o curso "${cursoNome}"?\n\nIsso NÃO apaga aulas nem desmatricula alunos — só limpa a memória temporária do Auditor de Conteúdo referente a esse curso, preparando espaço pro próximo. Continuar?`
+    );
+    if (!confirmar) return;
+
+    try {
+      const resp = await fetch(URL_FINALIZAR_CURSO, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ curso: cursoId })
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const r = await resp.json();
+      alert(`Curso "${cursoNome}" finalizado. Memória do Auditor limpa (${r.removidos ?? 0} registro(s) removido(s)).`);
+    } catch (e) {
+      console.warn('Nao foi possivel finalizar o curso:', e);
+      alert('Nao consegui limpar a memoria do Auditor agora. Tente de novo em instantes.');
+    }
+  };
   let auditoriaLiberada = false;
 
   function htmlParaTexto(html) {
