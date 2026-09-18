@@ -1493,6 +1493,49 @@
   };
   let auditoriaLiberada = false;
 
+  // Depois de cada auditoria (que usa o Groq, que tem limite de uso por
+  // minuto), o botão de salvar fica bloqueado por um tempo pra não estourar
+  // esse limite quando as aulas são salvas rápido, uma atrás da outra.
+  const INTERVALO_ENTRE_AUDITORIAS_MS = 70000;
+  const CHAVE_ESPERA_AUDITOR = 'auditorLivreEm';
+  let intervaloContagemEspera = null;
+
+  function aplicarEsperaBotaoSalvar() {
+    const botao = document.getElementById('botaoSalvar');
+    if (!botao) return;
+    const livreEm = Number(localStorage.getItem(CHAVE_ESPERA_AUDITOR) || 0);
+    if (intervaloContagemEspera) {
+      clearInterval(intervaloContagemEspera);
+      intervaloContagemEspera = null;
+    }
+    const atualizarTexto = () => {
+      const restante = Math.ceil((livreEm - Date.now()) / 1000);
+      if (restante <= 0) {
+        botao.disabled = false;
+        botao.textContent = 'Salvar aula';
+        if (intervaloContagemEspera) {
+          clearInterval(intervaloContagemEspera);
+          intervaloContagemEspera = null;
+        }
+        return;
+      }
+      botao.disabled = true;
+      botao.textContent = `Aguarde ${restante}s antes de salvar a próxima (evita erro no auditor)...`;
+    };
+    atualizarTexto();
+    if (livreEm - Date.now() > 0) {
+      intervaloContagemEspera = setInterval(atualizarTexto, 1000);
+    }
+  }
+
+  function iniciarEsperaAuditor() {
+    localStorage.setItem(CHAVE_ESPERA_AUDITOR, String(Date.now() + INTERVALO_ENTRE_AUDITORIAS_MS));
+    aplicarEsperaBotaoSalvar();
+  }
+
+  // Retoma a contagem se a página foi recarregada no meio da espera
+  aplicarEsperaBotaoSalvar();
+
   function htmlParaTexto(html) {
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
@@ -1878,6 +1921,7 @@
       return;
     }
 
+    const usouAuditor = !auditoriaLiberada;
     if (!auditoriaLiberada) {
       const aprovado = await auditarAntesDeSalvar(
         `${curso} — Modulo ${modulo}, Aula ${aula}${titulo ? ' — ' + titulo : ''}`,
@@ -1937,6 +1981,8 @@
       statusDiv.style.display = 'block';
       statusDiv.textContent = `Aula salva com sucesso em: ${caminho}. Já avancei o número da aula para a próxima — confira antes de colar o novo conteúdo.`;
 
+      if (usouAuditor) iniciarEsperaAuditor();
+
       document.getElementById('titulo').value = '';
       document.getElementById('conteudo').innerHTML = '';
       document.getElementById('linkImagem').value = '';
@@ -1962,8 +2008,7 @@
       statusDiv.style.display = 'block';
       statusDiv.textContent = 'Erro ao salvar: ' + erro.message + ' (pode ser necessário liberar permissão nas regras do Firestore — me chama que eu te ajudo).';
     } finally {
-      botao.disabled = false;
-      botao.textContent = 'Salvar aula';
+      aplicarEsperaBotaoSalvar();
     }
   };
 </script>
