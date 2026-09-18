@@ -1784,8 +1784,23 @@
       }
       mostrarRelatorio(r, true);
     } catch (e) {
-      console.warn('Reprocessamento indisponivel:', e);
-      window.alert('Nao consegui reprocessar agora (pode ser que o resultado do Auditor ja tenha expirado). Tente "Salvar aula" de novo pra rodar a auditoria completa, ou use "Salvar mesmo assim".');
+      console.warn('Conexao caiu no reprocessamento, verificando se terminou do outro lado:', e);
+      if (btn) btn.textContent = 'Conexão caiu, verificando se terminou...';
+      const r = await verificarRelatorioFinal(ultimoRelatorio.identificacao);
+      if (r) {
+        r.identificacao = ultimoRelatorio.identificacao;
+        r.conteudo_aula = ultimoRelatorio.conteudo_aula;
+        r.conteudo_html = ultimoRelatorio.conteudo_html;
+        if (r.veredito === 'APROVADA') {
+          document.getElementById('painelAuditoria').style.display = 'none';
+          auditoriaLiberada = true;
+          await window.salvarAula();
+          return;
+        }
+        mostrarRelatorio(r, true);
+      } else {
+        window.alert('Nao consegui reprocessar agora (pode ser que o resultado do Auditor ja tenha expirado). Tente "Salvar aula" de novo pra rodar a auditoria completa, ou use "Salvar mesmo assim".');
+      }
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = original; }
     }
