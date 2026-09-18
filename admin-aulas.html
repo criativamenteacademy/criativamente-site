@@ -1459,6 +1459,7 @@
   // ============================================================
   const URL_AUDITOR = 'https://n8n.criativamenteacademy.com/webhook/auditar-aula';
   const URL_CORRETOR = 'https://n8n.criativamenteacademy.com/webhook/corrigir-aula';
+  const URL_REPROCESSAR = 'https://n8n.criativamenteacademy.com/webhook/reprocessar-relatorio';
   let auditoriaLiberada = false;
 
   function htmlParaTexto(html) {
@@ -1657,6 +1658,42 @@
     window.salvarAula();
   };
 
+  // Reprocessa o relatorio reaproveitando o que o Auditor ja produziu na
+  // ultima tentativa, sem chamar o Auditor (DeepSeek) de novo. So o Revisor
+  // (Groq, gratuito) roda de novo em cima do resultado ja gerado. Usa a
+  // mesma "identificacao" da aula pra o n8n achar o que foi guardado.
+  window.reprocessarRelatorio = async function() {
+    if (!ultimoRelatorio || !ultimoRelatorio.identificacao) return;
+    const btn = document.getElementById('btnReprocessar');
+    const original = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Reprocessando...'; }
+    try {
+      const resp = await fetch(URL_REPROCESSAR, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identificacao: ultimoRelatorio.identificacao })
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const r = await resp.json();
+      r.identificacao = ultimoRelatorio.identificacao;
+      r.conteudo_aula = ultimoRelatorio.conteudo_aula;
+      r.conteudo_html = ultimoRelatorio.conteudo_html;
+
+      if (r.veredito === 'APROVADA') {
+        document.getElementById('painelAuditoria').style.display = 'none';
+        auditoriaLiberada = true;
+        await window.salvarAula();
+        return;
+      }
+      mostrarRelatorio(r, true);
+    } catch (e) {
+      console.warn('Reprocessamento indisponivel:', e);
+      window.alert('Nao consegui reprocessar agora (pode ser que o resultado do Auditor ja tenha expirado). Tente "Salvar aula" de novo pra rodar a auditoria completa, ou use "Salvar mesmo assim".');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = original; }
+    }
+  };
+
   function mostrarRelatorio(r, permitirForcar) {
     ultimoRelatorio = r;
     const painel = document.getElementById('painelAuditoria');
@@ -1709,6 +1746,9 @@
     if (!r.erro) {
       html += '<button type="button" id="btnCopiarAuditoria" onclick="copiarAuditoria()">Copiar relatorio</button>';
       html += '<button type="button" id="btnBaixarAuditoria" onclick="baixarAuditoria()">Baixar</button>';
+    }
+    if (r.erro) {
+      html += '<button type="button" id="btnReprocessar" onclick="reprocessarRelatorio()">🔄 Tentar de novo sem gastar no Auditor</button>';
     }
     if (permitirForcar) {
       html += '<button type="button" id="btnSalvarMesmoAssim" onclick="salvarMesmoAssim()">Salvar mesmo assim</button>';
