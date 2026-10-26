@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -5,64 +7,346 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CriativaMente Academy — Enviar / Editar Aula</title>
 <style>
-  /* Identidade oficial: Estratégia e Essência */
   :root {
-    --principal: #1F2937;
-    --destaque: #D97706;
-    --fundo: #F3F4F6;
-    --apoio: #0E7490;
-    --branco: #FFFFFF;
-    --texto-secundario: #526273;
-    --borda: #CBD5E1;
+    --cobre: #D97706;
+    --cobre-claro: #B45309;
+    --preto: #1F2937;
+    --creme: #F3F4F6;
+    --cinza: #526273;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 24px; background: var(--fundo); color: var(--principal); font-family: 'Segoe UI', Arial, sans-serif; }
-  .container, .tela-login { background: var(--branco); border: 1px solid var(--borda); border-top: 7px solid var(--destaque); border-radius: 16px; box-shadow: 0 12px 35px rgba(31,41,55,.09); }
-  .container { max-width: 900px; margin: 0 auto; padding: 40px; }
-  h1, h2, h3 { color: var(--principal); }
-  .container > h1 { margin-top: 0; padding-bottom: 18px; font-size: 28px; font-weight: 800; border-bottom: 2px solid var(--fundo); }
-  p.sub { margin-top: -8px; margin-bottom: 24px; font-size: 14px; }
-  p.sub, .ajuda { color: var(--texto-secundario); line-height: 1.6; }
-  .ajuda { font-size: 12px; margin-top: 4px; }
-  label { display: block; margin-top: 18px; margin-bottom: 6px; font-size: 14px; font-weight: 700; color: var(--principal); }
-  input[type='text'], input[type='number'], input[type='password'], select, textarea, .editor { width: 100%; padding: 12px; background: var(--branco); color: var(--principal); border: 1px solid var(--borda); border-radius: 9px; font-size: 15px; font-family: inherit; }
-  input:focus, select:focus, textarea:focus, .editor:focus { outline: 2px solid var(--apoio); outline-offset: 1px; border-color: var(--apoio); }
-  textarea { min-height: 240px; resize: vertical; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--creme);
+    color: var(--preto);
+    margin: 0;
+    padding: 24px;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  h1 {
+    color: var(--cobre);
+    font-size: 22px;
+    margin-top: 0;
+  }
+  p.sub {
+    color: var(--cinza);
+    margin-top: -8px;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  label {
+    display: block;
+    font-weight: bold;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    font-family: inherit;
+  }
+  textarea {
+    min-height: 240px;
+    resize: vertical;
+  }
   #htmlCompleto { min-height: 360px; font-family: Consolas, Monaco, monospace; font-size: 13px; }
-  .html-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding: 16px; background: var(--fundo); border: 1px solid var(--borda); border-radius: 12px; }
-  .linha-dupla { display: flex; gap: 16px; }
-  .linha-dupla > div { flex: 1; }
-  .botao-imagem { display: inline-block; background: var(--principal); color: var(--branco); border: none; padding: 11px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; margin-top: 8px; transition: background .15s; }
-  .botao-imagem:hover { background: var(--apoio); }
-  #modoTexto, #modoHtml { background: var(--principal); color: var(--branco); }
-  #modoTexto:hover, #modoHtml:hover { background: var(--apoio); }
-  .botao-salvar, .tela-login button { background: var(--destaque); color: var(--branco); border: none; padding: 14px 24px; border-radius: 9px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; }
-  .botao-salvar { margin-top: 28px; }
-  .botao-salvar:hover, .tela-login button:hover { background: #B45309; }
-  .botao-salvar:disabled, .tela-login button:disabled { background: #9CA3AF; cursor: not-allowed; }
-  #status { display: none; margin-top: 16px; padding: 12px; border-radius: 6px; font-size: 14px; }
-  #status.sucesso { display: block; background: #DCFCE7; color: #166534; }
-  #status.erro { display: block; background: #FEE2E2; color: #991B1B; }
-  .barra-ferramentas { display: flex; gap: 8px; margin-top: 10px; }
-  .barra-ferramentas button, .item-aula { background: var(--fundo); color: var(--principal); border: 1px solid var(--borda); border-radius: 7px; padding: 8px 12px; cursor: pointer; font-size: 14px; }
-  .barra-ferramentas button:hover, .item-aula:hover { background: #E0F2FE; border-color: var(--apoio); }
-  .editor { min-height: 280px; max-height: 480px; overflow-y: auto; margin-top: 8px; }
-  .editor img { max-width: 100%; border-radius: 8px; }
-  .editor:empty:before { content: attr(data-placeholder); color: #64748B; }
-  .tela-login { max-width: 380px; margin: 80px auto; padding: 32px; }
-  .tela-login h1 { font-size: 22px; font-weight: 800; }
-  .tela-login input { margin-top: 6px; margin-bottom: 16px; }
-  .tela-login button { font-size: 15px; padding: 12px 24px; }
-  #erro-login { display: none; margin-top: 14px; padding: 10px; border-radius: 6px; background: #FEE2E2; color: #991B1B; font-size: 13px; }
-  .barra-admin { max-width: 900px; margin: 0 auto 12px; display: flex; justify-content: flex-end; }
-  .barra-admin button { background: transparent; border: 1px solid var(--apoio); color: var(--apoio); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  .html-tools { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .linha-dupla {
+    display: flex;
+    gap: 16px;
+  }
+  .linha-dupla > div {
+    flex: 1;
+  }
+  .botao-imagem {
+    background: var(--cinza);
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .botao-salvar {
+    background: var(--cobre);
+    color: #fff;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 28px;
+  }
+  .botao-salvar:hover { background: var(--cobre-claro); }
+  .botao-salvar:disabled { background: #ccc; cursor: not-allowed; }
+  #status {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    display: none;
+  }
+  #status.sucesso { display: block; background: #e3f5e1; color: #1e6b1e; }
+  #status.erro { display: block; background: #fde3e3; color: #9c1c1c; }
+  .ajuda {
+    font-size: 12px;
+    color: var(--cinza);
+    margin-top: 4px;
+  }
+  .barra-ferramentas {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+  }
+  .barra-ferramentas button {
+    background: #F3F4F6;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .barra-ferramentas button:hover {
+    background: #D9770622;
+  }
+  .editor {
+    width: 100%;
+    min-height: 280px;
+    max-height: 480px;
+    overflow-y: auto;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    margin-top: 8px;
+    background: #fff;
+  }
+  .editor img {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+  .editor:empty:before {
+    content: attr(data-placeholder);
+    color: #999;
+  }
+  .tela-login {
+    max-width: 380px;
+    margin: 80px auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .tela-login h1 { font-size: 20px; }
+  .tela-login input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    margin-top: 6px;
+    margin-bottom: 16px;
+  }
+  .tela-login button {
+    background: var(--cobre);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+  }
+  .tela-login button:hover { background: var(--cobre-claro); }
+  .tela-login button:disabled { background: #ccc; cursor: not-allowed; }
+  #erro-login {
+    display: none;
+    margin-top: 14px;
+    padding: 10px;
+    border-radius: 6px;
+    background: #fde3e3;
+    color: #9c1c1c;
+    font-size: 13px;
+  }
+  .barra-admin {
+    max-width: 720px;
+    margin: 0 auto 12px auto;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .barra-admin button {
+    background: none;
+    border: 1px solid var(--cinza);
+    color: var(--cinza);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .item-aula {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin-top: 6px;
+    background: #F3F4F6;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .item-aula:hover { background: #D9770622; }
+  #carregandoImagem {
+    display: none;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #fff4e0;
+    color: var(--cobre);
+    font-size: 13px;
+  }
+  .aviso-editando {
+    display: none;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #e3f0f5;
+    color: #1c5c9c;
+    font-size: 13px;
+  }
+
+  /* Identidade visual oficial: Estratégia e Essência */
+  :root {
+    --marca-principal: #1F2937;
+    --marca-destaque: #D97706;
+    --marca-fundo: #F3F4F6;
+    --marca-apoio: #0E7490;
+  }
+  .container, .tela-login { border: 1px solid #E2E8F0; }
+  h1, .tela-login h1 { color: var(--marca-principal); }
+  h2, h3 { color: var(--marca-principal); }
+  input[type="text"], input[type="number"], input[type="password"], select, textarea, .editor {
+    border-color: #CBD5E1;
+    color: var(--marca-principal);
+    background: #FFFFFF;
+  }
+  input:focus, select:focus, textarea:focus, .editor:focus {
+    outline: 2px solid var(--marca-apoio);
+    outline-offset: 1px;
+    border-color: var(--marca-apoio);
+  }
+  .botao-imagem, .barra-ferramentas button, .item-aula { transition: background-color .15s ease, border-color .15s ease; }
+  .barra-ferramentas button:hover, .item-aula:hover { border-color: var(--marca-apoio); }
+  #modoTexto, #modoHtml { background: var(--marca-principal); color: #FFFFFF; }
+  #modoTexto:hover, #modoHtml:hover { background: var(--marca-apoio); }
+  .barra-admin button { border-color: var(--marca-apoio); color: var(--marca-apoio); }
   .barra-admin button:hover { background: #E0F2FE; }
-  .item-aula { display: block; width: 100%; text-align: left; margin-top: 6px; font-size: 13px; }
-  #carregandoImagem { display: none; margin-top: 8px; padding: 8px 12px; border-radius: 6px; background: #FFFBEB; color: #92400E; font-size: 13px; }
-  .aviso-editando { display: none; margin-top: 8px; padding: 8px 12px; border-radius: 6px; background: #E0F2FE; color: #075985; font-size: 13px; }
-  #editorHtml { margin-top: 14px; padding: 16px; background: var(--fundo); border: 1px solid var(--borda); border-radius: 12px; }
+  .aviso-editando { background: #E0F2FE; color: #075985; }
+  #carregandoImagem { background: #FFFBEB; color: #92400E; }
+  .botao-salvar { background: var(--marca-destaque); }
+  .botao-salvar:hover { background: #B45309; }
+  .ajuda, p.sub { color: #526273; }
+
+  /* CRIATIVAMENTE — ESTRATÉGIA E ESSÊNCIA | Painel administrativo */
+  :root {
+    --cobre: #D97706;
+    --cobre-claro: #B45309;
+    --preto: #1F2937;
+    --creme: #F3F4F6;
+    --cinza: #526273;
+    --marca-principal: #1F2937;
+    --marca-destaque: #D97706;
+    --marca-fundo: #F3F4F6;
+    --marca-apoio: #0E7490;
+  }
+  body { background: var(--marca-fundo); color: var(--marca-principal); }
+  .container {
+    max-width: 900px;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-top: 7px solid var(--marca-destaque);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 12px 35px rgba(31,41,55,.09);
+  }
+  .container > h1 {
+    color: var(--marca-principal);
+    font-size: 28px;
+    font-weight: 800;
+    border-bottom: 2px solid #F3F4F6;
+    padding-bottom: 18px;
+  }
+  h2, h3 { color: var(--marca-principal); }
+  label { color: var(--marca-principal); font-weight: 700; }
+  p.sub, .ajuda { color: #526273; line-height: 1.6; }
+  input[type="text"], input[type="number"], input[type="password"], select, textarea, .editor {
+    background: #fff;
+    color: var(--marca-principal);
+    border: 1px solid #CBD5E1;
+    border-radius: 9px;
+    padding: 12px;
+  }
+  input:focus, select:focus, textarea:focus, .editor:focus {
+    outline: 2px solid var(--marca-apoio);
+    outline-offset: 1px;
+    border-color: var(--marca-apoio);
+  }
+  .botao-salvar, .tela-login button {
+    background: var(--marca-destaque);
+    color: #fff;
+    border: 0;
+    border-radius: 9px;
+    font-weight: 700;
+  }
+  .botao-salvar:hover, .tela-login button:hover { background: #B45309; }
+  .botao-imagem { background: var(--marca-principal); color: #fff; border-radius: 8px; padding: 11px 16px; }
+  .botao-imagem:hover { background: var(--marca-apoio); }
+  #modoTexto, #modoHtml { background: var(--marca-principal); color: #fff; }
+  #modoTexto:hover, #modoHtml:hover { background: var(--marca-apoio); }
+  .html-tools { padding: 16px; background: #F3F4F6; border: 1px solid #E2E8F0; border-radius: 12px; }
+  .barra-ferramentas button, .item-aula { background: #F3F4F6; color: var(--marca-principal); border: 1px solid #CBD5E1; }
+  .barra-ferramentas button:hover, .item-aula:hover { background: #E0F2FE; border-color: var(--marca-apoio); }
+  .barra-admin { max-width: 900px; }
+  .barra-admin button { border: 1px solid var(--marca-apoio); color: var(--marca-apoio); border-radius: 8px; }
+  .tela-login { border: 1px solid #E2E8F0; border-top: 7px solid var(--marca-destaque); border-radius: 16px; box-shadow: 0 12px 35px rgba(31,41,55,.10); }
+  .tela-login h1 { color: var(--marca-principal); font-weight: 800; }
+  #editorHtml { padding: 16px; background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 12px; margin-top: 14px; }
+  #htmlCompleto { background: #fff; border: 1px solid #CBD5E1; }
+  .aviso-editando { background: #E0F2FE; color: #075985; }
   #painelAuditoriaHtml { border-radius: 12px; }
-  @media (max-width: 650px) { body { padding: 12px; } .container { padding: 22px; } .container > h1 { font-size: 23px; } .linha-dupla { flex-direction: column; gap: 0; } .html-tools { flex-direction: column; } }
+  #status.sucesso { background: #DCFCE7; color: #166534; }
+  #status.erro { background: #FEE2E2; color: #991B1B; }
+  @media (max-width: 650px) {
+    body { padding: 12px; }
+    .container { padding: 22px; }
+    .container > h1 { font-size: 23px; }
+    .linha-dupla { flex-direction: column; gap: 0; }
+    .html-tools { flex-direction: column; }
+  }
+  .curso-linha { display:flex; gap:12px; align-items:center; }
+  .curso-linha select { flex:1; min-width:0; }
+  .curso-linha button { margin-top:0; white-space:nowrap; }
+  .novo-curso-box,.importacao-html { background:#F3F4F6; border:1px solid #CBD5E1; border-radius:12px; padding:18px; margin-top:12px; }
+  .novo-curso-box .botao-imagem { margin-right:8px; }
+  .botao-neutro { background:#0E7490; }
+  .importacao-html input[type=file] { display:block; width:100%; padding:12px; background:white; border:1px dashed #0E7490; border-radius:8px; }
+  #editorTradicional[hidden],#editorHtml[hidden] { display:none !important; }
+  @media(max-width:650px) { .curso-linha {flex-direction:column;align-items:stretch;} .curso-linha button {white-space:normal;} }
 </style>
 </head>
 <body>
@@ -86,13 +370,14 @@
 
 <div class="container" id="painel-admin" style="display:none;">
   <h1>Enviar / Editar Aula — CriativaMente Academy</h1>
-  <p class="sub">Pra aula nova: preencha os campos e clique em "Salvar aula". Pra editar uma aula que já existe: use o botão "Ver aulas já existentes" abaixo.</p>
+  <p class="sub">Selecione o curso, informe o módulo e a aula e importe um arquivo HTML. O salvamento exige aprovação da auditoria.</p>
 
   <label for="curso">Curso</label>
-  <select id="curso">
+  <div class="curso-linha"><select id="curso">
     <option value="posicionamento-estrategico">Posicionamento Estratégico</option>
     <option value="ia-para-imobiliarias">IA para Imobiliárias</option>
-  </select>
+  </select><button type="button" class="botao-imagem" onclick="mostrarNovoCurso()">+ Criar novo curso</button></div>
+  <div id="novoCursoBox" class="novo-curso-box" style="display:none"><label for="novoCursoNome">Nome do novo curso</label><input type="text" id="novoCursoNome" placeholder="Ex.: Marketing Digital"><p class="ajuda">O curso será criado com o nome informado, sem precisar digitar identificadores com traços.</p><button type="button" class="botao-imagem" onclick="criarNovoCurso()">Cadastrar curso</button><button type="button" class="botao-imagem botao-neutro" onclick="mostrarNovoCurso(false)">Cancelar</button><p id="statusNovoCurso" class="ajuda" role="status"></p></div>
 
   <div class="linha-dupla">
     <div>
@@ -119,33 +404,16 @@
   <label for="titulo">Título da aula</label>
   <input type="text" id="titulo" placeholder="Ex: Como analisar a concorrência">
 
-  <label for="conteudo">Conteúdo da aula</label>
-  <p class="ajuda">Para aulas tradicionais, use o editor abaixo. Para aulas criadas como arquivo HTML completo, importe o arquivo ou cole o código no campo HTML. O HTML completo preserva a estrutura, os estilos e os scripts da aula.</p>
-  <div class="html-tools">
-    <button type="button" class="botao-imagem" id="modoTexto" onclick="alternarModoConteudo('texto')">Editor tradicional</button>
-    <button type="button" class="botao-imagem" id="modoHtml" onclick="alternarModoConteudo('html')">Usar HTML completo</button>
-    <label for="arquivoHtml" class="botao-imagem" style="margin:0;cursor:pointer">Importar arquivo .html</label>
-    <input type="file" id="arquivoHtml" accept=".html,.htm,text/html" style="display:none">
+  <label for="arquivoHtml">Importar aula HTML</label>
+  <div class="importacao-html">
+    <input type="file" id="arquivoHtml" accept=".html,.htm,text/html">
+    <p class="ajuda">Selecione o arquivo HTML completo criado para esta aula (até 700 KB). O conteúdo será enviado à auditoria antes do salvamento.</p>
+    <p id="arquivoHtmlInfo" class="ajuda" role="status">Nenhum arquivo selecionado.</p>
   </div>
-  <div id="editorTradicional">
-    <div class="barra-ferramentas">
-      <button type="button" onclick="formatar('bold')"><b>N</b></button>
-      <button type="button" onclick="formatar('italic')"><i>I</i></button>
-      <button type="button" onclick="formatar('formatBlock', 'H3')">Título</button>
-      <button type="button" onclick="formatar('insertUnorderedList')">Lista</button>
-    </div>
-    <div id="conteudo" contenteditable="true" class="editor" data-placeholder="Cole aqui o texto completo da aula..."></div>
-    <div id="carregandoImagem">⏳ Enviando imagem, aguarde...</div>
-  </div>
-  <div id="editorHtml" style="display:none">
-    <label for="htmlCompleto">Código HTML completo</label>
-    <textarea id="htmlCompleto" spellcheck="false" placeholder="Cole aqui o documento HTML completo, incluindo <!DOCTYPE html>, <head>, <style>, <body> e scripts."></textarea>
-    <p class="ajuda">O arquivo será armazenado como HTML da aula e exibido em um quadro isolado para impedir acesso direto à sessão da plataforma. Limite recomendado: 700 KB por aula.</p>
-  </div>
-
-  <label for="linkImagem">Link da imagem (alternativa manual — só use se colar não funcionar)</label>
-  <input type="text" id="linkImagem" placeholder="Cole aqui o link da imagem, se tiver uma">
-  <button type="button" class="botao-imagem" onclick="inserirImagem()">Inserir imagem no texto</button>
+  <!-- Campos técnicos ocultos: preservam compatibilidade com a lógica de auditoria e edição. -->
+  <div id="editorTradicional" hidden><div id="conteudo" contenteditable="true"></div><div id="carregandoImagem"></div></div>
+  <div id="editorHtml" hidden><textarea id="htmlCompleto" aria-label="Conteúdo HTML carregado"></textarea></div>
+  <input type="hidden" id="linkImagem">
 
   <button class="botao-salvar" id="botaoSalvar" onclick="salvarAula()">Salvar aula</button>
 
@@ -204,6 +472,64 @@
   const db = getFirestore(app);
   const storage = getStorage(app);
 
+  // Cadastro e listagem de cursos, preservando os IDs existentes no Firestore.
+  const nomesPadrao = {
+    'posicionamento-estrategico': 'Posicionamento Estratégico',
+    'ia-para-imobiliarias': 'IA para Imobiliárias'
+  };
+  function nomeCursoExibicao(id, dados) {
+    const nome = dados && (dados.titulo || dados.nome || dados.nomeCurso);
+    if (typeof nome === 'string' && nome.trim()) return nome.trim();
+    return nomesPadrao[id] || id.replace(/[-_]+/g, ' ').replace(/\b\p{L}/gu, letra => letra.toUpperCase());
+  }
+  async function carregarCursos() {
+    const seletor = document.getElementById('curso');
+    const seletorApagar = document.getElementById('cursoParaApagar');
+    const selecionado = seletor.value;
+    const selecionadoApagar = seletorApagar.value;
+    const cursos = new Map();
+    for (const opt of seletor.options) cursos.set(opt.value, opt.textContent);
+    try {
+      const docs = await getDocs(collection(db, 'cursos'));
+      docs.forEach(d => cursos.set(d.id, nomeCursoExibicao(d.id, d.data())));
+    } catch (erro) { console.warn('Não foi possível atualizar a lista de cursos:', erro); }
+    for (const select of [seletor, seletorApagar]) {
+      select.replaceChildren();
+      [...cursos.entries()].sort((a,b) => a[1].localeCompare(b[1], 'pt-BR')).forEach(([id, nome]) => {
+        const option = document.createElement('option'); option.value = id; option.textContent = nome;
+        select.appendChild(option);
+      });
+    }
+    if (cursos.has(selecionado)) seletor.value = selecionado;
+    if (cursos.has(selecionadoApagar)) seletorApagar.value = selecionadoApagar;
+    await atualizarBotaoManutencaoCurso();
+  }
+  window.mostrarNovoCurso = function(abrir = true) {
+    document.getElementById('novoCursoBox').style.display = abrir ? 'block' : 'none';
+  };
+  window.criarNovoCurso = async function() {
+    const campo = document.getElementById('novoCursoNome');
+    const status = document.getElementById('statusNovoCurso');
+    const nome = campo.value.trim().replace(/\s+/g,' ');
+    if (nome.length < 3 || nome.length > 100) { status.textContent = 'Informe um nome de 3 a 100 caracteres.'; return; }
+    const id = nome.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    if (!id) { status.textContent = 'Nome inválido.'; return; }
+    status.textContent = 'Cadastrando curso...';
+    try {
+      const refCurso = doc(db, 'cursos', id);
+      const existente = await getDoc(refCurso);
+      if (existente.exists()) { status.textContent = 'Já existe um curso com esse identificador. Selecione-o na lista.'; return; }
+      await setDoc(refCurso, { titulo: nome, nome: nome, ativo: true });
+      await carregarCursos();
+      document.getElementById('curso').value = id;
+      document.getElementById('cursoParaApagar').value = id;
+      campo.value = '';
+      status.textContent = 'Curso cadastrado com sucesso.';
+      await atualizarBotaoManutencaoCurso();
+    } catch (erro) { status.textContent = 'Erro ao cadastrar curso: ' + erro.message; }
+  };
+
+
   const telaLogin = document.getElementById('tela-login');
   const painelAdmin = document.getElementById('painel-admin');
   const barraAdmin = document.getElementById('barra-admin');
@@ -215,7 +541,7 @@
       painelAdmin.style.display = 'block';
       barraAdmin.style.display = 'flex';
       await atualizarBotaoManutencaoGeral();
-      await atualizarBotaoManutencaoCurso();
+      await carregarCursos();
     } else if (usuario) {
       // Logado, mas não é a conta de administrador — nega o acesso.
       signOut(auth);
@@ -518,14 +844,10 @@
     }
   };
 
-  let formatoConteudoAtual = 'tradicional';
+  let formatoConteudoAtual = 'html-completo';
 
   window.alternarModoConteudo = function(modo) {
-    formatoConteudoAtual = modo === 'html' ? 'html-completo' : 'tradicional';
-    document.getElementById('editorTradicional').style.display = formatoConteudoAtual === 'tradicional' ? 'block' : 'none';
-    document.getElementById('editorHtml').style.display = formatoConteudoAtual === 'html-completo' ? 'block' : 'none';
-    document.getElementById('modoTexto').style.opacity = formatoConteudoAtual === 'tradicional' ? '1' : '.65';
-    document.getElementById('modoHtml').style.opacity = formatoConteudoAtual === 'html-completo' ? '1' : '.65';
+    formatoConteudoAtual = 'html-completo';
   };
 
   document.getElementById('arquivoHtml').addEventListener('change', async (evento) => {
@@ -547,6 +869,7 @@
       document.getElementById('status').className = 'sucesso';
       document.getElementById('status').style.display = 'block';
       document.getElementById('status').textContent = 'HTML importado. Preencha curso, módulo, aula e título; depois siga o processo de auditoria aprovado antes de publicar.';
+      document.getElementById('arquivoHtmlInfo').textContent = 'Arquivo selecionado: ' + arquivo.name;
     } catch (erro) {
       alert('Não foi possível ler o arquivo HTML: ' + erro.message);
     }
@@ -561,10 +884,12 @@
     if (dados.formato === 'html-completo' || dados.htmlCompleto) {
       document.getElementById('htmlCompleto').value = dados.htmlCompleto || dados.conteudo || '';
       alternarModoConteudo('html');
+      document.getElementById('arquivoHtmlInfo').textContent = 'HTML da aula existente carregado. Importe outro arquivo para substituir, se desejar.';
     } else {
       document.getElementById('conteudo').innerHTML = dados.conteudo || '';
       document.getElementById('htmlCompleto').value = '';
-      alternarModoConteudo('texto');
+      alternarModoConteudo('html');
+      document.getElementById('arquivoHtmlInfo').textContent = 'Esta aula é do formato antigo. Importe um arquivo HTML para atualizá-la.';
     }
     document.getElementById('listaAulas').innerHTML = '';
 
@@ -576,7 +901,7 @@
     aviso.style.display = 'block';
     aviso.textContent = `✏️ Editando a Aula ${numeroAula}. Faça as alterações no texto acima e clique em "Salvar aula" pra atualizar (não cria uma aula duplicada).`;
 
-    document.getElementById('conteudo').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('arquivoHtml').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   window.inserirImagem = function() {
@@ -662,9 +987,10 @@
 
     // Segunda confirmação: precisa digitar o nome do curso certinho
     const digitado = window.prompt(
-      `Pra confirmar de vez, digite exatamente o nome do curso como aparece na lista:\n\n"${nomeCursoLegivel}"`
+      `Para confirmar, digite o nome do curso normalmente (com espaços, sem traços):\n\n"${nomeCursoLegivel}"`
     );
-    if (digitado !== nomeCursoLegivel) {
+    const normalizarNome = valor => (valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (normalizarNome(digitado) !== normalizarNome(nomeCursoLegivel)) {
       statusDiv.className = 'erro';
       statusDiv.textContent = 'Nome digitado não confere. Nada foi apagado.';
       return;
@@ -904,6 +1230,7 @@
         auditoriaHtmlLiberada = true;
       }
 
+      if (document.getElementById('htmlCompleto').value.trim() !== conteudo) throw new Error('O arquivo HTML mudou durante a auditoria. Faça uma nova auditoria.');
       const nomeModulo = document.getElementById('nomeModulo').value.trim();
 
       // Garante que o módulo existe como registro próprio (não só a aula dentro dele)
@@ -925,7 +1252,7 @@
       });
 
       statusDiv.className = 'sucesso';
-      statusDiv.textContent = `Aula salva com sucesso em: ${caminho}. Já avancei o número da aula para a próxima — confira antes de colar o novo conteúdo.`;
+      statusDiv.textContent = `Aula salva com sucesso em: ${caminho}. O número da aula foi avançado para a próxima.`;
 
       document.getElementById('titulo').value = '';
       document.getElementById('conteudo').innerHTML = '';
@@ -933,7 +1260,8 @@
       auditoriaHtmlLiberada = false;
       document.getElementById('painelAuditoriaHtml').style.display = 'none';
       document.getElementById('arquivoHtml').value = '';
-      alternarModoConteudo('texto');
+      alternarModoConteudo('html');
+      document.getElementById('arquivoHtmlInfo').textContent = 'Nenhum arquivo selecionado.';
       document.getElementById('linkImagem').value = '';
       document.getElementById('nomeModulo').value = '';
       document.getElementById('avisoEditando').style.display = 'none';
