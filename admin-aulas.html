@@ -437,6 +437,19 @@
     </div>
   </div>
 
+  <aside id="notificacaoAulaPronta" role="status" aria-live="polite" style="display:none;position:fixed;right:18px;bottom:18px;z-index:9998;width:min(430px,calc(100vw - 36px));background:#fff;border:2px solid #0E7490;border-radius:12px;box-shadow:0 12px 36px rgba(0,0,0,.25);padding:18px;color:#1F2937;box-sizing:border-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+      <strong id="tituloNotificacaoAula" style="font-size:17px">Aula pronta para conferência</strong>
+      <button type="button" onclick="ocultarNotificacaoAula()" aria-label="Fechar notificação" style="background:transparent;border:0;font-size:22px;cursor:pointer;color:#1F2937">×</button>
+    </div>
+    <p id="textoNotificacaoAula" style="margin:10px 0 15px;line-height:1.5">O HTML corrigido foi recebido. Confira como o aluno verá antes de salvar.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <button type="button" id="notificacaoVisualizar" onclick="visualizarComoAluno()" style="background:#0E7490;color:white;border:0;border-radius:7px;padding:11px 14px;cursor:pointer">Visualizar como aluno</button>
+      <button type="button" id="notificacaoSalvar" onclick="aprovarESalvarAula()" disabled style="background:#D97706;color:white;border:0;border-radius:7px;padding:11px 14px;cursor:pointer;opacity:.5">Aprovar e salvar</button>
+    </div>
+    <small id="instrucaoNotificacaoAula" style="display:block;margin-top:10px">O botão Salvar será liberado depois que você abrir e fechar a prévia.</small>
+  </aside>
+
   <div id="status"></div>
   <section id="painelAuditoriaHtml" style="display:none;margin-top:16px;padding:16px;border:1px solid #d97706;border-radius:8px;background:#fffaf0;">
     <h3 id="tituloAuditoriaHtml" style="margin:0 0 8px;color:#92400e;">Relatório da auditoria</h3>
@@ -1114,11 +1127,29 @@
   function assinaturaContexto() {
     return ['curso', 'modulo', 'aula', 'titulo', 'nomeModulo'].map(id => document.getElementById(id).value.trim()).join('||');
   }
+  function atualizarBotoesNotificacao() {
+    const salvar = document.getElementById('notificacaoSalvar');
+    const original = document.getElementById('botaoAprovarSalvar');
+    salvar.disabled = original.disabled;
+    salvar.style.opacity = original.disabled ? '.5' : '1';
+    document.getElementById('notificacaoVisualizar').disabled = document.getElementById('botaoVisualizarAluno').disabled;
+  }
+  function mostrarNotificacaoAula(origem) {
+    document.getElementById('tituloNotificacaoAula').textContent = 'Aula pronta para conferência';
+    document.getElementById('textoNotificacaoAula').textContent = origem + ' O conteúdo ainda não foi salvo. Confira se a aula está completa e funcionando.';
+    document.getElementById('instrucaoNotificacaoAula').textContent = 'Abra a prévia e feche-a para habilitar o salvamento.';
+    atualizarBotoesNotificacao();
+    document.getElementById('notificacaoAulaPronta').style.display = 'block';
+  }
+  window.ocultarNotificacaoAula = function() {
+    document.getElementById('notificacaoAulaPronta').style.display = 'none';
+  };
   function invalidarAprovacao() {
     auditoriaHtmlLiberada = false;
     conteudoProntoParaAprovacao = '';
     contextoProntoParaAprovacao = '';
     previaFoiAberta = false;
+    ocultarNotificacaoAula();
     document.getElementById('botaoAprovarSalvar').disabled = true;
     document.getElementById('botaoVisualizarAluno').disabled = !document.getElementById('htmlCompleto').value.trim();
     document.getElementById('avisoAprovacao').textContent = 'Conteúdo ou identificação alterados. Execute novamente a auditoria antes de aprovar.';
@@ -1154,6 +1185,7 @@
     document.body.style.overflow = '';
     const ok = previaFoiAberta && conteudoProntoParaAprovacao === document.getElementById('htmlCompleto').value && contextoProntoParaAprovacao === assinaturaContexto();
     document.getElementById('botaoAprovarSalvar').disabled = !ok;
+    atualizarBotoesNotificacao();
     if (ok) document.getElementById('avisoAprovacao').textContent = 'Prévia aberta. Se a aula estiver correta, clique em “Aprovar e salvar aula”.';
   };
   window.addEventListener('message', (event) => {
@@ -1279,8 +1311,8 @@
       document.getElementById('htmlCompleto').value = htmlCorrigido;
       auditoriaHtmlLiberada = false;
       liberarParaConferencia(htmlCorrigido, 'Correção recebida do DeepSeek. Não haverá segunda auditoria.');
-      status.textContent = 'Correção aplicada. Abra “Visualizar como aluno”, confira o resultado e aprove o salvamento manualmente.';
-      document.getElementById('painelAuditoriaHtml').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      status.textContent = 'Correção recebida. Confira a aula pela notificação antes de salvar.';
+      mostrarNotificacaoAula('O Corretor DeepSeek devolveu o HTML corrigido.');
     } catch (erro) {
       status.textContent = 'Não foi possível aplicar as correções: ' + erro.message;
     } finally {
@@ -1360,6 +1392,7 @@
     const estaEditando = document.getElementById('avisoEditando').style.display === 'block';
     botao.disabled = true;
     botao.textContent = 'Salvando...';
+    document.getElementById('notificacaoSalvar').disabled = true;
     try {
       const existente = await getDoc(ref);
       if (existente.exists() && !estaEditando) {
@@ -1374,6 +1407,7 @@
       await setDoc(ref, { titulo, ordem: Number(aula), conteudo: '', formato: 'html-completo', htmlCompleto: conteudo, ativo: true });
       statusDiv.className = 'sucesso';
       statusDiv.textContent = `Aula aprovada e salva em ${caminho}. Próxima aula: ${Number(aula)+1}.`;
+      ocultarNotificacaoAula();
       document.getElementById('titulo').value = '';
       document.getElementById('htmlCompleto').value = '';
       document.getElementById('arquivoHtml').value = '';
@@ -1392,6 +1426,7 @@
     } finally {
       botao.textContent = 'Aprovar e salvar aula';
       botao.disabled = !previaFoiAberta;
+      atualizarBotoesNotificacao();
     }
   };
 </script>
