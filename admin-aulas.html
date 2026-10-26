@@ -392,9 +392,15 @@
 
   <label for="nomeModulo">Nome do módulo</label>
   <input type="text" id="nomeModulo" placeholder="Ex: Personalidade e Voz de Marca">
-  <p class="ajuda">Preenche automaticamente o nome desse módulo (aparece pro aluno como título da seção). Só precisa preencher uma vez por módulo — nas próximas aulas do mesmo módulo, deixa em branco que ele não sobrescreve.</p>
+  <p class="ajuda">O nome permanece preenchido nas próximas aulas. Ao mudar de módulo, o sistema busca o nome já cadastrado; se for novo, deixa em branco.</p>
   <button type="button" class="botao-imagem" onclick="salvarNomeModuloAvulso()">💾 Só corrigir o nome deste módulo (sem mexer em aulas)</button>
   <p class="ajuda">Use este botão pra módulos que já têm todas as aulas prontas e só precisam do nome corrigido — preenche "Número do módulo" e "Nome do módulo" acima, clica aqui, e pronto.</p>
+
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin:14px 0">
+    <button type="button" class="botao-imagem" id="botaoFinalizarModulo" onclick="finalizarModulo()">Finalizar módulo</button>
+    <button type="button" class="botao-imagem" id="botaoFinalizarCurso" onclick="finalizarCurso()">Finalizar curso</button>
+  </div>
+  <p class="ajuda" id="statusFinalizacao" role="status">Finalizar registra a conclusão no Firebase. Nenhuma aula será apagada.</p>
 
   <button type="button" class="botao-imagem" onclick="listarAulasDoModulo()">🔍 Ver aulas já existentes neste módulo (pra editar)</button>
   <p class="ajuda">Escolha o curso e o número do módulo acima, depois clique aqui. Vai aparecer a lista das aulas já salvas nesse módulo — clique em uma pra carregar ela no formulário e editar.</p>
@@ -978,12 +984,69 @@
       statusDiv.className = 'sucesso';
       statusDiv.style.display = 'block';
       statusDiv.textContent = `Nome do Módulo ${modulo} salvo: "${nomeModulo}". As aulas desse módulo não foram alteradas.`;
-      document.getElementById('nomeModulo').value = '';
+      // Mantém o nome disponível para as próximas aulas do módulo.
     } catch (erro) {
       statusDiv.className = 'erro';
       statusDiv.style.display = 'block';
       statusDiv.textContent = 'Erro ao salvar nome do módulo: ' + erro.message;
     }
+  };
+
+  // Busca o nome do módulo no Firestore quando curso ou número do módulo mudar.
+  // O contador evita que uma resposta atrasada preencha o módulo errado.
+  let consultaNomeModulo = 0;
+  async function atualizarNomeModuloAutomaticamente() {
+    const token = ++consultaNomeModulo;
+    const curso = document.getElementById('curso').value;
+    const modulo = document.getElementById('modulo').value.trim();
+    const campo = document.getElementById('nomeModulo');
+    campo.value = '';
+    if (!curso || !/^[1-9]\d*$/.test(modulo)) return;
+    try {
+      const registro = await getDoc(doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`));
+      if (token !== consultaNomeModulo || curso !== document.getElementById('curso').value || modulo !== document.getElementById('modulo').value.trim()) return;
+      if (registro.exists()) campo.value = registro.data().titulo || '';
+    } catch (erro) {
+      console.warn('Não foi possível consultar o nome do módulo:', erro);
+    }
+  }
+  document.getElementById('modulo').addEventListener('change', atualizarNomeModuloAutomaticamente);
+  document.getElementById('curso').addEventListener('change', atualizarNomeModuloAutomaticamente);
+
+  window.finalizarModulo = async function() {
+    const curso = document.getElementById('curso').value;
+    const modulo = document.getElementById('modulo').value.trim();
+    const nome = document.getElementById('nomeModulo').value.trim();
+    const status = document.getElementById('statusFinalizacao');
+    const botao = document.getElementById('botaoFinalizarModulo');
+    if (!/^[1-9]\d*$/.test(modulo)) { status.textContent = 'Informe um número de módulo válido.'; return; }
+    if (!confirm(`Finalizar o módulo ${modulo} deste curso? Isso não apaga nenhuma aula.`)) return;
+    botao.disabled = true;
+    status.textContent = 'Finalizando módulo...';
+    try {
+      const ref = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`);
+      const atual = await getDoc(ref);
+      if (!atual.exists() && !nome) throw new Error('Informe o nome do módulo antes de finalizá-lo.');
+      await setDoc(ref, { concluido: true, statusProducao: 'finalizado', finalizadoEm: new Date().toISOString(), ordem: Number(modulo), ...(nome ? { titulo: nome } : {}) }, { merge: true });
+      status.textContent = `Módulo ${modulo} finalizado. Se quiser iniciar outro, altere o número do módulo.`;
+    } catch (erro) { status.textContent = 'Erro ao finalizar módulo: ' + erro.message; }
+    finally { botao.disabled = false; }
+  };
+
+  window.finalizarCurso = async function() {
+    const curso = document.getElementById('curso').value;
+    const seletor = document.getElementById('curso');
+    const nome = seletor.options[seletor.selectedIndex]?.textContent || curso;
+    const status = document.getElementById('statusFinalizacao');
+    const botao = document.getElementById('botaoFinalizarCurso');
+    if (!curso || !confirm(`Finalizar o curso "${nome}"? As aulas e módulos permanecerão salvos.`)) return;
+    botao.disabled = true;
+    status.textContent = 'Finalizando curso...';
+    try {
+      await setDoc(doc(db, 'cursos', curso), { concluido: true, statusProducao: 'finalizado', finalizadoEm: new Date().toISOString() }, { merge: true });
+      status.textContent = `Curso "${nome}" finalizado com sucesso. Nenhum conteúdo foi apagado.`;
+    } catch (erro) { status.textContent = 'Erro ao finalizar curso: ' + erro.message; }
+    finally { botao.disabled = false; }
   };
 
   window.apagarCursoCompleto = async function() {
@@ -1315,7 +1378,7 @@
       document.getElementById('htmlCompleto').value = '';
       document.getElementById('arquivoHtml').value = '';
       document.getElementById('arquivoHtmlInfo').textContent = 'Nenhum arquivo selecionado.';
-      document.getElementById('nomeModulo').value = '';
+      // O nome do módulo permanece preenchido até a seleção de outro módulo.
       document.getElementById('avisoEditando').style.display = 'none';
       document.getElementById('painelAuditoriaHtml').style.display = 'none';
       document.getElementById('aula').value = Number(aula) + 1;
