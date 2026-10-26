@@ -8,11 +8,11 @@
 <title>CriativaMente Academy — Enviar / Editar Aula</title>
 <style>
   :root {
-    --cobre: #B5541A;
-    --cobre-claro: #E8892A;
-    --preto: #0F0A05;
-    --creme: #FDF6E3;
-    --cinza: #6B5744;
+    --cobre: #D97706;
+    --cobre-claro: #B45309;
+    --preto: #1F2937;
+    --creme: #F3F4F6;
+    --cinza: #526273;
   }
   * { box-sizing: border-box; }
   body {
@@ -113,7 +113,7 @@
     gap: 8px;
   }
   .barra-ferramentas button {
-    background: #f0ece2;
+    background: #F3F4F6;
     border: 1px solid #ccc;
     border-radius: 6px;
     padding: 6px 12px;
@@ -121,7 +121,7 @@
     font-size: 14px;
   }
   .barra-ferramentas button:hover {
-    background: #e8892a33;
+    background: #D9770622;
   }
   .editor {
     width: 100%;
@@ -203,14 +203,14 @@
     width: 100%;
     text-align: left;
     margin-top: 6px;
-    background: #f0ece2;
+    background: #F3F4F6;
     border: 1px solid #ccc;
     border-radius: 6px;
     padding: 8px 12px;
     cursor: pointer;
     font-size: 13px;
   }
-  .item-aula:hover { background: #e8892a33; }
+  .item-aula:hover { background: #D9770622; }
   #carregandoImagem {
     display: none;
     margin-top: 8px;
@@ -229,6 +229,38 @@
     color: #1c5c9c;
     font-size: 13px;
   }
+
+  /* Identidade visual oficial: Estratégia e Essência */
+  :root {
+    --marca-principal: #1F2937;
+    --marca-destaque: #D97706;
+    --marca-fundo: #F3F4F6;
+    --marca-apoio: #0E7490;
+  }
+  .container, .tela-login { border: 1px solid #E2E8F0; }
+  h1, .tela-login h1 { color: var(--marca-principal); }
+  h2, h3 { color: var(--marca-principal); }
+  input[type="text"], input[type="number"], input[type="password"], select, textarea, .editor {
+    border-color: #CBD5E1;
+    color: var(--marca-principal);
+    background: #FFFFFF;
+  }
+  input:focus, select:focus, textarea:focus, .editor:focus {
+    outline: 2px solid var(--marca-apoio);
+    outline-offset: 1px;
+    border-color: var(--marca-apoio);
+  }
+  .botao-imagem, .barra-ferramentas button, .item-aula { transition: background-color .15s ease, border-color .15s ease; }
+  .barra-ferramentas button:hover, .item-aula:hover { border-color: var(--marca-apoio); }
+  #modoTexto, #modoHtml { background: var(--marca-principal); color: #FFFFFF; }
+  #modoTexto:hover, #modoHtml:hover { background: var(--marca-apoio); }
+  .barra-admin button { border-color: var(--marca-apoio); color: var(--marca-apoio); }
+  .barra-admin button:hover { background: #E0F2FE; }
+  .aviso-editando { background: #E0F2FE; color: #075985; }
+  #carregandoImagem { background: #FFFBEB; color: #92400E; }
+  .botao-salvar { background: var(--marca-destaque); }
+  .botao-salvar:hover { background: #B45309; }
+  .ajuda, p.sub { color: #526273; }
 </style>
 </head>
 <body>
