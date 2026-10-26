@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,260 +5,64 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CriativaMente Academy — Enviar / Editar Aula</title>
 <style>
+  /* Identidade oficial: Estratégia e Essência */
   :root {
-    --cobre: #D97706;
-    --cobre-claro: #B45309;
-    --preto: #1F2937;
-    --creme: #F3F4F6;
-    --cinza: #526273;
+    --principal: #1F2937;
+    --destaque: #D97706;
+    --fundo: #F3F4F6;
+    --apoio: #0E7490;
+    --branco: #FFFFFF;
+    --texto-secundario: #526273;
+    --borda: #CBD5E1;
   }
   * { box-sizing: border-box; }
-  body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: var(--creme);
-    color: var(--preto);
-    margin: 0;
-    padding: 24px;
-  }
-  .container {
-    max-width: 720px;
-    margin: 0 auto;
-    background: #fff;
-    border-radius: 12px;
-    padding: 32px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  }
-  h1 {
-    color: var(--cobre);
-    font-size: 22px;
-    margin-top: 0;
-  }
-  p.sub {
-    color: var(--cinza);
-    margin-top: -8px;
-    margin-bottom: 24px;
-    font-size: 14px;
-  }
-  label {
-    display: block;
-    font-weight: bold;
-    margin-top: 18px;
-    margin-bottom: 6px;
-    font-size: 14px;
-  }
-  input[type="text"], input[type="number"], select, textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 15px;
-    font-family: inherit;
-  }
-  textarea {
-    min-height: 240px;
-    resize: vertical;
-  }
+  body { margin: 0; padding: 24px; background: var(--fundo); color: var(--principal); font-family: 'Segoe UI', Arial, sans-serif; }
+  .container, .tela-login { background: var(--branco); border: 1px solid var(--borda); border-top: 7px solid var(--destaque); border-radius: 16px; box-shadow: 0 12px 35px rgba(31,41,55,.09); }
+  .container { max-width: 900px; margin: 0 auto; padding: 40px; }
+  h1, h2, h3 { color: var(--principal); }
+  .container > h1 { margin-top: 0; padding-bottom: 18px; font-size: 28px; font-weight: 800; border-bottom: 2px solid var(--fundo); }
+  p.sub { margin-top: -8px; margin-bottom: 24px; font-size: 14px; }
+  p.sub, .ajuda { color: var(--texto-secundario); line-height: 1.6; }
+  .ajuda { font-size: 12px; margin-top: 4px; }
+  label { display: block; margin-top: 18px; margin-bottom: 6px; font-size: 14px; font-weight: 700; color: var(--principal); }
+  input[type='text'], input[type='number'], input[type='password'], select, textarea, .editor { width: 100%; padding: 12px; background: var(--branco); color: var(--principal); border: 1px solid var(--borda); border-radius: 9px; font-size: 15px; font-family: inherit; }
+  input:focus, select:focus, textarea:focus, .editor:focus { outline: 2px solid var(--apoio); outline-offset: 1px; border-color: var(--apoio); }
+  textarea { min-height: 240px; resize: vertical; }
   #htmlCompleto { min-height: 360px; font-family: Consolas, Monaco, monospace; font-size: 13px; }
-  .html-tools { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-  .linha-dupla {
-    display: flex;
-    gap: 16px;
-  }
-  .linha-dupla > div {
-    flex: 1;
-  }
-  .botao-imagem {
-    background: var(--cinza);
-    color: #fff;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    margin-top: 8px;
-  }
-  .botao-salvar {
-    background: var(--cobre);
-    color: #fff;
-    border: none;
-    padding: 14px 24px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 28px;
-  }
-  .botao-salvar:hover { background: var(--cobre-claro); }
-  .botao-salvar:disabled { background: #ccc; cursor: not-allowed; }
-  #status {
-    margin-top: 16px;
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 14px;
-    display: none;
-  }
-  #status.sucesso { display: block; background: #e3f5e1; color: #1e6b1e; }
-  #status.erro { display: block; background: #fde3e3; color: #9c1c1c; }
-  .ajuda {
-    font-size: 12px;
-    color: var(--cinza);
-    margin-top: 4px;
-  }
-  .barra-ferramentas {
-    margin-top: 10px;
-    display: flex;
-    gap: 8px;
-  }
-  .barra-ferramentas button {
-    background: #F3F4F6;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  .barra-ferramentas button:hover {
-    background: #D9770622;
-  }
-  .editor {
-    width: 100%;
-    min-height: 280px;
-    max-height: 480px;
-    overflow-y: auto;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 15px;
-    margin-top: 8px;
-    background: #fff;
-  }
-  .editor img {
-    max-width: 100%;
-    border-radius: 8px;
-  }
-  .editor:empty:before {
-    content: attr(data-placeholder);
-    color: #999;
-  }
-  .tela-login {
-    max-width: 380px;
-    margin: 80px auto;
-    background: #fff;
-    border-radius: 12px;
-    padding: 32px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  }
-  .tela-login h1 { font-size: 20px; }
-  .tela-login input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 15px;
-    margin-top: 6px;
-    margin-bottom: 16px;
-  }
-  .tela-login button {
-    background: var(--cobre);
-    color: #fff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-  }
-  .tela-login button:hover { background: var(--cobre-claro); }
-  .tela-login button:disabled { background: #ccc; cursor: not-allowed; }
-  #erro-login {
-    display: none;
-    margin-top: 14px;
-    padding: 10px;
-    border-radius: 6px;
-    background: #fde3e3;
-    color: #9c1c1c;
-    font-size: 13px;
-  }
-  .barra-admin {
-    max-width: 720px;
-    margin: 0 auto 12px auto;
-    display: flex;
-    justify-content: flex-end;
-  }
-  .barra-admin button {
-    background: none;
-    border: 1px solid var(--cinza);
-    color: var(--cinza);
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-  }
-  .item-aula {
-    display: block;
-    width: 100%;
-    text-align: left;
-    margin-top: 6px;
-    background: #F3F4F6;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 13px;
-  }
-  .item-aula:hover { background: #D9770622; }
-  #carregandoImagem {
-    display: none;
-    margin-top: 8px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    background: #fff4e0;
-    color: var(--cobre);
-    font-size: 13px;
-  }
-  .aviso-editando {
-    display: none;
-    margin-top: 8px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    background: #e3f0f5;
-    color: #1c5c9c;
-    font-size: 13px;
-  }
-
-  /* Identidade visual oficial: Estratégia e Essência */
-  :root {
-    --marca-principal: #1F2937;
-    --marca-destaque: #D97706;
-    --marca-fundo: #F3F4F6;
-    --marca-apoio: #0E7490;
-  }
-  .container, .tela-login { border: 1px solid #E2E8F0; }
-  h1, .tela-login h1 { color: var(--marca-principal); }
-  h2, h3 { color: var(--marca-principal); }
-  input[type="text"], input[type="number"], input[type="password"], select, textarea, .editor {
-    border-color: #CBD5E1;
-    color: var(--marca-principal);
-    background: #FFFFFF;
-  }
-  input:focus, select:focus, textarea:focus, .editor:focus {
-    outline: 2px solid var(--marca-apoio);
-    outline-offset: 1px;
-    border-color: var(--marca-apoio);
-  }
-  .botao-imagem, .barra-ferramentas button, .item-aula { transition: background-color .15s ease, border-color .15s ease; }
-  .barra-ferramentas button:hover, .item-aula:hover { border-color: var(--marca-apoio); }
-  #modoTexto, #modoHtml { background: var(--marca-principal); color: #FFFFFF; }
-  #modoTexto:hover, #modoHtml:hover { background: var(--marca-apoio); }
-  .barra-admin button { border-color: var(--marca-apoio); color: var(--marca-apoio); }
+  .html-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding: 16px; background: var(--fundo); border: 1px solid var(--borda); border-radius: 12px; }
+  .linha-dupla { display: flex; gap: 16px; }
+  .linha-dupla > div { flex: 1; }
+  .botao-imagem { display: inline-block; background: var(--principal); color: var(--branco); border: none; padding: 11px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; margin-top: 8px; transition: background .15s; }
+  .botao-imagem:hover { background: var(--apoio); }
+  #modoTexto, #modoHtml { background: var(--principal); color: var(--branco); }
+  #modoTexto:hover, #modoHtml:hover { background: var(--apoio); }
+  .botao-salvar, .tela-login button { background: var(--destaque); color: var(--branco); border: none; padding: 14px 24px; border-radius: 9px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; }
+  .botao-salvar { margin-top: 28px; }
+  .botao-salvar:hover, .tela-login button:hover { background: #B45309; }
+  .botao-salvar:disabled, .tela-login button:disabled { background: #9CA3AF; cursor: not-allowed; }
+  #status { display: none; margin-top: 16px; padding: 12px; border-radius: 6px; font-size: 14px; }
+  #status.sucesso { display: block; background: #DCFCE7; color: #166534; }
+  #status.erro { display: block; background: #FEE2E2; color: #991B1B; }
+  .barra-ferramentas { display: flex; gap: 8px; margin-top: 10px; }
+  .barra-ferramentas button, .item-aula { background: var(--fundo); color: var(--principal); border: 1px solid var(--borda); border-radius: 7px; padding: 8px 12px; cursor: pointer; font-size: 14px; }
+  .barra-ferramentas button:hover, .item-aula:hover { background: #E0F2FE; border-color: var(--apoio); }
+  .editor { min-height: 280px; max-height: 480px; overflow-y: auto; margin-top: 8px; }
+  .editor img { max-width: 100%; border-radius: 8px; }
+  .editor:empty:before { content: attr(data-placeholder); color: #64748B; }
+  .tela-login { max-width: 380px; margin: 80px auto; padding: 32px; }
+  .tela-login h1 { font-size: 22px; font-weight: 800; }
+  .tela-login input { margin-top: 6px; margin-bottom: 16px; }
+  .tela-login button { font-size: 15px; padding: 12px 24px; }
+  #erro-login { display: none; margin-top: 14px; padding: 10px; border-radius: 6px; background: #FEE2E2; color: #991B1B; font-size: 13px; }
+  .barra-admin { max-width: 900px; margin: 0 auto 12px; display: flex; justify-content: flex-end; }
+  .barra-admin button { background: transparent; border: 1px solid var(--apoio); color: var(--apoio); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
   .barra-admin button:hover { background: #E0F2FE; }
-  .aviso-editando { background: #E0F2FE; color: #075985; }
-  #carregandoImagem { background: #FFFBEB; color: #92400E; }
-  .botao-salvar { background: var(--marca-destaque); }
-  .botao-salvar:hover { background: #B45309; }
-  .ajuda, p.sub { color: #526273; }
+  .item-aula { display: block; width: 100%; text-align: left; margin-top: 6px; font-size: 13px; }
+  #carregandoImagem { display: none; margin-top: 8px; padding: 8px 12px; border-radius: 6px; background: #FFFBEB; color: #92400E; font-size: 13px; }
+  .aviso-editando { display: none; margin-top: 8px; padding: 8px 12px; border-radius: 6px; background: #E0F2FE; color: #075985; font-size: 13px; }
+  #editorHtml { margin-top: 14px; padding: 16px; background: var(--fundo); border: 1px solid var(--borda); border-radius: 12px; }
+  #painelAuditoriaHtml { border-radius: 12px; }
+  @media (max-width: 650px) { body { padding: 12px; } .container { padding: 22px; } .container > h1 { font-size: 23px; } .linha-dupla { flex-direction: column; gap: 0; } .html-tools { flex-direction: column; } }
 </style>
 </head>
 <body>
