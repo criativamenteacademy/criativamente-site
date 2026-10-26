@@ -415,7 +415,21 @@
   <div id="editorHtml" hidden><textarea id="htmlCompleto" aria-label="Conteúdo HTML carregado"></textarea></div>
   <input type="hidden" id="linkImagem">
 
-  <button class="botao-salvar" id="botaoSalvar" onclick="salvarAula()">Salvar aula</button>
+  <button class="botao-salvar" id="botaoSalvar" onclick="salvarAula()">Auditar aula</button>
+  <div class="html-tools" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:10px">
+    <button type="button" class="botao-imagem" id="botaoVisualizarAluno" onclick="visualizarComoAluno()" disabled>Visualizar como aluno</button>
+    <button type="button" class="botao-imagem" id="botaoAprovarSalvar" onclick="aprovarESalvarAula()" disabled>Aprovar e salvar aula</button>
+  </div>
+  <p class="ajuda" id="avisoAprovacao">Importe a aula e execute a auditoria. Após aprovação ou correção, visualize a aula e confirme o salvamento.</p>
+  <div id="janelaPrevia" role="dialog" aria-modal="true" aria-label="Visualização da aula como aluno" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.9);padding:14px;overflow:auto">
+    <div style="max-width:1120px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#1F2937;color:white;gap:10px">
+        <strong>Prévia da aula — visão do aluno</strong>
+        <button type="button" id="fecharPrevia" onclick="fecharVisualizacaoAluno()" style="background:#D97706;color:#fff;border:0;border-radius:6px;padding:10px 16px;cursor:pointer">Fechar prévia</button>
+      </div>
+      <iframe id="framePreviaAluno" title="Prévia da aula" sandbox="allow-scripts allow-forms allow-modals" style="width:100%;min-height:78vh;border:0;display:block;background:#fff"></iframe>
+    </div>
+  </div>
 
   <div id="status"></div>
   <section id="painelAuditoriaHtml" style="display:none;margin-top:16px;padding:16px;border:1px solid #d97706;border-radius:8px;background:#fffaf0;">
@@ -860,6 +874,7 @@
     }
     try {
       document.getElementById('htmlCompleto').value = await arquivo.text();
+      invalidarAprovacao();
       alternarModoConteudo('html');
       const titulo = document.getElementById('titulo');
       if (!titulo.value.trim()) {
@@ -876,7 +891,7 @@
   });
 
   function carregarAulaParaEdicao(aulaId, dados) {
-    auditoriaHtmlLiberada = false;
+    invalidarAprovacao();
     document.getElementById('painelAuditoriaHtml').style.display = 'none';
     const numeroAula = aulaId.replace('aula-', '');
     document.getElementById('aula').value = numeroAula;
@@ -1029,12 +1044,69 @@
   };
 
   let auditoriaHtmlLiberada = false;
+  let conteudoProntoParaAprovacao = '';
+  let contextoProntoParaAprovacao = '';
+  let previaFoiAberta = false;
+
+  function assinaturaContexto() {
+    return ['curso', 'modulo', 'aula', 'titulo', 'nomeModulo'].map(id => document.getElementById(id).value.trim()).join('||');
+  }
+  function invalidarAprovacao() {
+    auditoriaHtmlLiberada = false;
+    conteudoProntoParaAprovacao = '';
+    contextoProntoParaAprovacao = '';
+    previaFoiAberta = false;
+    document.getElementById('botaoAprovarSalvar').disabled = true;
+    document.getElementById('botaoVisualizarAluno').disabled = !document.getElementById('htmlCompleto').value.trim();
+    document.getElementById('avisoAprovacao').textContent = 'Conteúdo ou identificação alterados. Execute novamente a auditoria antes de aprovar.';
+  }
+  function liberarParaConferencia(html, origem) {
+    if (!htmlValido(html)) throw new Error('O HTML está vazio ou incompleto. Não é possível aprovar.');
+    conteudoProntoParaAprovacao = html;
+    contextoProntoParaAprovacao = assinaturaContexto();
+    previaFoiAberta = false;
+    document.getElementById('botaoVisualizarAluno').disabled = false;
+    document.getElementById('botaoAprovarSalvar').disabled = true;
+    document.getElementById('avisoAprovacao').textContent = origem + ' Clique em “Visualizar como aluno”; depois feche a prévia para habilitar “Aprovar e salvar aula”.';
+  }
+  function htmlValido(html) {
+    return typeof html === 'string' && html.trim().length > 50 && /<html[\s>]/i.test(html) && /<body[\s>]/i.test(html) && /<\/body\s*>/i.test(html) && /<\/html\s*>/i.test(html) && new Blob([html]).size <= 700 * 1024;
+  }
+  window.visualizarComoAluno = function() {
+    const html = document.getElementById('htmlCompleto').value;
+    if (!htmlValido(html)) { alert('Importe um HTML completo e válido para visualizar.'); return; }
+    const modal = document.getElementById('janelaPrevia');
+    const frame = document.getElementById('framePreviaAluno');
+    // Mesmo sandbox e ponte localStorage utilizados pelo player aula.html; dados isolados na prévia.
+    const suporte = '<scr' + 'ipt>(function(){var s={};var ls={getItem:function(k){return Object.prototype.hasOwnProperty.call(s,k)?String(s[k]):null},setItem:function(k,v){s[String(k)]=String(v)},removeItem:function(k){delete s[String(k)]},clear:function(){s={}},key:function(i){return Object.keys(s)[i]||null}};Object.defineProperty(ls,"length",{get:function(){return Object.keys(s).length}});try{Object.defineProperty(window,"localStorage",{configurable:true,value:ls})}catch(e){}function resize(){parent.postMessage({type:"cm-preview-height",height:Math.max(document.documentElement.scrollHeight,document.body?document.body.scrollHeight:0)},"*")}if(window.ResizeObserver)new ResizeObserver(resize).observe(document.documentElement);window.addEventListener("load",resize);setTimeout(resize,250);setTimeout(resize,1000)})();</scr' + 'ipt>';
+    frame.srcdoc = /<head[^>]*>/i.test(html) ? html.replace(/<head([^>]*)>/i, '<head$1>' + suporte) : suporte + html;
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    document.getElementById('fecharPrevia').focus();
+    if (conteudoProntoParaAprovacao === html && contextoProntoParaAprovacao === assinaturaContexto()) previaFoiAberta = true;
+  };
+  window.fecharVisualizacaoAluno = function() {
+    document.getElementById('janelaPrevia').style.display = 'none';
+    document.getElementById('framePreviaAluno').srcdoc = '';
+    document.body.style.overflow = '';
+    const ok = previaFoiAberta && conteudoProntoParaAprovacao === document.getElementById('htmlCompleto').value && contextoProntoParaAprovacao === assinaturaContexto();
+    document.getElementById('botaoAprovarSalvar').disabled = !ok;
+    if (ok) document.getElementById('avisoAprovacao').textContent = 'Prévia aberta. Se a aula estiver correta, clique em “Aprovar e salvar aula”.';
+  };
+  window.addEventListener('message', (event) => {
+    if (event.source !== document.getElementById('framePreviaAluno').contentWindow || !event.data || event.data.type !== 'cm-preview-height') return;
+    const h = Number(event.data.height);
+    if (Number.isFinite(h) && h > 0) document.getElementById('framePreviaAluno').style.height = Math.min(Math.max(h, 550), 10000) + 'px';
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('janelaPrevia').style.display === 'block') fecharVisualizacaoAluno(); });
   let ultimoRelatorioAuditoriaHtml = null;
   let ultimoConteudoAuditadoHtml = '';
   ['htmlCompleto', 'titulo', 'curso', 'modulo', 'aula', 'arquivoHtml'].forEach((id) => {
     const campo = document.getElementById(id);
-    campo.addEventListener(id === 'arquivoHtml' || id === 'curso' ? 'change' : 'input', () => { auditoriaHtmlLiberada = false; });
+    campo.addEventListener(id === 'arquivoHtml' || id === 'curso' ? 'change' : 'input', invalidarAprovacao);
   });
+
+  document.getElementById('nomeModulo').addEventListener('input', invalidarAprovacao);
 
   function textoRelatorioAuditoria(dados, bruto) {
     try { return JSON.stringify(dados, null, 2); } catch (_) { return bruto || String(dados); }
@@ -1143,7 +1215,8 @@
       if (item.ok === false || !htmlCorrigido.trim()) throw new Error(item.motivo || item.message || 'O Corretor não devolveu um HTML corrigido válido.');
       document.getElementById('htmlCompleto').value = htmlCorrigido;
       auditoriaHtmlLiberada = false;
-      status.textContent = 'Correções aplicadas ao editor, sem salvar. Revise o HTML e clique em “Salvar aula” para executar novamente Auditor → Revisor antes de gravar.';
+      liberarParaConferencia(htmlCorrigido, 'Correção recebida do DeepSeek. Não haverá segunda auditoria.');
+      status.textContent = 'Correção aplicada. Abra “Visualizar como aluno”, confira o resultado e aprove o salvamento manualmente.';
       document.getElementById('painelAuditoriaHtml').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (erro) {
       status.textContent = 'Não foi possível aplicar as correções: ' + erro.message;
@@ -1158,7 +1231,7 @@
     const aula = document.getElementById('aula').value.trim();
     const titulo = document.getElementById('titulo').value.trim();
     const htmlCompleto = document.getElementById('htmlCompleto').value.trim();
-    const conteudo = formatoConteudoAtual === 'html-completo' ? htmlCompleto : document.getElementById('conteudo').innerHTML.trim();
+    const conteudo = htmlCompleto;
     const statusDiv = document.getElementById('status');
     const botao = document.getElementById('botaoSalvar');
 
@@ -1184,106 +1257,78 @@
       }
     }
 
+    botao.disabled = true;
+    botao.textContent = 'Auditando a aula...';
+    try {
+      const aprovada = await auditarHtmlAntesDeSalvar(conteudo, { curso, modulo, aula, titulo });
+      if (aprovada) {
+        liberarParaConferencia(conteudo, 'Auditoria aprovada com zero achados.');
+        statusDiv.className = 'sucesso';
+        statusDiv.textContent = 'Auditoria aprovada. Visualize a aula antes de autorizar o salvamento.';
+      } else {
+        statusDiv.className = 'erro';
+        statusDiv.textContent = 'Auditoria reprovou a aula. Clique em “Aplicar correções sugeridas”; depois visualize o HTML corrigido e aprove o salvamento.';
+      }
+    } catch (erro) {
+      statusDiv.className = 'erro';
+      statusDiv.textContent = 'Não foi possível concluir a auditoria: ' + erro.message;
+    } finally {
+      botao.disabled = false;
+      botao.textContent = 'Auditar aula';
+    }
+  };
+
+  window.aprovarESalvarAula = async function() {
+    const curso = document.getElementById('curso').value;
+    const modulo = document.getElementById('modulo').value.trim();
+    const aula = document.getElementById('aula').value.trim();
+    const titulo = document.getElementById('titulo').value.trim();
+    const conteudo = document.getElementById('htmlCompleto').value;
+    const statusDiv = document.getElementById('status');
+    const botao = document.getElementById('botaoAprovarSalvar');
+    if (!previaFoiAberta || !htmlValido(conteudo) || conteudoProntoParaAprovacao !== conteudo || contextoProntoParaAprovacao !== assinaturaContexto()) {
+      statusDiv.className = 'erro';
+      statusDiv.textContent = 'O HTML ou os dados foram alterados, ou a prévia ainda não foi aberta. Faça uma nova auditoria e visualize antes de salvar.';
+      invalidarAprovacao();
+      return;
+    }
     const caminho = `cursos/${curso}/modulos/modulo-${modulo}/aulas/aula-${aula}`;
     const ref = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`, 'aulas', `aula-${aula}`);
     const estaEditando = document.getElementById('avisoEditando').style.display === 'block';
-
-    if (!estaEditando) {
-      try {
-        const existente = await getDoc(ref);
-        if (existente.exists()) {
-          const tituloExistente = existente.data().titulo || '(sem título)';
-          const confirmar = window.confirm(
-            `Atenção: já existe uma aula salva em "${caminho}" com o título "${tituloExistente}".\n\nSe continuar, ela será SUBSTITUÍDA por esta nova aula ("${titulo}").\n\nClique OK só se isso for intencional (ex: corrigindo essa mesma aula). Clique Cancelar se você queria criar uma aula diferente — nesse caso, ajuste o número da aula antes de salvar.`
-          );
-          if (!confirmar) {
-            statusDiv.className = '';
-            statusDiv.style.display = 'none';
-            return;
-          }
-        }
-      } catch (erroCheck) {
-        // Se a checagem falhar por algum motivo, segue o salvamento normalmente
-        console.warn('Não foi possível checar aula existente antes de salvar:', erroCheck);
-      }
-    }
-
     botao.disabled = true;
     botao.textContent = 'Salvando...';
-
     try {
-      if (formatoConteudoAtual === 'html-completo' && !auditoriaHtmlLiberada) {
-        botao.textContent = 'Auditando a aula...';
-        let aprovada;
-        try {
-          aprovada = await auditarHtmlAntesDeSalvar(conteudo, { curso, modulo, aula, titulo });
-        } catch (erroAuditoria) {
-          statusDiv.className = 'erro'; statusDiv.style.display = 'block';
-          statusDiv.textContent = 'Auditoria indisponível: ' + erroAuditoria.message + ' A aula HTML não foi salva. Tente novamente quando o auditor estiver disponível.';
-          return;
-        }
-        if (!aprovada) {
-          statusDiv.className = 'erro'; statusDiv.style.display = 'block';
-          statusDiv.textContent = 'A aula não foi salva porque não recebeu aprovação final com zero achados. Revise o relatório antes de tentar novamente.';
-          return;
-        }
-        auditoriaHtmlLiberada = true;
+      const existente = await getDoc(ref);
+      if (existente.exists() && !estaEditando) {
+        if (!confirm(`Já existe uma aula em ${caminho} (${existente.data().titulo || 'sem título'}). Deseja substituí-la?`)) return;
       }
-
-      if (document.getElementById('htmlCompleto').value.trim() !== conteudo) throw new Error('O arquivo HTML mudou durante a auditoria. Faça uma nova auditoria.');
+      if (conteudoProntoParaAprovacao !== document.getElementById('htmlCompleto').value || contextoProntoParaAprovacao !== assinaturaContexto()) throw new Error('A aula mudou antes do salvamento.');
       const nomeModulo = document.getElementById('nomeModulo').value.trim();
-
-      // Garante que o módulo existe como registro próprio (não só a aula dentro dele)
       if (nomeModulo) {
         const refModulo = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`);
-        await setDoc(refModulo, {
-          titulo: nomeModulo,
-          ordem: Number(modulo)
-        }, { merge: true });
+        await setDoc(refModulo, { titulo: nomeModulo, ordem: Number(modulo) }, { merge: true });
       }
-
-      await setDoc(ref, {
-        titulo: titulo,
-        ordem: Number(aula),
-        conteudo: formatoConteudoAtual === 'tradicional' ? conteudo : '',
-        formato: formatoConteudoAtual,
-        htmlCompleto: formatoConteudoAtual === 'html-completo' ? conteudo : '',
-        ativo: true
-      });
-
+      await setDoc(ref, { titulo, ordem: Number(aula), conteudo: '', formato: 'html-completo', htmlCompleto: conteudo, ativo: true });
       statusDiv.className = 'sucesso';
-      statusDiv.textContent = `Aula salva com sucesso em: ${caminho}. O número da aula foi avançado para a próxima.`;
-
+      statusDiv.textContent = `Aula aprovada e salva em ${caminho}. Próxima aula: ${Number(aula)+1}.`;
       document.getElementById('titulo').value = '';
-      document.getElementById('conteudo').innerHTML = '';
       document.getElementById('htmlCompleto').value = '';
-      auditoriaHtmlLiberada = false;
-      document.getElementById('painelAuditoriaHtml').style.display = 'none';
       document.getElementById('arquivoHtml').value = '';
-      alternarModoConteudo('html');
       document.getElementById('arquivoHtmlInfo').textContent = 'Nenhum arquivo selecionado.';
-      document.getElementById('linkImagem').value = '';
       document.getElementById('nomeModulo').value = '';
       document.getElementById('avisoEditando').style.display = 'none';
-
-      // Reseta a posição salva do cursor: a aula mudou, o conteúdo foi
-      // limpo, então a posição antiga não serve mais pra próxima aula
-      ultimaPosicaoCursor = null;
-
-      // Avança automaticamente para a próxima aula, pra não sobrescrever por engano
-      const proximaAula = Number(aula) + 1;
-      document.getElementById('aula').value = proximaAula;
-
-      // Rola a página de volta pro topo do formulário, pronto pra próxima aula
+      document.getElementById('painelAuditoriaHtml').style.display = 'none';
+      document.getElementById('aula').value = Number(aula) + 1;
+      invalidarAprovacao();
+      document.getElementById('botaoVisualizarAluno').disabled = true;
+      document.getElementById('avisoAprovacao').textContent = 'Aula salva. Importe o HTML da próxima aula.';
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      document.getElementById('aula').focus();
-
     } catch (erro) {
       statusDiv.className = 'erro';
-      statusDiv.textContent = 'Erro ao salvar: ' + erro.message + ' (pode ser necessário liberar permissão nas regras do Firestore — me chama que eu te ajudo).';
+      statusDiv.textContent = 'Erro ao salvar: ' + erro.message;
     } finally {
-      botao.disabled = false;
-      botao.textContent = 'Salvar aula';
+      botao.textContent = 'Aprovar e salvar aula';
+      botao.disabled = !previaFoiAberta;
     }
   };
 </script>
