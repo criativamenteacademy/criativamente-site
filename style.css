@@ -12,21 +12,25 @@
    Qualquer página nova deve consumir estas variáveis, nunca valores soltos.
    -------------------------------------------------------------------------- */
 :root {
-  /* Cores da marca — NÃO alterar */
-  --copper: #B5541A;
-  --copper-light: #E8892A;
-  --warm-black: #0F0A05;
-  --ivory: #FDF6E3;
-  --warm-gray: #6B5744;
+  /* Paleta oficial Estratégia e Essência */
+  --brand-primary: #1F2937;
+  --brand-accent: #D97706;
+  --brand-support: #0E7490;
+  --brand-neutral: #F3F4F6;
+  --copper: #D97706;
+  --copper-light: #D97706;
+  --warm-black: #1F2937;
+  --ivory: #F3F4F6;
+  --warm-gray: #A8B4C1;
 
   /* Tons derivados (variações de opacidade/luminosidade da paleta oficial,
      usados para hierarquia visual sem introduzir cores novas) */
-  --surface-1: #17110A;      /* fundo dos cards, levemente acima do preto base */
-  --surface-2: #1F1710;      /* fundo de elementos elevados (inputs, hover) */
-  --line: rgba(253, 246, 227, 0.12);   /* divisores sutis sobre fundo escuro */
-  --line-strong: rgba(253, 246, 227, 0.22);
-  --ivory-muted: rgba(253, 246, 227, 0.68); /* texto de apoio sobre fundo escuro */
-  --copper-glow: rgba(181, 84, 26, 0.35);
+  --surface-1: #263445;      /* fundo dos cards, levemente acima do preto base */
+  --surface-2: #304154;      /* fundo de elementos elevados (inputs, hover) */
+  --line: rgba(243, 244, 246, 0.12);   /* divisores sutis sobre fundo escuro */
+  --line-strong: rgba(243, 244, 246, 0.22);
+  --ivory-muted: rgba(243, 244, 246, 0.68); /* texto de apoio sobre fundo escuro */
+  --copper-glow: rgba(217, 119, 6, 0.35);
 
   /* Tipografia */
   --font-display: 'Sora', sans-serif;
@@ -230,7 +234,7 @@ section { padding-block: var(--space-2xl); }
   z-index: 100;
   display: flex;
   align-items: center;
-  background: rgba(15, 10, 5, 0.7);
+  background: rgba(31, 41, 55, 0.7);
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-bottom: 1px solid transparent;
@@ -239,7 +243,7 @@ section { padding-block: var(--space-2xl); }
 
 .site-header.is-scrolled {
   border-bottom-color: var(--line);
-  background: rgba(15, 10, 5, 0.92);
+  background: rgba(31, 41, 55, 0.92);
 }
 
 .site-header .container {
@@ -628,12 +632,12 @@ a.card { display: block; text-decoration: none; }
 .form-field textarea { min-height: 150px; resize: vertical; }
 
 .form-field.has-error input,
-.form-field.has-error textarea { border-color: #d8654a; }
+.form-field.has-error textarea { border-color: #0E7490; }
 
 .field-error {
   display: none;
   font-size: var(--text-xs);
-  color: #e08a72;
+  color: #38A5BE;
   margin-top: var(--space-3xs);
 }
 .form-field.has-error .field-error { display: block; }
@@ -669,8 +673,8 @@ a.card { display: block; text-decoration: none; }
 }
 .form-status.is-error {
   background: rgba(216, 101, 74, 0.14);
-  border: 1px solid #d8654a;
-  color: #e08a72;
+  border: 1px solid #0E7490;
+  color: #38A5BE;
 }
 
 .contact-social {

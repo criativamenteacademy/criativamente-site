@@ -375,9 +375,15 @@
   <label for="curso">Curso</label>
   <div class="curso-linha"><select id="curso">
     <option value="posicionamento-estrategico">Posicionamento Estratégico</option>
-    <option value="ia-para-imobiliarias">IA para Imobiliárias</option>
+    
   </select><button type="button" class="botao-imagem" onclick="mostrarNovoCurso()">+ Criar novo curso</button></div>
-  <div id="novoCursoBox" class="novo-curso-box" style="display:none"><label for="novoCursoNome">Nome do novo curso</label><input type="text" id="novoCursoNome" placeholder="Ex.: Marketing Digital"><p class="ajuda">O curso será criado com o nome informado, sem precisar digitar identificadores com traços.</p><button type="button" class="botao-imagem" onclick="criarNovoCurso()">Cadastrar curso</button><button type="button" class="botao-imagem botao-neutro" onclick="mostrarNovoCurso(false)">Cancelar</button><p id="statusNovoCurso" class="ajuda" role="status"></p></div>
+  <div class="novo-curso-box" style="margin:12px 0"><h3>Publicação no site</h3>
+<label for="cursoDescricaoPublica">Descrição pública</label><textarea id="cursoDescricaoPublica" rows="3" style="width:100%"></textarea>
+<label for="cursoResultadoPublico">Resultado do curso</label><input id="cursoResultadoPublico" style="width:100%">
+<label for="cursoPaginaPublica">Página de vendas (ex.: /posicionamento-estrategico.html)</label><input id="cursoPaginaPublica" style="width:100%">
+<p id="statusPublicacaoCurso" role="status" aria-live="polite">Selecione um curso para consultar a publicação.</p>
+<button type="button" onclick="salvarDadosPublicosCurso()">Salvar informações públicas</button>
+<button type="button" onclick="alternarPublicacaoCurso()" id="botaoPublicarCurso">Publicar no site</button></div><div id="novoCursoBox" class="novo-curso-box" style="display:none"><label for="novoCursoNome">Nome do novo curso</label><input type="text" id="novoCursoNome" placeholder="Ex.: Marketing Digital"><p class="ajuda">O curso será criado com o nome informado, sem precisar digitar identificadores com traços.</p><button type="button" class="botao-imagem" onclick="criarNovoCurso()">Cadastrar curso</button><button type="button" class="botao-imagem botao-neutro" onclick="mostrarNovoCurso(false)">Cancelar</button><p id="statusNovoCurso" class="ajuda" role="status"></p></div>
 
   <div class="linha-dupla">
     <div>
@@ -468,7 +474,7 @@
     <label for="cursoParaApagar">Curso a apagar por completo</label>
     <select id="cursoParaApagar">
       <option value="posicionamento-estrategico">Posicionamento Estratégico</option>
-      <option value="ia-para-imobiliarias">IA para Imobiliárias</option>
+      
     </select>
 
     <button type="button" style="background:#c0392b; color:#fff; border:none; padding:10px 16px; border-radius:6px; cursor:pointer; margin-top:10px;" onclick="apagarCursoCompleto()">🗑️ Apagar todo o conteúdo deste curso</button>
@@ -508,7 +514,7 @@
   // Cadastro e listagem de cursos, preservando os IDs existentes no Firestore.
   const nomesPadrao = {
     'posicionamento-estrategico': 'Posicionamento Estratégico',
-    'ia-para-imobiliarias': 'IA para Imobiliárias'
+    'posicionamento-estrategico': 'Posicionamento Estratégico'
   };
   function nomeCursoExibicao(id, dados) {
     const nome = dados && (dados.titulo || dados.nome || dados.nomeCurso);
@@ -521,10 +527,10 @@
     const selecionado = seletor.value;
     const selecionadoApagar = seletorApagar.value;
     const cursos = new Map();
-    for (const opt of seletor.options) cursos.set(opt.value, opt.textContent);
+    // Somente registros reais do Firestore; opções antigas não recriam cursos apagados.
     try {
       const docs = await getDocs(collection(db, 'cursos'));
-      docs.forEach(d => cursos.set(d.id, nomeCursoExibicao(d.id, d.data())));
+      docs.forEach(d => { if (d.id !== 'ia-para-imobiliarias' && d.data().excluido !== true) cursos.set(d.id, nomeCursoExibicao(d.id, d.data())); });
     } catch (erro) { console.warn('Não foi possível atualizar a lista de cursos:', erro); }
     for (const select of [seletor, seletorApagar]) {
       select.replaceChildren();
@@ -536,7 +542,87 @@
     if (cursos.has(selecionado)) seletor.value = selecionado;
     if (cursos.has(selecionadoApagar)) seletorApagar.value = selecionadoApagar;
     await atualizarBotaoManutencaoCurso();
+    await atualizarPublicacaoCurso();
   }
+
+  async function atualizarPublicacaoCurso() {
+    const id = document.getElementById('curso').value;
+    const status = document.getElementById('statusPublicacaoCurso');
+    const botao = document.getElementById('botaoPublicarCurso');
+    botao.disabled = !id;
+    if (!id) { status.textContent = 'Nenhum curso selecionado.'; return; }
+    try {
+      const snap = await getDoc(doc(db, 'cursos', id));
+      const d = snap.exists() ? snap.data() : {};
+      document.getElementById('cursoDescricaoPublica').value = d.descricao || '';
+      document.getElementById('cursoResultadoPublico').value = d.resultado || '';
+      document.getElementById('cursoPaginaPublica').value = d.paginaVendas || '/' + id + '.html';
+      const publicado = d.visibilidadeGerenciada === true ? d.publicado === true : (['posicionamento-estrategico','patrimonio-protegido'].includes(id) && d.excluido !== true);
+      botao.textContent = publicado ? 'Despublicar do site' : 'Publicar no site';
+      status.textContent = publicado ? 'Curso publicado no site.' : 'Curso não publicado no site.';
+    } catch (erro) { status.textContent = 'Erro ao consultar publicação: ' + erro.message; }
+  }
+  window.salvarDadosPublicosCurso = async function() {
+    const id = document.getElementById('curso').value;
+    if (!id) return;
+    const paginaVendas = document.getElementById('cursoPaginaPublica').value.trim();
+    if (!/^\/[a-z0-9-]+\.html$/.test(paginaVendas)) { alert('Use uma página local no formato /nome-do-curso.html'); return; }
+    try {
+      const privado = doc(db,'cursos',id);
+      const snap = await getDoc(privado);
+      if (!snap.exists() || snap.data().excluido === true) {
+        alert('Curso não encontrado ou excluído.'); return;
+      }
+      const dados = snap.data();
+      const descricao = document.getElementById('cursoDescricaoPublica').value.trim();
+      const resultado = document.getElementById('cursoResultadoPublico').value.trim();
+      await setDoc(privado, { descricao, resultado, paginaVendas }, {merge:true});
+      const publicado = dados.visibilidadeGerenciada === true
+        ? dados.publicado === true
+        : ['posicionamento-estrategico','patrimonio-protegido'].includes(id);
+      if (publicado) {
+        await setDoc(doc(db,'catalogo_publico',id), {
+          titulo: dados.titulo || dados.nome || id.replace(/-/g,' '),
+          descricao, resultado, paginaVendas, publicado:true, excluido:false
+        }, {merge:true});
+      }
+      const aviso = document.getElementById('statusPublicacaoCurso');
+      aviso.textContent = '✓ Informações públicas salvas e catálogo sincronizado.';
+      aviso.style.cssText = 'background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:8px;padding:12px 16px;font-weight:600;margin:12px 0;';
+
+    } catch (erro) { alert('Erro ao salvar: ' + erro.message); }
+  };
+  window.alternarPublicacaoCurso = async function() {
+    const id = document.getElementById('curso').value;
+    if (!id) return;
+    const ref = doc(db,'cursos',id);
+    try {
+      const snap = await getDoc(ref);
+      if (!snap.exists()) { alert('Curso não encontrado no banco de dados.'); return; }
+      const dados = snap.data();
+      if (dados.excluido === true) { alert('Curso excluído não pode ser republicado.'); return; }
+      const publicado = dados.visibilidadeGerenciada === true ? dados.publicado === true : (['posicionamento-estrategico','patrimonio-protegido'].includes(id) && dados.excluido !== true);
+      if (!confirm(publicado ? 'Retirar este curso do site?' : 'Publicar este curso no site? Verifique antes se a página de vendas existe.')) return;
+      await setDoc(ref,{publicado:!publicado, visibilidadeGerenciada:true, excluido:false},{merge:true});
+      const meta = snap.data();
+      const publico = doc(db,'catalogo_publico',id);
+      if (!publicado) {
+        await setDoc(publico, {
+          titulo: meta.titulo || meta.nome || id.replace(/-/g,' '),
+          descricao: document.getElementById('cursoDescricaoPublica').value.trim() || meta.descricao || '',
+          resultado: document.getElementById('cursoResultadoPublico').value.trim() || meta.resultado || '',
+          paginaVendas: document.getElementById('cursoPaginaPublica').value.trim() || '/' + id + '.html',
+          publicado:true,
+          excluido:false
+        },{merge:true});
+      } else {
+        await setDoc(publico,{publicado:false},{merge:true});
+      }
+      await atualizarPublicacaoCurso();
+    } catch (erro) { alert('Erro ao alterar publicação: ' + erro.message); }
+  };
+  document.getElementById('curso').addEventListener('change', atualizarPublicacaoCurso);
+
   window.mostrarNovoCurso = function(abrir = true) {
     document.getElementById('novoCursoBox').style.display = abrir ? 'block' : 'none';
   };
@@ -552,7 +638,7 @@
       const refCurso = doc(db, 'cursos', id);
       const existente = await getDoc(refCurso);
       if (existente.exists()) { status.textContent = 'Já existe um curso com esse identificador. Selecione-o na lista.'; return; }
-      await setDoc(refCurso, { titulo: nome, nome: nome, ativo: true });
+      await setDoc(refCurso, { titulo: nome, nome: nome, ativo: true, publicado: false });
       await carregarCursos();
       document.getElementById('curso').value = id;
       document.getElementById('cursoParaApagar').value = id;
@@ -1091,6 +1177,9 @@
     statusDiv.textContent = '⏳ Apagando... isso pode levar alguns segundos, não feche a página.';
 
     try {
+      // Retirar do catálogo ANTES de remover aulas, evitando venda de curso incompleto.
+      await setDoc(doc(db,'catalogo_publico',curso),{publicado:false,excluido:true},{merge:true});
+      await setDoc(doc(db,'cursos',curso),{publicado:false,excluido:true,visibilidadeGerenciada:true,ativo:false},{merge:true});
       const colModulos = collection(db, 'cursos', curso, 'modulos');
       const snapModulos = await getDocs(colModulos);
 
@@ -1110,6 +1199,7 @@
         totalModulosApagados++;
       }
 
+      await carregarCursos();
       statusDiv.className = 'sucesso';
       statusDiv.textContent = `Curso "${nomeCursoLegivel}" apagado: ${totalModulosApagados} módulo(s) e ${totalAulasApagadas} aula(s) removidos. Pode recomeçar do zero quando quiser.`;
 

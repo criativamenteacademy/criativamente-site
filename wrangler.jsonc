@@ -1,0 +1,13 @@
+{
+  "name": "criativamente-site",
+  "main": "./worker/controle-publicacao.js",
+  "compatibility_date": "2026-10-23",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/posicionamento-estrategico.html",
+      "/patrimonio-protegido.html"
+    ]
+  }
+}

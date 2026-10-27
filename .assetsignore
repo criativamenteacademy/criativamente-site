@@ -1,3 +1,7 @@
 .git
 .gitignore
 wrangler.jsonc
+
+worker/
+wrangler.jsonc
+.assetsignore
