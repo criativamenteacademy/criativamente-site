@@ -6,169 +6,59 @@
   <title>Certificado — CriativaMente Academy</title>
   <meta name="robots" content="noindex" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/css/auth.css" />
   <style>
-    /* Estilos exclusivos desta página — não afeta o resto do site */
-    .certificado-tela {
-      min-height: 100vh;
-      background: var(--marfim, #FDF6E3);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px 80px;
-    }
-
-    .certificado-acoes {
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      font-family: "Inter", sans-serif;
-    }
-
-    .certificado-voltar {
-      color: var(--preto-quente, #0F0A05);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .certificado-imprimir {
-      background: var(--cobre, #B5541A);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 11px 22px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: "Inter", sans-serif;
-    }
-
-    .certificado-imprimir:hover {
-      background: var(--cobre-claro, #E8892A);
-    }
-
+    /* Identidade Estratégia e Essência — certificado */
+    .certificado-tela { min-height:100vh; background:#F3F4F6; display:flex; flex-direction:column; align-items:center; padding:40px 20px 80px; }
+    .certificado-acoes { width:100%; max-width:900px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; font-family:"Inter",sans-serif; }
+    .certificado-voltar { color:#1F2937; text-decoration:none; font-size:14px; font-weight:600; }
+    .certificado-imprimir { background:#D97706; color:#fff; border:0; border-radius:8px; padding:11px 22px; font-size:14px; font-weight:600; cursor:pointer; font-family:"Inter",sans-serif; }
+    .certificado-imprimir:hover { background:#B45309; }
     .certificado-folha {
-      width: 100%;
-      max-width: 900px;
-      background: #ffffff;
-      border: 10px solid var(--preto-quente, #0F0A05);
-      outline: 2px solid var(--cobre, #B5541A);
-      outline-offset: -18px;
-      padding: 64px 56px;
-      text-align: center;
-      font-family: "Inter", sans-serif;
-      color: var(--preto-quente, #0F0A05);
+      position:relative; box-sizing:border-box; isolation:isolate; width:100%; max-width:900px;
+      background:#fff; border:2px solid #1F2937; padding:75px 74px 65px;
+      text-align:center; font-family:"Inter",sans-serif; color:#1F2937;
+      box-shadow:0 12px 32px rgba(31,41,55,.08);
     }
-
-    .certificado-marca {
-      font-family: "Sora", sans-serif;
-      font-weight: 700;
-      font-size: 15px;
-      letter-spacing: 0.5px;
-      color: var(--cobre, #B5541A);
-      margin: 0 0 40px;
+    /* Moldura grega geométrica própria, discreta, distinta de qualquer marca. */
+    .certificado-folha::before {
+      content:""; position:absolute; inset:12px; pointer-events:none; z-index:-1;
+      border:1px solid #D97706;
+      background:
+        repeating-linear-gradient(90deg,#D97706 0 2px,transparent 2px 12px,#D97706 12px 14px,transparent 14px 25px) top 9px left 14px / calc(100% - 28px) 2px no-repeat,
+        repeating-linear-gradient(90deg,#D97706 0 2px,transparent 2px 12px,#D97706 12px 14px,transparent 14px 25px) bottom 9px left 14px / calc(100% - 28px) 2px no-repeat,
+        repeating-linear-gradient(0deg,#D97706 0 2px,transparent 2px 12px,#D97706 12px 14px,transparent 14px 25px) left 9px top 14px / 2px calc(100% - 28px) no-repeat,
+        repeating-linear-gradient(0deg,#D97706 0 2px,transparent 2px 12px,#D97706 12px 14px,transparent 14px 25px) right 9px top 14px / 2px calc(100% - 28px) no-repeat;
+      opacity:.72;
     }
-
-    .certificado-marca span {
-      color: var(--preto-quente, #0F0A05);
+    .certificado-marca { font-family:"Cormorant Garamond",Georgia,serif; font-size:25px; font-weight:700; letter-spacing:.6px; color:#D97706; margin:0 0 30px; }
+    .certificado-marca span { color:#1F2937; }
+    .certificado-titulo { font-family:"Cormorant Garamond",Georgia,serif; font-size:29px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:#0E7490; margin:0 0 12px; }
+    .certificado-texto { font-size:16px; line-height:1.7; max-width:680px; margin:0 auto; }
+    .certificado-aluno { font-family:"Cormorant Garamond",Georgia,serif; font-size:40px; font-weight:700; color:#1F2937; margin:16px 0; }
+    .certificado-curso { display:block; font-family:"Cormorant Garamond",Georgia,serif; font-size:43px; line-height:1.1; font-weight:700; color:#D97706; margin:12px auto 0; overflow-wrap:anywhere; }
+    .certificado-data { margin-top:22px; font-size:14px; color:#526071; }
+    .certificado-assinatura { margin-top:35px; display:flex; flex-direction:column; align-items:center; }
+    .certificado-assinatura img { height:100px; object-fit:contain; margin-bottom:2px; }
+    .certificado-assinatura-linha { width:220px; border-top:1px solid #1F2937; padding-top:8px; font-size:13px; }
+    .certificado-assinatura-nome { font-weight:600; }
+    .certificado-assinatura-cargo { color:#526071; font-size:12px; }
+    .certificado-aviso { max-width:480px; margin:100px auto; text-align:center; font-family:"Inter",sans-serif; color:#1F2937; padding:0 24px; }
+    .certificado-aviso h1 { font-family:"Cormorant Garamond",Georgia,serif; font-size:30px; margin-bottom:10px; }
+    .certificado-aviso p { color:#526071; margin-bottom:24px; }
+    @media(max-width:650px) {
+      .certificado-folha { padding:60px 35px 45px; }
+      .certificado-curso { font-size:32px; }
+      .certificado-aluno { font-size:34px; }
+      .certificado-acoes { gap:12px; flex-wrap:wrap; }
     }
-
-    .certificado-titulo {
-      font-family: "Sora", sans-serif;
-      font-size: 15px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--cinza-quente, #6B5744);
-      margin: 0 0 8px;
-    }
-
-    .certificado-texto {
-      font-size: 17px;
-      line-height: 1.7;
-      max-width: 640px;
-      margin: 0 auto;
-    }
-
-    .certificado-aluno {
-      font-family: "Sora", sans-serif;
-      font-size: 34px;
-      font-weight: 700;
-      color: var(--preto-quente, #0F0A05);
-      margin: 22px 0;
-    }
-
-    .certificado-curso {
-      font-family: "Sora", sans-serif;
-      font-weight: 700;
-      color: var(--cobre, #B5541A);
-    }
-
-    .certificado-data {
-      margin-top: 24px;
-      font-size: 14px;
-      color: var(--cinza-quente, #6B5744);
-    }
-
-    .certificado-assinatura {
-      margin-top: 56px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .certificado-assinatura img {
-      height: 120px;
-      object-fit: contain;
-      margin-bottom: 2px;
-    }
-
-    .certificado-assinatura-linha {
-      width: 220px;
-      border-top: 1px solid var(--preto-quente, #0F0A05);
-      padding-top: 8px;
-      font-size: 13px;
-    }
-
-    .certificado-assinatura-nome {
-      font-weight: 600;
-    }
-
-    .certificado-assinatura-cargo {
-      color: var(--cinza-quente, #6B5744);
-      font-size: 12px;
-    }
-
-    .certificado-aviso {
-      max-width: 480px;
-      margin: 100px auto;
-      text-align: center;
-      font-family: "Inter", sans-serif;
-      color: var(--preto-quente, #0F0A05);
-      padding: 0 24px;
-    }
-
-    .certificado-aviso h1 {
-      font-family: "Sora", sans-serif;
-      font-size: 22px;
-      margin-bottom: 10px;
-    }
-
-    .certificado-aviso p {
-      color: var(--cinza-quente, #6B5744);
-      margin-bottom: 24px;
-    }
-
-    /* Layout de impressão: some com cabeçalho/botões, só a folha aparece */
     @media print {
-      .certificado-acoes { display: none !important; }
-      .certificado-tela { padding: 0; background: #fff; }
-      .certificado-folha { border-width: 6px; outline-offset: -14px; box-shadow: none; }
-      @page { size: landscape; margin: 0; }
+      .certificado-acoes { display:none!important; }
+      .certificado-tela { padding:0; background:#fff; min-height:0; }
+      .certificado-folha { width:100%; max-width:none; min-height:100vh; box-shadow:none; border:2px solid #1F2937; padding:55px 70px 40px; }
+      .certificado-folha::before { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      @page { size:landscape; margin:0; }
     }
   </style>
 </head>
