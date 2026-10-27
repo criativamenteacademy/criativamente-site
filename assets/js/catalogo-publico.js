@@ -44,12 +44,7 @@ try {
   // Cursos antigos permanecem visíveis até migração explícita.
   // Cursos despublicados são removidos pelo ID da página; novos publicados são adicionados.
   if (container) {
-    for (const card of [...container.querySelectorAll('.course-card')]) {
-      const href = card.querySelector('a[href]')?.getAttribute('href') || '';
-      const id = href.split('/').pop().replace('.html', '');
-      const registro = docs.docs.find(d => d.id === id);
-      if (registro && (registro.data().publicado === false || registro.data().excluido === true || registro.data().ativo === false)) card.remove();
-    }
+    // Cursos legados permanecem visíveis até migração controlada.
     for (const curso of cursos) {
       if ([...container.querySelectorAll('a[href]')].some(a => a.getAttribute('href')?.split('/').pop() === curso.url.split('/').pop())) continue;
       const card=document.createElement('div'); card.className='card course-card';
