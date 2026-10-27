@@ -47,5 +47,13 @@ try {
     }
   }
 } catch (erro) {
-  console.error('Não foi possível atualizar o catálogo; exibindo cursos estáticos existentes.', erro);
+  console.error('Falha na leitura pública do Firestore:', erro);
+  if (container) {
+    container.replaceChildren();
+    const aviso = document.createElement('p');
+    aviso.setAttribute('role', 'alert');
+    aviso.textContent = 'Catálogo temporariamente indisponível. Diagnóstico: ' + (erro.code || erro.message || 'falha desconhecida') + '.';
+    container.append(aviso);
+  }
+  if (tabela) tabela.replaceChildren();
 }
