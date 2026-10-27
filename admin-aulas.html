@@ -378,11 +378,8 @@
     
   </select><button type="button" class="botao-imagem" onclick="mostrarNovoCurso()">+ Criar novo curso</button></div>
   <div class="novo-curso-box" style="margin:12px 0"><h3>Publicação no site</h3>
-<label for="cursoDescricaoPublica">Descrição pública</label><textarea id="cursoDescricaoPublica" rows="3" style="width:100%"></textarea>
-<label for="cursoResultadoPublico">Resultado do curso</label><input id="cursoResultadoPublico" style="width:100%">
-<label for="cursoPaginaPublica">Página de vendas (ex.: /posicionamento-estrategico.html)</label><input id="cursoPaginaPublica" style="width:100%">
 <p id="statusPublicacaoCurso" role="status" aria-live="polite">Selecione um curso para consultar a publicação.</p>
-<button type="button" onclick="salvarDadosPublicosCurso()">Salvar informações públicas</button>
+
 <button type="button" onclick="alternarPublicacaoCurso()" id="botaoPublicarCurso">Publicar no site</button></div><div id="novoCursoBox" class="novo-curso-box" style="display:none"><label for="novoCursoNome">Nome do novo curso</label><input type="text" id="novoCursoNome" placeholder="Ex.: Marketing Digital"><p class="ajuda">O curso será criado com o nome informado, sem precisar digitar identificadores com traços.</p><button type="button" class="botao-imagem" onclick="criarNovoCurso()">Cadastrar curso</button><button type="button" class="botao-imagem botao-neutro" onclick="mostrarNovoCurso(false)">Cancelar</button><p id="statusNovoCurso" class="ajuda" role="status"></p></div>
 
   <div class="linha-dupla">
@@ -555,44 +552,11 @@
     try {
       const snap = await getDoc(doc(db, 'cursos', id));
       const d = snap.exists() ? snap.data() : {};
-      document.getElementById('cursoDescricaoPublica').value = d.descricao || '';
-      document.getElementById('cursoResultadoPublico').value = d.resultado || '';
-      document.getElementById('cursoPaginaPublica').value = d.paginaVendas || '/' + id + '.html';
       const publicado = d.visibilidadeGerenciada === true ? d.publicado === true : (['posicionamento-estrategico','patrimonio-protegido'].includes(id) && d.excluido !== true);
       botao.textContent = publicado ? 'Despublicar do site' : 'Publicar no site';
       status.textContent = publicado ? 'Curso publicado no site.' : 'Curso não publicado no site.';
     } catch (erro) { status.textContent = 'Erro ao consultar publicação: ' + erro.message; }
   }
-  window.salvarDadosPublicosCurso = async function() {
-    const id = document.getElementById('curso').value;
-    if (!id) return;
-    const paginaVendas = document.getElementById('cursoPaginaPublica').value.trim();
-    if (!/^\/[a-z0-9-]+\.html$/.test(paginaVendas)) { alert('Use uma página local no formato /nome-do-curso.html'); return; }
-    try {
-      const privado = doc(db,'cursos',id);
-      const snap = await getDoc(privado);
-      if (!snap.exists() || snap.data().excluido === true) {
-        alert('Curso não encontrado ou excluído.'); return;
-      }
-      const dados = snap.data();
-      const descricao = document.getElementById('cursoDescricaoPublica').value.trim();
-      const resultado = document.getElementById('cursoResultadoPublico').value.trim();
-      await setDoc(privado, { descricao, resultado, paginaVendas }, {merge:true});
-      const publicado = dados.visibilidadeGerenciada === true
-        ? dados.publicado === true
-        : ['posicionamento-estrategico','patrimonio-protegido'].includes(id);
-      if (publicado) {
-        await setDoc(doc(db,'catalogo_publico',id), {
-          titulo: dados.titulo || dados.nome || id.replace(/-/g,' '),
-          descricao, resultado, paginaVendas, publicado:true, excluido:false
-        }, {merge:true});
-      }
-      const aviso = document.getElementById('statusPublicacaoCurso');
-      aviso.textContent = '✓ Informações públicas salvas e catálogo sincronizado.';
-      aviso.style.cssText = 'background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:8px;padding:12px 16px;font-weight:600;margin:12px 0;';
-
-    } catch (erro) { alert('Erro ao salvar: ' + erro.message); }
-  };
   window.alternarPublicacaoCurso = async function() {
     const id = document.getElementById('curso').value;
     if (!id) return;
@@ -610,9 +574,9 @@
       if (!publicado) {
         await setDoc(publico, {
           titulo: meta.titulo || meta.nome || id.replace(/-/g,' '),
-          descricao: document.getElementById('cursoDescricaoPublica').value.trim() || meta.descricao || '',
-          resultado: document.getElementById('cursoResultadoPublico').value.trim() || meta.resultado || '',
-          paginaVendas: document.getElementById('cursoPaginaPublica').value.trim() || '/' + id + '.html',
+          descricao: meta.descricao || '',
+          resultado: meta.resultado || '',
+          paginaVendas: meta.paginaVendas || '/' + id + '.html',
           publicado:true,
           excluido:false
         },{merge:true});
