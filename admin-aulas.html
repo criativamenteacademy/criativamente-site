@@ -591,14 +591,14 @@
       const publico = doc(db,'catalogo_publico',id);
       if (!publicado) {
         await setDoc(publico, {
-          titulo: meta.titulo || meta.nome || nomeLegivelCurso(id),
+          titulo: meta.titulo || meta.nome || nomeCursoPorId(id),
           descricao: document.getElementById('cursoDescricaoPublica').value.trim() || meta.descricao || '',
           resultado: document.getElementById('cursoResultadoPublico').value.trim() || meta.resultado || '',
           paginaVendas: document.getElementById('cursoPaginaPublica').value.trim() || '/' + id + '.html',
           publicado:true
         },{merge:true});
       } else {
-        await deleteDoc(publico);
+        await setDoc(publico,{publicado:false},{merge:true});
       }
       await atualizarPublicacaoCurso();
     } catch (erro) { alert('Erro ao alterar publicação: ' + erro.message); }
@@ -1179,7 +1179,7 @@
       }
 
       await setDoc(doc(db, 'cursos', curso), { publicado:false, excluido:true, visibilidadeGerenciada:true, ativo:false }, {merge:true});
-      await deleteDoc(doc(db,'catalogo_publico',curso));
+      await setDoc(doc(db,'catalogo_publico',curso),{publicado:false,excluido:true},{merge:true});
       await carregarCursos();
       statusDiv.className = 'sucesso';
       statusDiv.textContent = `Curso "${nomeCursoLegivel}" apagado: ${totalModulosApagados} módulo(s) e ${totalAulasApagadas} aula(s) removidos. Pode recomeçar do zero quando quiser.`;
