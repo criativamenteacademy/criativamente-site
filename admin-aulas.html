@@ -585,7 +585,7 @@
       if (!snap.exists()) { alert('Curso não encontrado no banco de dados.'); return; }
       const publicado = snap.data().publicado === true;
       if (!confirm(publicado ? 'Retirar este curso do site?' : 'Publicar este curso no site? Verifique antes se a página de vendas existe.')) return;
-      await setDoc(ref,{publicado:!publicado},{merge:true});
+      await setDoc(ref,{publicado:!publicado, visibilidadeGerenciada:true, excluido:false},{merge:true});
       await atualizarPublicacaoCurso();
     } catch (erro) { alert('Erro ao alterar publicação: ' + erro.message); }
   };
@@ -1164,6 +1164,8 @@
         totalModulosApagados++;
       }
 
+      await setDoc(doc(db, 'cursos', curso), { publicado:false, excluido:true, visibilidadeGerenciada:true, ativo:false }, {merge:true});
+      await carregarCursos();
       statusDiv.className = 'sucesso';
       statusDiv.textContent = `Curso "${nomeCursoLegivel}" apagado: ${totalModulosApagados} módulo(s) e ${totalAulasApagadas} aula(s) removidos. Pode recomeçar do zero quando quiser.`;
 
