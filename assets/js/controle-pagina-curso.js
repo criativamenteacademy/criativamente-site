@@ -5,6 +5,7 @@ const db = getFirestore(app);
 const id = document.documentElement.dataset.cursoId;
 const legado = new Set(['posicionamento-estrategico','patrimonio-protegido']);
 const bloquear = () => {
+  document.documentElement.classList.add('publicacao-verificada');
   document.body.replaceChildren();
   const aviso = document.createElement('main');
   aviso.style.cssText = 'max-width:700px;margin:15vh auto;padding:32px;font:18px Arial,sans-serif;text-align:center';
@@ -17,7 +18,7 @@ try {
   const snap = await getDoc(doc(db,'catalogo_publico',id));
   const d = snap.exists() ? snap.data() : null;
   if (d ? d.publicado !== true || d.excluido === true : !legado.has(id)) bloquear();
-  else document.documentElement.style.visibility = 'visible';
+  else document.documentElement.classList.add('publicacao-verificada');
 } catch (erro) {
   console.error('Falha ao verificar publicação:', erro);
   bloquear();
