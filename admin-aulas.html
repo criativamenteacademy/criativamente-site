@@ -381,7 +381,7 @@
 <label for="cursoDescricaoPublica">Descrição pública</label><textarea id="cursoDescricaoPublica" rows="3" style="width:100%"></textarea>
 <label for="cursoResultadoPublico">Resultado do curso</label><input id="cursoResultadoPublico" style="width:100%">
 <label for="cursoPaginaPublica">Página de vendas (ex.: /posicionamento-estrategico.html)</label><input id="cursoPaginaPublica" style="width:100%">
-<p id="statusPublicacaoCurso" role="status">Selecione um curso para consultar a publicação.</p>
+<p id="statusPublicacaoCurso" role="status" aria-live="polite">Selecione um curso para consultar a publicação.</p>
 <button type="button" onclick="salvarDadosPublicosCurso()">Salvar informações públicas</button>
 <button type="button" onclick="alternarPublicacaoCurso()" id="botaoPublicarCurso">Publicar no site</button></div><div id="novoCursoBox" class="novo-curso-box" style="display:none"><label for="novoCursoNome">Nome do novo curso</label><input type="text" id="novoCursoNome" placeholder="Ex.: Marketing Digital"><p class="ajuda">O curso será criado com o nome informado, sem precisar digitar identificadores com traços.</p><button type="button" class="botao-imagem" onclick="criarNovoCurso()">Cadastrar curso</button><button type="button" class="botao-imagem botao-neutro" onclick="mostrarNovoCurso(false)">Cancelar</button><p id="statusNovoCurso" class="ajuda" role="status"></p></div>
 
@@ -586,8 +586,10 @@
           descricao, resultado, paginaVendas, publicado:true, excluido:false
         }, {merge:true});
       }
-      document.getElementById('statusPublicacaoCurso').textContent = 'Informações públicas salvas e catálogo sincronizado.';
-      alert('Informações públicas salvas e catálogo sincronizado.');
+      const aviso = document.getElementById('statusPublicacaoCurso');
+      aviso.textContent = '✓ Informações públicas salvas e catálogo sincronizado.';
+      aviso.style.cssText = 'background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:8px;padding:12px 16px;font-weight:600;margin:12px 0;';
+
     } catch (erro) { alert('Erro ao salvar: ' + erro.message); }
   };
   window.alternarPublicacaoCurso = async function() {
