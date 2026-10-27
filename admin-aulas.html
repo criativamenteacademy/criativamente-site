@@ -477,7 +477,7 @@
       
     </select>
 
-    <button type="button" style="background:#c0392b; color:#fff; border:none; padding:10px 16px; border-radius:6px; cursor:pointer; margin-top:10px;" onclick="apagarCursoCompleto()">🗑️ Apagar todo o conteúdo deste curso</button>
+    <label for="senhaConfirmacaoExclusao" style="display:block;margin-top:14px;">Senha de acesso ao painel para confirmar a exclusão</label>\n    <input id="senhaConfirmacaoExclusao" type="password" autocomplete="current-password" placeholder="Digite sua senha de acesso" style="display:block;width:100%;max-width:380px;box-sizing:border-box;margin-top:6px;padding:10px;border:1px solid #bca3a3;border-radius:6px;">\n    <button type="button" style="background:#c0392b; color:#fff; border:none; padding:10px 16px; border-radius:6px; cursor:pointer; margin-top:10px;" onclick="apagarCursoCompleto()">🗑️ Apagar todo o conteúdo deste curso</button>
 
     <div id="statusApagar" style="margin-top:10px;"></div>
   </div>
@@ -486,7 +486,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
   import {
-    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential
   } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
   import {
     getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs
@@ -1162,16 +1162,30 @@
     );
     if (!confirmar1) return;
 
-    // Segunda confirmação: precisa digitar o nome do curso certinho
-    const digitado = window.prompt(
-      `Para confirmar, digite o nome do curso normalmente (com espaços, sem traços):\n\n"${nomeCursoLegivel}"`
-    );
-    const normalizarNome = valor => (valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-    if (normalizarNome(digitado) !== normalizarNome(nomeCursoLegivel)) {
+    // Segunda confirmação: reautenticar com a senha real do painel.
+    // Não armazenar a senha nem exibi-la em prompt de texto simples.
+    const senha = document.getElementById('senhaConfirmacaoExclusao').value;
+    if (!senha) {
       statusDiv.className = 'erro';
-      statusDiv.textContent = 'Nome digitado não confere. Nada foi apagado.';
+      statusDiv.textContent = 'Informe a senha de acesso ao painel para confirmar.';
       return;
     }
+    const usuarioAdmin = auth.currentUser;
+    if (!usuarioAdmin || usuarioAdmin.email?.toLowerCase() !== EMAIL_ADMIN.toLowerCase()) {
+      statusDiv.className = 'erro';
+      statusDiv.textContent = 'Sessão administrativa inválida. Entre novamente no painel.';
+      return;
+    }
+    try {
+      const credencial = EmailAuthProvider.credential(usuarioAdmin.email, senha);
+      await reauthenticateWithCredential(usuarioAdmin, credencial);
+    } catch (_) {
+      statusDiv.className = 'erro';
+      statusDiv.textContent = 'Senha incorreta ou autenticação não permitida. Nada foi apagado.';
+      document.getElementById('senhaConfirmacaoExclusao').value = '';
+      return;
+    }
+    document.getElementById('senhaConfirmacaoExclusao').value = '';
 
     statusDiv.className = '';
     statusDiv.textContent = '⏳ Apagando... isso pode levar alguns segundos, não feche a página.';
