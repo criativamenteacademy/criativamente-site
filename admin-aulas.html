@@ -568,12 +568,25 @@
     const paginaVendas = document.getElementById('cursoPaginaPublica').value.trim();
     if (!/^\/[a-z0-9-]+\.html$/.test(paginaVendas)) { alert('Use uma página local no formato /nome-do-curso.html'); return; }
     try {
-      await setDoc(doc(db,'cursos',id), {
-        descricao: document.getElementById('cursoDescricaoPublica').value.trim(),
-        resultado: document.getElementById('cursoResultadoPublico').value.trim(),
-        paginaVendas
-      }, {merge:true});
-      document.getElementById('statusPublicacaoCurso').textContent = 'Informações públicas salvas.';
+      const privado = doc(db,'cursos',id);
+      const snap = await getDoc(privado);
+      if (!snap.exists() || snap.data().excluido === true) {
+        alert('Curso não encontrado ou excluído.'); return;
+      }
+      const dados = snap.data();
+      const descricao = document.getElementById('cursoDescricaoPublica').value.trim();
+      const resultado = document.getElementById('cursoResultadoPublico').value.trim();
+      await setDoc(privado, { descricao, resultado, paginaVendas }, {merge:true});
+      const publicado = dados.visibilidadeGerenciada === true
+        ? dados.publicado === true
+        : ['posicionamento-estrategico','patrimonio-protegido'].includes(id);
+      if (publicado) {
+        await setDoc(doc(db,'catalogo_publico',id), {
+          titulo: dados.titulo || dados.nome || id.replace(/-/g,' '),
+          descricao, resultado, paginaVendas, publicado:true, excluido:false
+        }, {merge:true});
+      }
+      document.getElementById('statusPublicacaoCurso').textContent = 'Informações públicas salvas e catálogo sincronizado.';
     } catch (erro) { alert('Erro ao salvar: ' + erro.message); }
   };
   window.alternarPublicacaoCurso = async function() {
@@ -595,7 +608,8 @@
           descricao: document.getElementById('cursoDescricaoPublica').value.trim() || meta.descricao || '',
           resultado: document.getElementById('cursoResultadoPublico').value.trim() || meta.resultado || '',
           paginaVendas: document.getElementById('cursoPaginaPublica').value.trim() || '/' + id + '.html',
-          publicado:true
+          publicado:true,
+          excluido:false
         },{merge:true});
       } else {
         await setDoc(publico,{publicado:false},{merge:true});
