@@ -11,6 +11,11 @@ function texto(valor) { return typeof valor === 'string' ? valor.trim() : ''; }
 function renderizar(cursos) {
   if (container) {
     container.replaceChildren();
+    for (const card of [...container.querySelectorAll('.course-card')]) {
+      const id = (card.querySelector('a[href]')?.getAttribute('href') || '').split('/').pop().replace('.html','');
+      const registro = docs.docs.find(d => d.id === id);
+      if (registro && (registro.data().excluido === true || (registro.data().visibilidadeGerenciada === true && registro.data().publicado !== true))) card.remove();
+    }
     for (const curso of cursos) {
       const card = document.createElement('div'); card.className = 'card course-card';
       const titulo = document.createElement('h3'); titulo.textContent = curso.titulo;
