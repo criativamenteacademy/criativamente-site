@@ -11,12 +11,12 @@
   <style>
     /* Identidade Estratégia e Essência — certificado */
     .certificado-tela { min-height:100vh; background:#1F2937; display:flex; flex-direction:column; align-items:center; padding:40px 20px 80px; }
-    .certificado-acoes { width:100%; max-width:900px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; font-family:"Inter",sans-serif; }
+    .certificado-acoes { width:100%; max-width:1120px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; font-family:"Inter",sans-serif; }
     .certificado-voltar { color:#1F2937; text-decoration:none; font-size:14px; font-weight:600; }
     .certificado-imprimir { background:#D97706; color:#fff; border:0; border-radius:8px; padding:11px 22px; font-size:14px; font-weight:600; cursor:pointer; font-family:"Inter",sans-serif; }
     .certificado-imprimir:hover { background:#B45309; }
     .certificado-folha {
-      position:relative; box-sizing:border-box; isolation:isolate; width:100%; max-width:900px;
+      position:relative; box-sizing:border-box; isolation:isolate; width:100%; max-width:1120px; aspect-ratio:420 / 297;
       background:#fff; border:2px solid #1F2937; padding:75px 74px 65px;
       text-align:center; font-family:"Inter",sans-serif; color:#1F2937;
       box-shadow:0 12px 32px rgba(31,41,55,.08);
@@ -48,7 +48,7 @@
     .certificado-aviso h1 { font-family:"Cormorant Garamond",Georgia,serif; font-size:30px; margin-bottom:10px; }
     .certificado-aviso p { color:#526071; margin-bottom:24px; }
     @media(max-width:650px) {
-      .certificado-folha { padding:60px 35px 45px; }
+      .certificado-folha { aspect-ratio:auto; padding:60px 35px 45px; }
       .certificado-curso { font-size:32px; }
       .certificado-aluno { font-size:34px; }
       .certificado-acoes { gap:12px; flex-wrap:wrap; }
@@ -56,9 +56,9 @@
     @media print {
       .certificado-acoes { display:none!important; }
       .certificado-tela { padding:0; background:#fff; min-height:0; }
-      .certificado-folha { width:100%; max-width:none; min-height:100vh; box-shadow:none; border:2px solid #1F2937; padding:55px 70px 40px; }
+      .certificado-folha { width:420mm; height:297mm; max-width:none; min-height:0; aspect-ratio:auto; box-shadow:none; border:2px solid #1F2937; padding:30mm 28mm 20mm; break-inside:avoid; }
       .certificado-folha::before { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
-      @page { size:landscape; margin:0; }
+      @page { size:A3 landscape; margin:0; }
     }
   </style>
 </head>
