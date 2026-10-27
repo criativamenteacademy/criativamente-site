@@ -59,8 +59,8 @@
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
     import { sairUsuario } from "/assets/js/auth.js";
     import { carregarAula, ERROS } from "/assets/js/content-loader.js";
-    import { registrarUltimaAula, marcarAulaConcluida } from "/assets/js/progress.js";
-    import { proximaAula, aulaAnterior } from "/assets/js/access-control.js";
+    import { registrarUltimaAula, marcarAulaConcluida, verificarEMarcarConclusao } from "/assets/js/progress.js";
+    import { proximaAula, aulaAnterior, listarModulos, listarAulas } from "/assets/js/access-control.js";
     import { ativarProtecaoConteudo } from "/assets/js/protecao-conteudo.js";
 
     document.getElementById("botao-sair").addEventListener("click", async () => {
@@ -215,15 +215,24 @@
         await marcarAulaConcluida(usuario.uid, cursoId, moduloId, aulaId);
         botao.textContent = "Aula concluída ✓";
 
+        // A conclusão é calculada sobre todas as aulas cadastradas, não só a última aberta.
+        const modulos = await listarModulos(cursoId);
+        const grupos = await Promise.all(modulos.map(m => listarAulas(cursoId, m.id)));
+        const totalAulas = grupos.reduce((total, aulas) => total + aulas.length, 0);
+        const concluido = await verificarEMarcarConclusao(usuario.uid, cursoId, totalAulas);
+
         const botaoProxima = document.getElementById("botao-proxima");
         const proxima = await proximaAula(cursoId, moduloId, aulaId);
 
-        if (proxima) {
+        if (concluido) {
+          botaoProxima.href = `/certificado.html?curso=${encodeURIComponent(cursoId)}`;
+          botaoProxima.textContent = "Curso concluído — ver meu certificado";
+        } else if (proxima) {
           botaoProxima.href = `/aula.html?curso=${cursoId}&modulo=${proxima.moduloId}&aula=${proxima.aulaId}`;
           botaoProxima.textContent = "Próxima aula →";
         } else {
           botaoProxima.href = `/area-do-aluno.html`;
-          botaoProxima.textContent = "Curso concluído — voltar para minha área";
+          botaoProxima.textContent = "Voltar para minha área";
         }
         botaoProxima.style.display = "inline-block";
       } catch {
