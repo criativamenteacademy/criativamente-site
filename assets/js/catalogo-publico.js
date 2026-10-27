@@ -8,56 +8,44 @@ const container = document.querySelector('[data-catalogo-cursos]');
 const tabela = document.querySelector('[data-resultados-cursos]');
 const permitidos = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 function texto(valor) { return typeof valor === 'string' ? valor.trim() : ''; }
-function renderizar(cursos) {
-  if (container) {
-    container.replaceChildren();
-    for (const card of [...container.querySelectorAll('.course-card')]) {
-      const id = (card.querySelector('a[href]')?.getAttribute('href') || '').split('/').pop().replace('.html','');
-      const registro = docs.docs.find(d => d.id === id);
-      if (registro && (registro.data().excluido === true || (registro.data().visibilidadeGerenciada === true && registro.data().publicado !== true))) card.remove();
-    }
-    for (const curso of cursos) {
-      const card = document.createElement('div'); card.className = 'card course-card';
-      const titulo = document.createElement('h3'); titulo.textContent = curso.titulo;
-      const descricao = document.createElement('p'); descricao.textContent = curso.descricao || 'Curso prático da CriativaMente Academy.';
-      const link = document.createElement('a'); link.className = 'btn btn-primary'; link.href = curso.url; link.textContent = 'Saiba mais';
-      card.append(titulo, descricao, link); container.append(card);
-    }
-    if (!cursos.length) { const p = document.createElement('p'); p.textContent = 'Nenhum curso publicado no momento.'; container.append(p); }
-  }
-  if (tabela) {
-    tabela.replaceChildren();
-    for (const curso of cursos) {
-      const tr = document.createElement('tr'); const a = document.createElement('td'); const b = document.createElement('td');
-      a.textContent = curso.titulo; b.textContent = curso.resultado || curso.descricao || 'Resultado prático ao concluir o curso.';
-      tr.append(a,b); tabela.append(tr);
-    }
-  }
-}
-// Preserva os cursos legados enquanto os registros são migrados.
+// Os dois cursos anteriores à integração começam publicados.
+// Uma ação explícita no painel passa a controlar sua visibilidade.
+const legados = new Set(['posicionamento-estrategico', 'patrimonio-protegido']);
 try {
-  const docs = await getDocs(collection(db, 'cursos'));
-  const cursos = docs.docs.flatMap(doc => {
-    const d = doc.data();
-    if (d.publicado !== true || d.ativo === false || !permitidos.test(doc.id)) return [];
-    const titulo = texto(d.titulo || d.nome);
-    if (!titulo) return [];
-    const caminho = texto(d.paginaVendas);
-    const url = caminho && /^\/[a-z0-9-]+\.html$/.test(caminho) ? caminho : '/' + doc.id + '.html';
-    return [{ titulo, descricao: texto(d.descricao), resultado: texto(d.resultado), url }];
-  }).sort((a,b)=>a.titulo.localeCompare(b.titulo,'pt-BR'));
-  // Cursos antigos permanecem visíveis até migração explícita.
-  // Cursos despublicados são removidos pelo ID da página; novos publicados são adicionados.
+  const snapshot = await getDocs(collection(db, 'cursos'));
+  const registros = new Map(snapshot.docs.map(d => [d.id, d.data()]));
+  const visivel = (id, d) => {
+    if (d?.excluido === true || d?.ativo === false) return false;
+    if (d?.visibilidadeGerenciada === true) return d.publicado === true;
+    return legados.has(id);
+  };
   if (container) {
-    // Cursos legados permanecem visíveis até migração controlada.
-    for (const curso of cursos) {
-      if ([...container.querySelectorAll('a[href]')].some(a => a.getAttribute('href')?.split('/').pop() === curso.url.split('/').pop())) continue;
-      const card=document.createElement('div'); card.className='card course-card';
-      const h=document.createElement('h3'); h.textContent=curso.titulo;
-      const p=document.createElement('p'); p.textContent=curso.descricao || 'Curso prático da CriativaMente Academy.';
-      const a=document.createElement('a'); a.href=curso.url; a.className='btn btn-primary'; a.textContent='Saiba mais';
+    for (const card of [...container.querySelectorAll('.course-card')]) {
+      const id = (card.querySelector('a[href]')?.getAttribute('href') || '').split('/').pop().replace(/\\.html$/, '');
+      if (!visivel(id, registros.get(id))) card.remove();
+    }
+    for (const doc of snapshot.docs) {
+      const d = doc.data(), id = doc.id;
+      if (!permitidos.test(id) || !visivel(id, d)) continue;
+      if ([...container.querySelectorAll('a[href]')].some(a => a.getAttribute('href')?.split('/').pop() === id + '.html')) continue;
+      const titulo = texto(d.titulo || d.nome);
+      if (!titulo) continue;
+      const caminho = texto(d.paginaVendas);
+      const url = /^\\/[a-z0-9-]+\\.html$/.test(caminho) ? caminho : '/' + id + '.html';
+      const card = document.createElement('div'); card.className = 'card course-card';
+      const h = document.createElement('h3'); h.textContent = titulo;
+      const p = document.createElement('p'); p.textContent = texto(d.descricao) || 'Curso prático da CriativaMente Academy.';
+      const a = document.createElement('a'); a.href = url; a.className = 'btn btn-primary'; a.textContent = 'Saiba mais';
       card.append(h,p,a); container.append(card);
     }
   }
-  // A tabela legada permanece até os cursos serem migrados.
-} catch (e) { console.error('Catálogo indisponível:', e); }
+  if (tabela) {
+    for (const tr of [...tabela.querySelectorAll('tr')]) {
+      const titulo = tr.querySelector('td')?.textContent?.trim();
+      const id = titulo === 'Posicionamento Estratégico' ? 'posicionamento-estrategico' : titulo === 'Patrimônio Protegido' ? 'patrimonio-protegido' : null;
+      if (id && !visivel(id, registros.get(id))) tr.remove();
+    }
+  }
+} catch (erro) {
+  console.error('Não foi possível atualizar o catálogo; exibindo cursos estáticos existentes.', erro);
+}
