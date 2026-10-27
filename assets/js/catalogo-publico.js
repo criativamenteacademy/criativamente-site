@@ -12,12 +12,11 @@ function texto(valor) { return typeof valor === 'string' ? valor.trim() : ''; }
 // Uma ação explícita no painel passa a controlar sua visibilidade.
 const legados = new Set(['posicionamento-estrategico', 'patrimonio-protegido']);
 try {
-  const snapshot = await getDocs(collection(db, 'cursos'));
+  const snapshot = await getDocs(collection(db, 'catalogo_publico'));
   const registros = new Map(snapshot.docs.map(d => [d.id, d.data()]));
   const visivel = (id, d) => {
     if (d?.excluido === true || d?.ativo === false) return false;
-    if (d?.visibilidadeGerenciada === true) return d.publicado === true;
-    return legados.has(id);
+    return d ? d.publicado === true : legados.has(id);
   };
   if (container) {
     for (const card of [...container.querySelectorAll('.course-card')]) {
