@@ -587,6 +587,7 @@
         }, {merge:true});
       }
       document.getElementById('statusPublicacaoCurso').textContent = 'Informações públicas salvas e catálogo sincronizado.';
+      alert('Informações públicas salvas e catálogo sincronizado.');
     } catch (erro) { alert('Erro ao salvar: ' + erro.message); }
   };
   window.alternarPublicacaoCurso = async function() {
