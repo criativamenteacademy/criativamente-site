@@ -557,7 +557,7 @@
       document.getElementById('cursoDescricaoPublica').value = d.descricao || '';
       document.getElementById('cursoResultadoPublico').value = d.resultado || '';
       document.getElementById('cursoPaginaPublica').value = d.paginaVendas || '/' + id + '.html';
-      const publicado = d.publicado === true;
+      const publicado = d.visibilidadeGerenciada === true ? d.publicado === true : (['posicionamento-estrategico','patrimonio-protegido'].includes(id) && d.excluido !== true);
       botao.textContent = publicado ? 'Despublicar do site' : 'Publicar no site';
       status.textContent = publicado ? 'Curso publicado no site.' : 'Curso não publicado no site.';
     } catch (erro) { status.textContent = 'Erro ao consultar publicação: ' + erro.message; }
@@ -583,7 +583,8 @@
     try {
       const snap = await getDoc(ref);
       if (!snap.exists()) { alert('Curso não encontrado no banco de dados.'); return; }
-      const publicado = snap.data().publicado === true;
+      const dados = snap.data();
+      const publicado = dados.visibilidadeGerenciada === true ? dados.publicado === true : (['posicionamento-estrategico','patrimonio-protegido'].includes(id) && dados.excluido !== true);
       if (!confirm(publicado ? 'Retirar este curso do site?' : 'Publicar este curso no site? Verifique antes se a página de vendas existe.')) return;
       await setDoc(ref,{publicado:!publicado, visibilidadeGerenciada:true, excluido:false},{merge:true});
       await atualizarPublicacaoCurso();
