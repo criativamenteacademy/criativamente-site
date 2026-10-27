@@ -600,6 +600,7 @@
       const snap = await getDoc(ref);
       if (!snap.exists()) { alert('Curso não encontrado no banco de dados.'); return; }
       const dados = snap.data();
+      if (dados.excluido === true) { alert('Curso excluído não pode ser republicado.'); return; }
       const publicado = dados.visibilidadeGerenciada === true ? dados.publicado === true : (['posicionamento-estrategico','patrimonio-protegido'].includes(id) && dados.excluido !== true);
       if (!confirm(publicado ? 'Retirar este curso do site?' : 'Publicar este curso no site? Verifique antes se a página de vendas existe.')) return;
       await setDoc(ref,{publicado:!publicado, visibilidadeGerenciada:true, excluido:false},{merge:true});
@@ -1176,6 +1177,9 @@
     statusDiv.textContent = '⏳ Apagando... isso pode levar alguns segundos, não feche a página.';
 
     try {
+      // Retirar do catálogo ANTES de remover aulas, evitando venda de curso incompleto.
+      await setDoc(doc(db,'catalogo_publico',curso),{publicado:false,excluido:true},{merge:true});
+      await setDoc(doc(db,'cursos',curso),{publicado:false,excluido:true,visibilidadeGerenciada:true,ativo:false},{merge:true});
       const colModulos = collection(db, 'cursos', curso, 'modulos');
       const snapModulos = await getDocs(colModulos);
 
@@ -1195,8 +1199,6 @@
         totalModulosApagados++;
       }
 
-      await setDoc(doc(db, 'cursos', curso), { publicado:false, excluido:true, visibilidadeGerenciada:true, ativo:false }, {merge:true});
-      await setDoc(doc(db,'catalogo_publico',curso),{publicado:false,excluido:true},{merge:true});
       await carregarCursos();
       statusDiv.className = 'sucesso';
       statusDiv.textContent = `Curso "${nomeCursoLegivel}" apagado: ${totalModulosApagados} módulo(s) e ${totalAulasApagadas} aula(s) removidos. Pode recomeçar do zero quando quiser.`;
