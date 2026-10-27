@@ -21,7 +21,7 @@ try {
   };
   if (container) {
     for (const card of [...container.querySelectorAll('.course-card')]) {
-      const id = (card.querySelector('a[href]')?.getAttribute('href') || '').split('/').pop().replace(/\\.html$/, '');
+      const id = (card.querySelector('a[href]')?.getAttribute('href') || '').split('/').pop().split('.html')[0];
       if (!visivel(id, registros.get(id))) card.remove();
     }
     for (const doc of snapshot.docs) {
@@ -31,7 +31,7 @@ try {
       const titulo = texto(d.titulo || d.nome);
       if (!titulo) continue;
       const caminho = texto(d.paginaVendas);
-      const url = /^\\/[a-z0-9-]+\\.html$/.test(caminho) ? caminho : '/' + id + '.html';
+      const url = caminho.startsWith('/') && caminho.endsWith('.html') && !caminho.includes('..') ? caminho : '/' + id + '.html';
       const card = document.createElement('div'); card.className = 'card course-card';
       const h = document.createElement('h3'); h.textContent = titulo;
       const p = document.createElement('p'); p.textContent = texto(d.descricao) || 'Curso prático da CriativaMente Academy.';
