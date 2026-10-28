@@ -1108,8 +1108,23 @@
     status.textContent = 'Finalizando curso...';
     try {
       await setDoc(doc(db, 'cursos', curso), { concluido: true, statusProducao: 'finalizado', finalizadoEm: new Date().toISOString() }, { merge: true });
-      status.textContent = `Curso "${nome}" finalizado com sucesso. Nenhum conteúdo foi apagado.`;
-    } catch (erro) { status.textContent = 'Erro ao finalizar curso: ' + erro.message; }
+      status.textContent = 'Conclusão registrada no Firebase. Solicitando limpeza da memória do curso no n8n...';
+      // O caminho precisa corresponder ao Path configurado no nó "Recebe Finalizar Curso" do n8n.
+      const resposta = await fetch('https://n8n.criativamenteacademy.com/webhook/finalizar-curso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ curso, curso_id: curso, nome_curso: nome, acao: 'finalizar_curso' })
+      });
+      if (!resposta.ok) throw new Error('O n8n respondeu HTTP ' + resposta.status + '.');
+      const bruto = await resposta.text();
+      let retorno = {};
+      if (bruto.trim()) {
+        try { retorno = JSON.parse(bruto); } catch (_) { throw new Error('O n8n não retornou uma confirmação JSON válida.'); }
+      }
+      const dados = Array.isArray(retorno) ? (retorno[0]?.json || retorno[0] || {}) : (retorno.json || retorno);
+      if (dados.ok === false || dados.sucesso === false || dados.error || dados.erro) throw new Error(dados.mensagem || dados.message || dados.error || dados.erro || 'O n8n não confirmou a limpeza.');
+      status.textContent = `Curso "${nome}" finalizado no Firebase. Solicitação de limpeza enviada ao n8n. Nenhuma aula foi apagada.`;
+    } catch (erro) { status.textContent = 'Atenção: verifique a conclusão no Firebase e a limpeza no n8n. ' + erro.message; }
     finally { botao.disabled = false; }
   };
 
