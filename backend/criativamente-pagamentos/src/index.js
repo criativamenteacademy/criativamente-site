@@ -26,6 +26,9 @@ var index_default = {
     }
     const url = new URL(request.url);
     try {
+      if (url.pathname === "/sincronizar-cursos-teste" && request.method === "POST") {
+        return await sincronizarCursosTeste(request, env, corsHeaders);
+      }
       if (url.pathname === "/criar-cobranca" && request.method === "POST") {
         return await criarCobranca(request, env, corsHeaders);
       }
@@ -43,6 +46,52 @@ var index_default = {
     }
   }
 };
+
+const EMAIL_CONTA_TESTE = "jhoniguilhermesilva@gmail.com";
+async function sincronizarCursosTeste(request, env, corsHeaders) {
+  const authHeader = request.headers.get("Authorization") || "";
+  const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  if (!idToken) return jsonResponse({ erro: "Autenticação necessária." }, 401, corsHeaders);
+  const respostaUsuario = await fetch(
+    "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + FIREBASE_WEB_API_KEY,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken }) }
+  );
+  if (!respostaUsuario.ok) return jsonResponse({ erro: "Sessão inválida." }, 401, corsHeaders);
+  const usuario = (await respostaUsuario.json()).users?.[0];
+  if (!usuario || usuario.email?.toLowerCase() !== EMAIL_CONTA_TESTE || !usuario.emailVerified) {
+    return jsonResponse({ erro: "Conta de teste não autorizada ou e-mail não verificado." }, 403, corsHeaders);
+  }
+  const accessToken = await obterTokenGoogle(env);
+  const base = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+  let pagina = "", criadas = 0, existentes = 0, paginas = 0;
+  do {
+    const url = new URL(base + "/cursos");
+    url.searchParams.set("pageSize", "100");
+    if (pagina) url.searchParams.set("pageToken", pagina);
+    const resposta = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!resposta.ok) throw new Error("Falha ao consultar os cursos.");
+    const dados = await resposta.json();
+    for (const curso of dados.documents || []) {
+      const cursoId = curso.name.split("/").pop();
+      if (!/^[a-zA-Z0-9_-]+$/.test(cursoId)) continue;
+      const campos = curso.fields || {};
+      if (campos.excluido?.booleanValue === true) continue;
+      const caminho = `matricula/${usuario.localId}_${cursoId}`;
+      const existente = await firestoreLer({ projectId: env.FIREBASE_PROJECT_ID, accessToken, caminho });
+      if (existente) { existentes++; continue; }
+      await firestoreEscrever({
+        projectId: env.FIREBASE_PROJECT_ID, accessToken, caminho,
+        dados: { uid: usuario.localId, cursoId, liberado: true, origem: "teste-administrativo", liberadoEm: new Date().toISOString() }
+      });
+      criadas++;
+    }
+    pagina = dados.nextPageToken || "";
+    paginas++;
+    if (paginas > 100) throw new Error("Limite de paginação atingido.");
+  } while (pagina);
+  return jsonResponse({ criadas, existentes }, 200, corsHeaders);
+}
+
 function construirCorsHeaders(origin) {
   const headers = {
     "Access-Control-Allow-Methods": "POST, OPTIONS",
