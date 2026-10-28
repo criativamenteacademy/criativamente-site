@@ -254,6 +254,19 @@
       }
 
       const grid = document.getElementById("cursos-grid");
+      // A sincronização é autorizada exclusivamente no servidor, após validação do token.
+      if (usuario.email?.toLowerCase() === "jhoniguilhermesilva@gmail.com" && usuario.emailVerified) {
+        try {
+          const token = await usuario.getIdToken();
+          const resposta = await fetch("https://criativamente-pagamentos.contatojhonisilva.workers.dev/sincronizar-cursos-teste", {
+            method: "POST",
+            headers: { Authorization: "Bearer " + token }
+          });
+          if (!resposta.ok) console.warn("Sincronização de cursos de teste indisponível.");
+        } catch (erro) {
+          console.warn("Não foi possível sincronizar cursos de teste.", erro);
+        }
+      }
       const cursos = await listarCursosDoAluno(usuario.uid);
 
       if (cursos.length === 0) {
