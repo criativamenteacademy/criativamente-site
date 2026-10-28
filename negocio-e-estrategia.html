@@ -8,6 +8,23 @@
 <link rel="stylesheet" href="/style.css">
 <style>
 :root{--dark:#1F2937;--amber:#D97706;--sand:#F3F4F6;--blue:#0E7490}body{margin:0;background:var(--sand);color:var(--dark);font:16px/1.65 system-ui,Arial,sans-serif}header,footer{background:var(--dark);color:white;padding:20px max(24px,calc((100vw - 1100px)/2))}header a,footer a{color:white;text-decoration:none}.brand{font-weight:800;font-size:21px}.brand em{color:#fbbf24;font-style:normal}.wrap{max-width:1100px;margin:auto;padding:70px 24px}.hero{background:var(--dark);color:white}.eyebrow{font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:#fbbf24;font-weight:700}h1{font-size:clamp(34px,5vw,62px);line-height:1.12;max-width:850px;margin:20px 0}h2{font-size:clamp(26px,3vw,39px);line-height:1.2;margin:0 0 22px}p{max-width:760px}.lede{font-size:19px;color:#e2e8f0}.btn{display:inline-block;background:var(--amber);color:white;padding:15px 26px;border-radius:9px;text-decoration:none;font-weight:750;margin-top:18px}.btn:focus-visible{outline:3px solid var(--blue);outline-offset:4px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.panel{background:white;border:1px solid #d8dee5;border-radius:12px;padding:22px}.panel strong{display:block;margin-bottom:8px}.modules{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;list-style:none;padding:0}.modules li{display:flex;align-items:center;gap:16px;background:white;border:1px solid #d8dee5;padding:19px;border-radius:10px}.modules span{font-weight:800;color:var(--blue)}.modules strong{line-height:1.35}.soft{background:#e8eef1}.price{font-size:48px;font-weight:800;line-height:1.1}.note{font-size:14px;color:#526273}details{background:white;padding:18px 22px;margin:10px 0;border-radius:9px;border:1px solid #d8dee5}summary{cursor:pointer;font-weight:700}footer{font-size:14px}@media(max-width:600px){.wrap{padding:48px 20px}}
+/* Correção de contraste: isola esta página dos estilos globais do site. */
+body{background:#F3F4F6!important;color:#1F2937!important}
+main section:not(.hero){background:#F3F4F6!important;color:#1F2937!important}
+main section.soft{background:#E7EEF2!important;color:#1F2937!important}
+main section:not(.hero) h1,main section:not(.hero) h2,main section:not(.hero) h3,
+main section:not(.hero) p,main section:not(.hero) li,main section:not(.hero) strong,
+main section:not(.hero) summary{color:#1F2937!important;opacity:1!important;visibility:visible!important}
+main section.hero,main section.hero .wrap{background:#1F2937!important;color:#FFFFFF!important}
+main section.hero h1,main section.hero p{color:#FFFFFF!important;opacity:1!important}
+main section .eyebrow{color:#A64B00!important}
+main section.hero .eyebrow{color:#FBBF24!important}
+main section .btn,main section .btn:visited{background:#B45309!important;color:#FFFFFF!important;opacity:1!important}
+main section .panel,main section .modules li,main section details{background:#FFFFFF!important;color:#1F2937!important}
+main section .note{color:#334155!important}
+main section .price{color:#1F2937!important}
+main section .wrap{opacity:1!important;visibility:visible!important;transform:none!important}
+main section .wrap *:not(.btn){text-shadow:none!important}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Course","name":"Negócio e Estratégia","description":"Curso prático de oito módulos para construir um modelo de negócio e um plano estratégico executável.","provider":{"@type":"EducationalOrganization","name":"CriativaMente Academy","url":"https://criativamenteacademy.com/"},"offers":{"@type":"Offer","price":"397.00","priceCurrency":"BRL","url":"https://criativamenteacademy.com/negocio-e-estrategia.html"},"hasCourseInstance":{"@type":"CourseInstance","courseMode":"online"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Preciso ter uma empresa para começar?","acceptedAnswer":{"@type":"Answer","text":"Não. O curso parte do diagnóstico do seu ponto de partida e orienta a construção de um modelo de negócio."}},{"@type":"Question","name":"O curso é prático?","acceptedAnswer":{"@type":"Answer","text":"Sim. Cada módulo desenvolve uma entrega que contribui para o plano final de negócio."}},{"@type":"Question","name":"O curso garante faturamento?","acceptedAnswer":{"@type":"Answer","text":"Não. O resultado financeiro depende da execução, do mercado e de fatores externos."}},{"@type":"Question","name":"O curso substitui consultoria especializada?","acceptedAnswer":{"@type":"Answer","text":"Não. O conteúdo é educacional e pode apoiar decisões que, conforme o caso, exigem orientação profissional."}}]}</script>
