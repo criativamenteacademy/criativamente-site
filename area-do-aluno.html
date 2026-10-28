@@ -38,12 +38,63 @@
     <div class="cursos-grid" id="cursos-grid">
       <!-- Cartões de curso inseridos aqui via JavaScript -->
     </div>
+    <section style="margin-top:40px;padding:24px;border:1px solid #D1D5DB;border-radius:12px;background:white">
+      <h2>Meus dados cadastrais</h2>
+      <p>Nome e CPF são protegidos. Atualize seus dados de contato e endereço.</p>
+      <form id="form-perfil" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px">
+        <div class="auth-field"><label for="perfil-nome">Nome completo (fixo)</label><input id="perfil-nome" disabled  maxlength="150"></div>
+<div class="auth-field"><label for="perfil-cpf">CPF (fixo)</label><input id="perfil-cpf" disabled  maxlength="150"></div>
+<div class="auth-field"><label for="perfil-email">E-mail</label><input id="perfil-email"  type="email" required maxlength="150"></div>
+<div class="auth-field"><label for="perfil-telefone">Telefone</label><input id="perfil-telefone"   maxlength="150"></div>
+<div class="auth-field"><label for="perfil-cep">CEP</label><input id="perfil-cep"   maxlength="150"></div>
+<div class="auth-field"><label for="perfil-logradouro">Rua / avenida</label><input id="perfil-logradouro"   maxlength="150"></div>
+<div class="auth-field"><label for="perfil-numero">Número</label><input id="perfil-numero"   maxlength="150"></div>
+<div class="auth-field"><label for="perfil-complemento">Complemento</label><input id="perfil-complemento"   maxlength="150"></div>
+<div class="auth-field"><label for="perfil-bairro">Bairro</label><input id="perfil-bairro"   maxlength="150"></div>
+<div class="auth-field"><label for="perfil-cidade">Cidade</label><input id="perfil-cidade"   maxlength="150"></div>
+<div class="auth-field"><label for="perfil-estado">UF</label><input id="perfil-estado"   maxlength="150"></div>
+        <div style="grid-column:1/-1"><p id="perfil-mensagem" role="status" aria-live="polite"></p><button id="perfil-salvar" class="auth-button" type="submit" style="max-width:250px;background:#D97706">Salvar alterações</button></div>
+      </form>
+    </section>
   </main>
 
   <script type="module">
     import { sairUsuario, reenviarVerificacaoDeEmail } from "/assets/js/auth.js";
     import { listarCursosDoAluno, primeiraAula, listarModulos, listarAulas } from "/assets/js/access-control.js";
     import { buscarProgresso } from "/assets/js/progress.js";
+    import { db } from "/assets/js/firebase-config.js";
+    import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+    import { verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+    let usuarioPerfil = null;
+    const camposPerfil = ["telefone","cep","logradouro","numero","complemento","bairro","cidade","estado"];
+    const campoPerfil = (nome) => document.getElementById("perfil-" + nome);
+    const mensagemPerfil = document.getElementById("perfil-mensagem");
+    document.getElementById("form-perfil").addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      if (!usuarioPerfil) return;
+      const botao = document.getElementById("perfil-salvar");
+      botao.disabled = true;
+      mensagemPerfil.textContent = "Salvando...";
+      try {
+        const atualizacoes = {};
+        for (const campo of camposPerfil) atualizacoes[campo] = campoPerfil(campo).value.trim();
+        atualizacoes.estado = atualizacoes.estado.toUpperCase();
+        if (atualizacoes.estado && !/^[A-Z]{2}$/.test(atualizacoes.estado)) throw new Error("Informe a UF com duas letras.");
+        if (atualizacoes.cep && !/^\d{5}-?\d{3}$/.test(atualizacoes.cep)) throw new Error("Informe um CEP válido.");
+        await updateDoc(doc(db, "usuarios", usuarioPerfil.uid), atualizacoes);
+        const novoEmail = campoPerfil("email").value.trim();
+        if (novoEmail !== usuarioPerfil.email) {
+          await verifyBeforeUpdateEmail(usuarioPerfil, novoEmail);
+          mensagemPerfil.textContent = "Dados salvos. Confirme o link enviado ao novo e-mail para concluir a alteração.";
+        } else mensagemPerfil.textContent = "Dados atualizados com sucesso.";
+      } catch (erro) {
+        mensagemPerfil.textContent = erro.code === "auth/requires-recent-login"
+          ? "Entre novamente na conta para confirmar a alteração do e-mail."
+          : (erro.message || "Não foi possível atualizar os dados.");
+      } finally { botao.disabled = false; }
+    });
+
 
     document.getElementById("botao-sair").addEventListener("click", async () => {
       await sairUsuario();
@@ -107,6 +158,13 @@
 
     document.addEventListener("cm-auth-ready", async (evento) => {
       const usuario = evento.detail.usuario;
+      usuarioPerfil = usuario;
+      const dados = evento.detail.dadosConta || {};
+      campoPerfil("nome").value = dados.nome || usuario.displayName || "";
+      campoPerfil("cpf").value = dados.cpf || "";
+      campoPerfil("email").value = usuario.email || "";
+      for (const campo of camposPerfil) campoPerfil(campo).value = dados[campo] || "";
+
 
       const nomeExibido = usuario.displayName ? usuario.displayName.split(" ")[0] : "aluno";
       document.getElementById("titulo-boas-vindas").textContent = `Olá, ${nomeExibido}!`;
