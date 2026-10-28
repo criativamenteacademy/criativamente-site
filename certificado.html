@@ -32,6 +32,9 @@
         repeating-linear-gradient(0deg,#D97706 0 2px,transparent 2px 12px,#D97706 12px 14px,transparent 14px 25px) right 9px top 14px / 2px calc(100% - 28px) no-repeat;
       opacity:.72;
     }
+    .certificado-selo { position:absolute; left:54px; top:54px; width:88px; height:112px; object-fit:contain; }
+    @media(max-width:650px) { .certificado-selo { left:22px; top:20px; width:54px; height:70px; } }
+    @media print { .certificado-selo { left:22mm; top:19mm; width:31mm; height:39mm; } }
     .certificado-marca { font-family:"Cormorant Garamond",Georgia,serif; font-size:25px; font-weight:700; letter-spacing:.6px; color:#D97706; margin:0 0 30px; }
     .certificado-marca span { color:#F3F4F6; }
     .certificado-titulo { font-family:"Cormorant Garamond",Georgia,serif; font-size:29px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:#F3F4F6; margin:0 0 12px; }
@@ -73,6 +76,7 @@
     </div>
 
     <div class="certificado-folha">
+      <img class="certificado-selo" src="/hero-mark.png" alt="Selo CriativaMente Academy" />
       <p class="certificado-marca">Criativa<span>Mente</span> Academy</p>
       <p class="certificado-titulo">Certificado de conclusão</p>
       <p class="certificado-texto">Certificamos que</p>
