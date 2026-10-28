@@ -133,6 +133,18 @@
       });
     }
 
+    function formatarNomeProprio(nome) {
+      const minusculas = new Set(["de", "da", "do", "das", "dos", "e"]);
+      return nome.trim().replace(/\s+/g, " ").split(" ").map((parte, indice) => {
+        return parte.split("-").map((segmento) => {
+          const texto = segmento.toLocaleLowerCase("pt-BR");
+          if (indice > 0 && minusculas.has(texto)) return texto;
+          return texto.replace(/(^|['’])([a-zà-ÿ])/gu, (_, prefixo, letra) =>
+            prefixo + letra.toLocaleUpperCase("pt-BR"));
+        }).join("-");
+      }).join(" ");
+    }
+
     document.addEventListener("cm-auth-ready", async (evento) => {
       const usuario = evento.detail.usuario;
 
@@ -167,7 +179,7 @@
           mostrarAviso("Nome não cadastrado", "Atualize seu nome completo no cadastro para emitir o certificado.");
           return;
         }
-        document.getElementById("certificado-nome-aluno").textContent = nomeAluno;
+        document.getElementById("certificado-nome-aluno").textContent = formatarNomeProprio(nomeAluno);
         document.getElementById("certificado-nome-curso").textContent =
           (curso && curso.nome) || "curso";
         document.getElementById("certificado-data").textContent =
