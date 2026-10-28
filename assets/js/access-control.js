@@ -39,7 +39,12 @@ export async function cursoLiberado(uid, cursoId) {
 export async function buscarCurso(cursoId) {
   const referencia = doc(db, "cursos", cursoId);
   const snapshot = await getDoc(referencia);
-  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+  if (!snapshot.exists()) return null;
+  const dados = snapshot.data();
+  const nome = [dados.nome, dados.titulo, dados.nomeCurso]
+    .find((valor) => typeof valor === "string" && valor.trim())?.trim()
+    || snapshot.id.replace(/[-_]+/g, " ").replace(/\b\p{L}/gu, letra => letra.toUpperCase());
+  return { ...dados, id: snapshot.id, nome };
 }
 
 export async function listarCursosDoAluno(uid) {
