@@ -487,7 +487,7 @@
     getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, EmailAuthProvider, reauthenticateWithCredential
   } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs
+    getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs, writeBatch
   } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
   import {
     getStorage, ref as storageRef, uploadBytes, uploadString, getDownloadURL
@@ -568,21 +568,25 @@
       if (dados.excluido === true) { alert('Curso excluído não pode ser republicado.'); return; }
       const publicado = dados.visibilidadeGerenciada === true ? dados.publicado === true : (['posicionamento-estrategico','patrimonio-protegido'].includes(id) && dados.excluido !== true);
       if (!confirm(publicado ? 'Retirar este curso do site?' : 'Publicar este curso no site? Verifique antes se a página de vendas existe.')) return;
-      await setDoc(ref,{publicado:!publicado, visibilidadeGerenciada:true, excluido:false},{merge:true});
-      const meta = snap.data();
-      const publico = doc(db,'catalogo_publico',id);
+      // Atualização atômica: o curso e o catálogo público mudam juntos.
+      const publico = doc(db, 'catalogo_publico', id);
+      const lote = writeBatch(db);
+      lote.set(ref, {publicado: !publicado, visibilidadeGerenciada: true, excluido: false}, {merge: true});
       if (!publicado) {
-        await setDoc(publico, {
-          titulo: meta.titulo || meta.nome || id.replace(/-/g,' '),
-          descricao: meta.descricao || '',
-          resultado: meta.resultado || '',
-          paginaVendas: meta.paginaVendas || '/' + id + '.html',
-          publicado:true,
-          excluido:false
-        },{merge:true});
+        lote.set(publico, {
+          nome: nomeCursoExibicao(id, dados),
+          titulo: nomeCursoExibicao(id, dados),
+          descricao: dados.descricao || '',
+          resultado: dados.resultado || '',
+          paginaVendas: dados.paginaVendas || '/' + id + '.html',
+          publicado: true,
+          excluido: false,
+          emManutencao: dados.emManutencao === true
+        }, {merge: true});
       } else {
-        await setDoc(publico,{publicado:false},{merge:true});
+        lote.set(publico, {publicado: false}, {merge: true});
       }
+      await lote.commit();
       await atualizarPublicacaoCurso();
     } catch (erro) { alert('Erro ao alterar publicação: ' + erro.message); }
   };
