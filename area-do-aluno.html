@@ -62,20 +62,30 @@
   <style>
     .perfil-modal[hidden]{display:none!important}
     .perfil-modal{position:fixed;inset:0;z-index:1000;background:rgba(31,41,55,.75);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}
-    .perfil-dialogo{position:relative;width:min(760px,100%);max-height:90vh;overflow-y:auto;background:#F3F4F6;color:#1F2937;border:2px solid #0E7490;border-radius:16px;padding:32px;box-sizing:border-box;box-shadow:0 24px 70px rgba(0,0,0,.35)}
-    .perfil-dialogo h2{color:#1F2937;margin:0 0 10px}
-    .perfil-dialogo p{color:#1F2937}
+    .perfil-dialogo{position:relative;width:min(760px,100%);max-height:90vh;overflow-y:auto;background:#1F2937;color:#F3F4F6;border:2px solid #0E7490;border-radius:16px;padding:32px;box-sizing:border-box;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+    .perfil-dialogo h2{color:#F3F4F6;margin:0 0 10px}
+    .perfil-dialogo p{color:#F3F4F6}
     .perfil-formulario{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
-    .perfil-dialogo .auth-field label{color:#1F2937}
-    .perfil-dialogo .auth-field input{background:#fff;color:#1F2937;border:1px solid #9CA3AF}
+    .perfil-dialogo .auth-field label{color:#F3F4F6}
+    .perfil-dialogo .auth-field input{background:#111827;color:#F3F4F6;border:1px solid #64748B}
     .perfil-dialogo .auth-field input:focus{outline:2px solid #0E7490}
-    .perfil-dialogo .auth-field input:disabled{background:#E5E7EB;color:#4B5563}
+    .perfil-dialogo .auth-field input:disabled{background:#374151;color:#D1D5DB}
     .perfil-dialogo .auth-button{background:#D97706;color:#fff}
     .perfil-dialogo .auth-button:hover{background:#B45309}
-    .perfil-fechar{position:absolute;right:16px;top:12px;border:0;background:transparent;color:#1F2937;font-size:32px;cursor:pointer}
+    .perfil-fechar{position:absolute;right:16px;top:12px;border:0;background:transparent;color:#F3F4F6;font-size:32px;cursor:pointer}
     #perfil-abrir{border:1px solid #D97706;border-radius:8px;padding:8px 12px;background:transparent;color:#F3F4F6;cursor:pointer}
     #perfil-abrir:hover{background:#0E7490}
     @media(max-width:550px){.perfil-dialogo{padding:24px 16px}.perfil-formulario{grid-template-columns:1fr}}
+    body.auth-ok{background:#111827;color:#F3F4F6}
+    .aluno-conteudo{color:#F3F4F6}
+    .aluno-boas-vindas h1{color:#F3F4F6}
+    .aluno-boas-vindas p{color:#CBD5E1}
+    .curso-card,.curso-card__vazio{background:#1F2937;color:#F3F4F6;border-color:#374151}
+    .curso-card h3{color:#F3F4F6}
+    .curso-card p,.progresso-texto{color:#CBD5E1}
+    .barra-progresso{background:#374151}
+    .curso-card__acao{background:#D97706;color:#fff}
+    .curso-card__acao:hover{background:#B45309}
   </style>
   <script type="module">
     import { sairUsuario, reenviarVerificacaoDeEmail } from "/assets/js/auth.js";
