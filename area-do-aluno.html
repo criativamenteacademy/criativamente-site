@@ -119,6 +119,34 @@
       }
     });
     let usuarioPerfil = null;
+    let consultaCepId = 0;
+    const cepInput = document.getElementById("perfil-cep");
+    cepInput.addEventListener("input", async () => {
+      const id = ++consultaCepId;
+      const cep = cepInput.value.replace(/\D/g, "");
+      if (cep.length !== 8) return;
+      mensagemPerfil.textContent = "Consultando CEP...";
+      try {
+        const resposta = await fetch("https://viacep.com.br/ws/" + cep + "/json/");
+        if (!resposta.ok) throw new Error("Não foi possível consultar o CEP.");
+        const dadosCep = await resposta.json();
+        if (id !== consultaCepId) return;
+        if (dadosCep.erro) throw new Error("CEP não encontrado. Preencha o endereço manualmente.");
+        for (const [campo, valor] of Object.entries({
+          logradouro: dadosCep.logradouro,
+          bairro: dadosCep.bairro,
+          cidade: dadosCep.localidade,
+          estado: dadosCep.uf
+        })) {
+          if (valor) document.getElementById("perfil-" + campo).value = valor;
+        }
+        cepInput.value = cep.slice(0, 5) + "-" + cep.slice(5);
+        mensagemPerfil.textContent = "Endereço preenchido. Informe o número e confira os dados.";
+      } catch (erro) {
+        if (id === consultaCepId) mensagemPerfil.textContent = erro.message || "Consulta indisponível. Preencha manualmente.";
+      }
+    });
+
     const camposPerfil = ["telefone","cep","logradouro","numero","complemento","bairro","cidade","estado"];
     const campoPerfil = (nome) => document.getElementById("perfil-" + nome);
     const mensagemPerfil = document.getElementById("perfil-mensagem");
