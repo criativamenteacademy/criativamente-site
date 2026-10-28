@@ -100,7 +100,8 @@
   </div>
 
   <script type="module">
-    import { auth } from "/assets/js/firebase-config.js";
+    import { auth, db } from "/assets/js/firebase-config.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
     import { cursoLiberado, buscarCurso } from "/assets/js/access-control.js";
     import { buscarProgresso } from "/assets/js/progress.js";
 
@@ -154,8 +155,15 @@
 
         const curso = await buscarCurso(cursoId);
 
-        document.getElementById("certificado-nome-aluno").textContent =
-          usuario.displayName || "Aluno(a)";
+        const cadastro = await getDoc(doc(db, "usuarios", usuario.uid));
+        const nomeCadastrado = cadastro.exists() ? cadastro.data().nome : "";
+        const nomeAluno = (typeof nomeCadastrado === "string" && nomeCadastrado.trim()) ||
+          (typeof usuario.displayName === "string" && usuario.displayName.trim()) || "";
+        if (!nomeAluno) {
+          mostrarAviso("Nome não cadastrado", "Atualize seu nome completo no cadastro para emitir o certificado.");
+          return;
+        }
+        document.getElementById("certificado-nome-aluno").textContent = nomeAluno;
         document.getElementById("certificado-nome-curso").textContent =
           (curso && curso.nome) || "curso";
         document.getElementById("certificado-data").textContent =
