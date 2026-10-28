@@ -20,6 +20,7 @@
     <a href="/area-do-aluno.html" class="aluno-header__logo">Criativa<span>Mente</span> academy</a>
     <div class="aluno-header__acoes">
       <a class="aluno-header__link" href="/index.html">Voltar ao site</a>
+      <button class="aluno-header__link" type="button" id="perfil-abrir">Meus dados</button>
       <button class="aluno-sair" id="botao-sair">Sair</button>
     </div>
   </header>
@@ -38,10 +39,10 @@
     <div class="cursos-grid" id="cursos-grid">
       <!-- Cartões de curso inseridos aqui via JavaScript -->
     </div>
-    <section style="margin-top:40px;padding:24px;border:1px solid #D1D5DB;border-radius:12px;background:white">
-      <h2>Meus dados cadastrais</h2>
+    <section id="perfil-modal" class="perfil-modal" role="dialog" aria-modal="true" aria-labelledby="perfil-titulo" hidden><div class="perfil-dialogo"><button type="button" id="perfil-fechar" class="perfil-fechar" aria-label="Fechar janela">×</button>
+      <h2 id="perfil-titulo">Meus dados cadastrais</h2>
       <p>Nome e CPF são protegidos. Atualize seus dados de contato e endereço.</p>
-      <form id="form-perfil" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px">
+      <form id="form-perfil" class="perfil-formulario">
         <div class="auth-field"><label for="perfil-nome">Nome completo (fixo)</label><input id="perfil-nome" disabled  maxlength="150"></div>
 <div class="auth-field"><label for="perfil-cpf">CPF (fixo)</label><input id="perfil-cpf" disabled  maxlength="150"></div>
 <div class="auth-field"><label for="perfil-email">E-mail</label><input id="perfil-email"  type="email" required maxlength="150"></div>
@@ -53,11 +54,29 @@
 <div class="auth-field"><label for="perfil-bairro">Bairro</label><input id="perfil-bairro"   maxlength="150"></div>
 <div class="auth-field"><label for="perfil-cidade">Cidade</label><input id="perfil-cidade"   maxlength="150"></div>
 <div class="auth-field"><label for="perfil-estado">UF</label><input id="perfil-estado"   maxlength="150"></div>
-        <div style="grid-column:1/-1"><p id="perfil-mensagem" role="status" aria-live="polite"></p><button id="perfil-salvar" class="auth-button" type="submit" style="max-width:250px;background:#D97706">Salvar alterações</button></div>
-      </form>
+        <div style="grid-column:1/-1"><p id="perfil-mensagem" role="status" aria-live="polite"></p><button id="perfil-salvar" class="auth-button" type="submit" style="max-width:250px">Salvar alterações</button></div>
+      </form></div>
     </section>
   </main>
 
+  <style>
+    .perfil-modal[hidden]{display:none!important}
+    .perfil-modal{position:fixed;inset:0;z-index:1000;background:rgba(31,41,55,.75);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}
+    .perfil-dialogo{position:relative;width:min(760px,100%);max-height:90vh;overflow-y:auto;background:#F3F4F6;color:#1F2937;border:2px solid #0E7490;border-radius:16px;padding:32px;box-sizing:border-box;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+    .perfil-dialogo h2{color:#1F2937;margin:0 0 10px}
+    .perfil-dialogo p{color:#1F2937}
+    .perfil-formulario{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+    .perfil-dialogo .auth-field label{color:#1F2937}
+    .perfil-dialogo .auth-field input{background:#fff;color:#1F2937;border:1px solid #9CA3AF}
+    .perfil-dialogo .auth-field input:focus{outline:2px solid #0E7490}
+    .perfil-dialogo .auth-field input:disabled{background:#E5E7EB;color:#4B5563}
+    .perfil-dialogo .auth-button{background:#D97706;color:#fff}
+    .perfil-dialogo .auth-button:hover{background:#B45309}
+    .perfil-fechar{position:absolute;right:16px;top:12px;border:0;background:transparent;color:#1F2937;font-size:32px;cursor:pointer}
+    #perfil-abrir{border:1px solid #D97706;border-radius:8px;padding:8px 12px;background:transparent;color:#F3F4F6;cursor:pointer}
+    #perfil-abrir:hover{background:#0E7490}
+    @media(max-width:550px){.perfil-dialogo{padding:24px 16px}.perfil-formulario{grid-template-columns:1fr}}
+  </style>
   <script type="module">
     import { sairUsuario, reenviarVerificacaoDeEmail } from "/assets/js/auth.js";
     import { listarCursosDoAluno, primeiraAula, listarModulos, listarAulas } from "/assets/js/access-control.js";
@@ -66,6 +85,29 @@
     import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
     import { verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
+    const modalPerfil = document.getElementById("perfil-modal");
+    const abrirPerfil = document.getElementById("perfil-abrir");
+    const fecharPerfil = document.getElementById("perfil-fechar");
+    let focoAnterior = null;
+    function alternarPerfil(aberto) {
+      modalPerfil.hidden = !aberto;
+      document.body.style.overflow = aberto ? "hidden" : "";
+      if (aberto) { focoAnterior = document.activeElement; fecharPerfil.focus(); }
+      else if (focoAnterior) focoAnterior.focus();
+    }
+    abrirPerfil.addEventListener("click", () => alternarPerfil(true));
+    fecharPerfil.addEventListener("click", () => alternarPerfil(false));
+    modalPerfil.addEventListener("click", (evento) => { if (evento.target === modalPerfil) alternarPerfil(false); });
+    document.addEventListener("keydown", (evento) => {
+      if (modalPerfil.hidden) return;
+      if (evento.key === "Escape") alternarPerfil(false);
+      if (evento.key === "Tab") {
+        const focaveis = [...modalPerfil.querySelectorAll("button:not(:disabled),input:not(:disabled)")];
+        const primeiro = focaveis[0], ultimo = focaveis[focaveis.length-1];
+        if (evento.shiftKey && document.activeElement === primeiro) { evento.preventDefault(); ultimo.focus(); }
+        else if (!evento.shiftKey && document.activeElement === ultimo) { evento.preventDefault(); primeiro.focus(); }
+      }
+    });
     let usuarioPerfil = null;
     const camposPerfil = ["telefone","cep","logradouro","numero","complemento","bairro","cidade","estado"];
     const campoPerfil = (nome) => document.getElementById("perfil-" + nome);
