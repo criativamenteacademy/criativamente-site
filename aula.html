@@ -15,6 +15,12 @@
     #bloco-aula, #bloco-erro { color: #F3F4F6; }
     #aula-titulo, #erro-titulo { color: #F3F4F6 !important; }
     #modulo-nome { color: #D97706 !important; }
+    /* Apenas os dois cursos antigos mantêm a aparência anterior. */
+    body.aula-legada { background: #fff !important; }
+    body.aula-legada #area-principal { background: #fff !important; }
+    body.aula-legada #bloco-aula, body.aula-legada #bloco-erro { color: #1c2220; }
+    body.aula-legada #aula-titulo, body.aula-legada #erro-titulo { color: #1c2220 !important; }
+    body.aula-legada #modulo-nome { color: #B5541A !important; }
   </style>
 </head>
 <!--
@@ -78,6 +84,10 @@
 
     const parametros = new URLSearchParams(window.location.search);
     const cursoId = parametros.get("curso");
+    // Cursos anteriores à importação de aulas em HTML completo.
+    if (["posicionamento-estrategico", "patrimonio-protegido"].includes(cursoId)) {
+      document.body.classList.add("aula-legada");
+    }
     const moduloId = parametros.get("modulo");
     const aulaId = parametros.get("aula");
 
