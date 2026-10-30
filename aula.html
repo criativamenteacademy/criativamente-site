@@ -146,6 +146,12 @@
           if (/<script\b/i.test(htmlAula)) htmlAula = htmlAula.replace(/<script\b/i, suporte + "<script");
           else if (/<\/body\s*>/i.test(htmlAula)) htmlAula = htmlAula.replace(/<\/body\s*>/i, suporte + "</body>");
           else htmlAula += suporte;
+          // Força o tema escuro definido pelo próprio autor, sem trocar as
+          // cores por uma paleta da plataforma. Atua somente no CSS da aula.
+          htmlAula = htmlAula.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, bloco =>
+            bloco.replace(/@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)/gi, "@media all")
+          );
+          frame.style.background = "#111413";
           frame.srcdoc = htmlAula;
           containerConteudo.appendChild(frame);
           window.addEventListener("message", (eventoMensagem) => {
