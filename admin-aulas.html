@@ -413,6 +413,14 @@
     <button type="button" class="botao-imagem" id="botaoFinalizarModulo" onclick="finalizarModulo()">Finalizar módulo</button>
     <button type="button" class="botao-imagem" id="botaoFinalizarCurso" onclick="finalizarCurso()">Finalizar curso</button>
   </div>
+  <section id="painelResumoPrecificacao" style="margin:14px 0;padding:16px;border:1px solid #0E7490;border-radius:10px;background:#F3F4F6">
+    <strong>Resumo do curso para precificação</strong>
+    <p class="ajuda">Gerado a partir das aulas salvas após revisão. Confira antes de encaminhar para precificação.</p>
+    <button type="button" class="botao-imagem" onclick="gerarResumoPrecificacao()">Gerar / atualizar resumo</button>
+    <button type="button" class="botao-imagem" id="copiarResumoPrecificacao" onclick="copiarResumoPrecificacao()" disabled>Copiar resumo</button>
+    <textarea id="textoResumoPrecificacao" aria-label="Resumo para precificação" readonly style="width:100%;min-height:280px;margin-top:12px;white-space:pre-wrap"></textarea>
+    <p class="ajuda" id="statusResumoPrecificacao" role="status"></p>
+  </section>
   <p class="ajuda" id="statusFinalizacao" role="status">Finalizar registra a conclusão no Firebase. Nenhuma aula será apagada.</p>
 
   <button type="button" class="botao-imagem" onclick="listarAulasDoModulo()">🔍 Ver aulas já existentes neste módulo (pra editar)</button>
@@ -1178,6 +1186,70 @@
     finally { botao.disabled = false; }
   };
 
+
+  window.gerarResumoPrecificacao = async function() {
+    const curso = document.getElementById('curso').value;
+    const seletor = document.getElementById('curso');
+    const nome = seletor.options[seletor.selectedIndex]?.textContent?.trim() || curso;
+    const status = document.getElementById('statusResumoPrecificacao');
+    const campo = document.getElementById('textoResumoPrecificacao');
+    const copiar = document.getElementById('copiarResumoPrecificacao');
+    campo.value = ''; copiar.disabled = true;
+    if (!curso) { status.textContent = 'Selecione um curso.'; return; }
+    status.textContent = 'Lendo os módulos e as aulas salvas...';
+    try {
+      const modSnap = await getDocs(collection(db, 'cursos', curso, 'modulos'));
+      const modulos = [];
+      for (const m of modSnap.docs) {
+        const dados = m.data();
+        const aulaSnap = await getDocs(collection(db, 'cursos', curso, 'modulos', m.id, 'aulas'));
+        const aulas = aulaSnap.docs.map(a => ({ id:a.id, ...a.data() }))
+          .sort((a,b) => (Number(a.ordem)||0)-(Number(b.ordem)||0));
+        modulos.push({ id:m.id, ordem:Number(dados.ordem)||Number(m.id.match(/\\d+/)?.[0])||0, titulo:dados.titulo||m.id, aulas });
+      }
+      modulos.sort((a,b)=>a.ordem-b.ordem);
+      const total = modulos.reduce((n,m)=>n+m.aulas.length,0);
+      if (!total) throw new Error('Não foram encontradas aulas salvas para este curso.');
+      const extrair = html => {
+        const docHtml = new DOMParser().parseFromString(String(html||''),'text/html');
+        docHtml.querySelectorAll('script,style,nav,footer,header,button,svg').forEach(e=>e.remove());
+        return (docHtml.body?.textContent||'').replace(/\\s+/g,' ').trim();
+      };
+      const partes = [
+        'RESUMO DO CURSO PARA PRECIFICAÇÃO',
+        'Curso: '+nome,
+        'Módulos encontrados: '+modulos.length,
+        'Aulas encontradas: '+total,
+        'Fonte: conteúdo atualmente salvo no painel administrativo.',
+        'Observação: este documento não constitui uma nova auditoria por IA; confira a versão e a aprovação de cada aula.',
+        'Carga horária: não informada (sem medição confiável).',
+        '',
+        'CONTEÚDO PROGRAMÁTICO E ATIVIDADES'
+      ];
+      for (const m of modulos) {
+        partes.push('', 'MÓDULO '+m.ordem+' — '+m.titulo);
+        for (const a of m.aulas) {
+          const conteudo = a.htmlCompleto || a.conteudoHtml || a.conteudo_html || a.conteudo || '';
+          const texto = extrair(conteudo);
+          partes.push('Aula '+(a.ordem??a.id)+' — '+(a.titulo||'Sem título'));
+          partes.push('Conteúdo e atividades: '+(texto ? texto.slice(0,2500) : 'Não há texto extraível nesta aula.'));
+        }
+      }
+      partes.push('', 'ORIENTAÇÃO PARA PRECIFICAÇÃO',
+        'Avaliar profundidade, aplicabilidade, quantidade de aulas, entregas e mercado. Não presumir carga horária, resultados garantidos ou recursos não documentados.');
+      campo.value = partes.join('\\n');
+      copiar.disabled = false;
+      status.textContent = 'Resumo gerado. Revise e use Copiar resumo.';
+    } catch(e) { status.textContent = 'Falha ao gerar resumo: '+e.message; }
+  };
+  window.copiarResumoPrecificacao = async function() {
+    const campo = document.getElementById('textoResumoPrecificacao');
+    if (!campo.value) return;
+    try { await navigator.clipboard.writeText(campo.value); }
+    catch (_) { campo.focus(); campo.select(); document.execCommand('copy'); }
+    document.getElementById('statusResumoPrecificacao').textContent = 'Resumo copiado.';
+  };
+
   window.finalizarCurso = async function() {
     const curso = document.getElementById('curso').value;
     const seletor = document.getElementById('curso');
@@ -1205,6 +1277,7 @@
       const dados = Array.isArray(retorno) ? (retorno[0]?.json || retorno[0] || {}) : (retorno.json || retorno);
       if (dados.ok === false || dados.sucesso === false || dados.error || dados.erro) throw new Error(dados.mensagem || dados.message || dados.error || dados.erro || 'O n8n não confirmou a limpeza.');
       status.textContent = `Curso "${nome}" finalizado no Firebase. Solicitação de limpeza enviada ao n8n. Nenhuma aula foi apagada.`;
+      await window.gerarResumoPrecificacao();
     } catch (erro) { status.textContent = 'Atenção: verifique a conclusão no Firebase e a limpeza no n8n. ' + erro.message; }
     finally { botao.disabled = false; }
   };
