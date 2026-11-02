@@ -408,6 +408,13 @@
   <button type="button" class="botao-imagem" onclick="listarAulasDoModulo()">🔍 Ver aulas já existentes neste módulo (pra editar)</button>
   <p class="ajuda">Escolha o curso e o número do módulo acima, depois clique aqui. Vai aparecer a lista das aulas já salvas nesse módulo — clique em uma pra carregar ela no formulário e editar.</p>
   <div id="listaAulas"></div>
+  <div id="exclusaoAulaPainel" style="margin:12px 0;padding:14px;border:1px solid #c0392b;border-radius:8px;background:#fdecea;">
+    <strong style="color:#8b2119;">Excluir somente uma aula</strong>
+    <p class="ajuda">Clique em “Excluir” ao lado da aula na lista. O curso e os outros módulos e aulas serão preservados.</p>
+    <label for="senhaExclusaoAula">Senha do painel para confirmar a exclusão</label>
+    <input id="senhaExclusaoAula" type="password" autocomplete="current-password" placeholder="Informe a senha somente ao excluir" style="max-width:380px;">
+    <div id="statusExclusaoAula" role="status" aria-live="polite" style="margin-top:8px;"></div>
+  </div>
   <div class="aviso-editando" id="avisoEditando"></div>
 
   <label for="titulo">Título da aula</label>
@@ -895,6 +902,52 @@
 
   // -------- Ver / carregar aulas já existentes (edição) --------
 
+  let exclusaoAulaEmAndamento = false;
+  window.excluirUmaAula = async function(curso, modulo, aulaId, titulo) {
+    const status = document.getElementById('statusExclusaoAula');
+    const senhaInput = document.getElementById('senhaExclusaoAula');
+    if (exclusaoAulaEmAndamento) return;
+    status.className = '';
+    status.textContent = '';
+    const usuario = auth.currentUser;
+    if (!usuario || usuario.email?.toLowerCase() !== EMAIL_ADMIN.toLowerCase()) {
+      status.className = 'erro';
+      status.textContent = 'Acesso administrativo inválido. Faça login novamente.';
+      return;
+    }
+    const senha = senhaInput.value;
+    if (!senha) {
+      status.className = 'erro';
+      status.textContent = 'Informe a senha do painel antes de excluir.';
+      senhaInput.focus();
+      return;
+    }
+    if (!window.confirm('Excluir definitivamente somente a aula "' + titulo + '"? Esta ação não pode ser desfeita.')) return;
+    exclusaoAulaEmAndamento = true;
+    try {
+      const credencial = EmailAuthProvider.credential(usuario.email, senha);
+      await reauthenticateWithCredential(usuario, credencial);
+      senhaInput.value = '';
+      status.textContent = 'Excluindo a aula selecionada...';
+      const refAula = doc(db, 'cursos', curso, 'modulos', 'modulo-' + modulo, 'aulas', aulaId);
+      const existente = await getDoc(refAula);
+      if (!existente.exists()) throw new Error('A aula já não existe no banco de dados.');
+      await deleteDoc(refAula);
+      status.className = 'sucesso';
+      status.textContent = 'Aula excluída com sucesso. As demais aulas e módulos foram preservados.';
+      document.getElementById('avisoEditando').style.display = 'none';
+      if (document.getElementById('curso').value === curso && document.getElementById('modulo').value.trim() === modulo) {
+        await window.listarAulasDoModulo();
+      }
+    } catch (erro) {
+      senhaInput.value = '';
+      status.className = 'erro';
+      status.textContent = 'Não foi possível excluir a aula: ' + (erro.code?.startsWith('auth/') ? 'senha incorreta ou autenticação recusada.' : erro.message);
+    } finally {
+      exclusaoAulaEmAndamento = false;
+    }
+  };
+
   window.listarAulasDoModulo = async function() {
     const curso = document.getElementById('curso').value;
     const modulo = document.getElementById('modulo').value.trim();
@@ -926,6 +979,13 @@
         btn.textContent = `Aula ${a.ordem ?? '?'} — ${a.titulo || '(sem título)'}`;
         btn.onclick = () => carregarAulaParaEdicao(a.id, a);
         lista.appendChild(btn);
+        const excluir = document.createElement('button');
+        excluir.type = 'button';
+        excluir.textContent = 'Excluir';
+        excluir.style.cssText = 'background:#c0392b;color:#fff;margin:5px 8px;padding:8px 12px;border:0;border-radius:6px;cursor:pointer;';
+        excluir.setAttribute('aria-label', 'Excluir ' + (a.titulo || a.id));
+        excluir.onclick = () => window.excluirUmaAula(curso, modulo, a.id, a.titulo || a.id);
+        lista.appendChild(excluir);
       });
     } catch (erro) {
       lista.innerHTML = `<p class="ajuda">Erro ao buscar aulas: ${erro.message}</p>`;
