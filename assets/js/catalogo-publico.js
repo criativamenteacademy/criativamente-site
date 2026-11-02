@@ -31,11 +31,25 @@ try {
       if (!titulo) continue;
       const caminho = texto(d.paginaVendas);
       const url = caminho.startsWith('/') && caminho.endsWith('.html') && !caminho.includes('..') ? caminho : '/' + id + '.html';
-      const card = document.createElement('div'); card.className = 'card course-card';
+      const card = document.createElement('div'); card.className = 'card course-card'; card.dataset.cursoId = id;
+      const icone = document.createElement('div'); icone.className = 'card-icon'; icone.setAttribute('aria-hidden', 'true');
+      icone.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L14.5 9.5 L21 12 L14.5 14.5 L12 21 L9.5 14.5 L3 12 L9.5 9.5 Z"/></svg>';
       const h = document.createElement('h3'); h.textContent = titulo;
       const p = document.createElement('p'); p.textContent = texto(d.descricao) || 'Curso prático da CriativaMente Academy.';
+      card.append(icone,h,p);
+      if (id === 'inteligencia-artificial-e-produtividade' || /inteligência artificial e produtividade/i.test(titulo)) {
+        h.textContent = 'Inteligência Artificial e Produtividade';
+        p.textContent = 'Aprenda a aplicar inteligência artificial no trabalho, organizar tarefas e construir processos mais eficientes com atividades práticas.';
+        const ul = document.createElement('ul');
+        for (const item of ['Uso prático de inteligência artificial','Organização de tarefas e processos','Aplicação no trabalho e nos projetos']) {
+          const li = document.createElement('li');
+          li.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5 L10.5 15 L16 9"/></svg>';
+          li.append(document.createTextNode(item)); ul.append(li);
+        }
+        card.append(ul);
+      }
       const a = document.createElement('a'); a.href = url; a.className = 'btn btn-primary'; a.textContent = 'Saiba mais';
-      card.append(h,p,a); container.append(card);
+      card.append(a); container.append(card);
     }
   }
   if (tabela) {
