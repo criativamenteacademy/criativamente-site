@@ -347,6 +347,15 @@
   .importacao-html input[type=file] { display:block; width:100%; padding:12px; background:white; border:1px dashed #0E7490; border-radius:8px; }
   #editorTradicional[hidden],#editorHtml[hidden] { display:none !important; }
   @media(max-width:650px) { .curso-linha {flex-direction:column;align-items:stretch;} .curso-linha button {white-space:normal;} }
+
+  /* Layout dividido: edição à esquerda e auditoria à direita. */
+  #painel-admin {max-width:1500px;width:100%;}
+  .admin-duas-colunas {display:grid;grid-template-columns:minmax(0,1.15fr) minmax(350px,0.85fr);gap:24px;align-items:start;}
+  .admin-coluna-edicao,.admin-coluna-auditoria {min-width:0;}
+  .admin-coluna-auditoria {position:sticky;top:18px;border:1px solid #d1d5db;border-radius:12px;padding:20px;background:#f3f4f6;max-height:calc(100vh - 36px);overflow-y:auto;}
+  .admin-coluna-auditoria h2 {margin:0 0 10px;color:#1f2937;font-size:21px;}
+  #painelAuditoriaHtml {overflow-wrap:anywhere;}
+  @media(max-width:950px) {.admin-duas-colunas {grid-template-columns:minmax(0,1fr);} .admin-coluna-auditoria {position:static;max-height:none;}}
 </style>
 </head>
 <body>
@@ -372,6 +381,7 @@
   <h1>Enviar / Editar Aula — CriativaMente Academy</h1>
   <p class="sub">Selecione o curso, informe o módulo e a aula e importe um arquivo HTML. O salvamento exige aprovação da auditoria.</p>
 
+  <div class="admin-duas-colunas"><div class="admin-coluna-edicao">
   <label for="curso">Curso</label>
   <div class="curso-linha"><select id="curso">
     <option value="posicionamento-estrategico">Posicionamento Estratégico</option>
@@ -461,6 +471,11 @@
   </aside>
 
   <div id="status"></div>
+  </div>
+  <aside class="admin-coluna-auditoria" aria-label="Área de auditoria">
+    <h2>Auditoria da aula</h2>
+    <p class="ajuda">O relatório do Auditor, Revisor e Corretor aparece aqui durante o processamento da aula.</p>
+    <p id="auditoriaAguardando" class="ajuda">Aguardando o envio de uma aula para auditoria.</p>
   <section id="painelAuditoriaHtml" style="display:none;margin-top:16px;padding:16px;border:1px solid #d97706;border-radius:8px;background:#fffaf0;">
     <h3 id="tituloAuditoriaHtml" style="margin:0 0 8px;color:#92400e;">Relatório da auditoria</h3>
     <p id="resumoAuditoriaHtml" style="margin:0 0 10px;"></p>
@@ -468,6 +483,8 @@
     <button type="button" id="botaoCorrigirHtml" class="botao-imagem" style="display:none;background:#15803d;color:#fff;" onclick="aplicarCorrecoesHtml()">Aplicar correções sugeridas</button>
     <p class="ajuda" id="statusCorrecaoHtml"></p>
   </section>
+
+  </aside></div>
 
   <hr style="margin: 40px 0 20px; border: none; border-top: 2px solid #ccc;">
 
