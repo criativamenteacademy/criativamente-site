@@ -691,3 +691,12 @@ body.auth-checking .auth-loading {
   }
 }
 
+
+/* Login e cadastro com Google */
+.auth-google-separator {display:flex;align-items:center;gap:12px;margin:20px 0 16px;color:var(--cinza-quente);font-size:13px;}
+.auth-google-separator::before,.auth-google-separator::after {content:"";height:1px;background:rgba(15,10,5,.15);flex:1;}
+.auth-google-button {width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 14px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#1f2937;font-family:"Inter",sans-serif;font-size:15px;font-weight:600;cursor:pointer;}
+.auth-google-button:hover {background:#f3f4f6;border-color:#94a3b8;}
+.auth-google-button:focus-visible {outline:2px solid #0e7490;outline-offset:2px;}
+.auth-google-button:disabled {opacity:.6;cursor:not-allowed;}
+.auth-google-button svg {flex-shrink:0;}
