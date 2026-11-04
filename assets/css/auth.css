@@ -700,3 +700,35 @@ body.auth-checking .auth-loading {
 .auth-google-button:focus-visible {outline:2px solid #0e7490;outline-offset:2px;}
 .auth-google-button:disabled {opacity:.6;cursor:not-allowed;}
 .auth-google-button svg {flex-shrink:0;}
+
+/* Identidade Estratégia e Essência — telas de autenticação */
+body.auth-page {
+  background-color:#1F2937;
+  background-image:none;
+  color:#1F2937;
+}
+.auth-page .auth-card {
+  background:#E0F2FE;
+  border:1px solid #7BAFC4;
+  border-top:6px solid #D97706;
+  box-shadow:0 16px 48px rgba(0,0,0,.24);
+}
+.auth-page .auth-card__logo,
+.auth-page .auth-card h1,
+.auth-page .auth-field label {color:#1F2937;}
+.auth-page .auth-card__logo span,
+.auth-page .auth-footer-link a {color:#B45309;}
+.auth-page .auth-card p.auth-subtitle,
+.auth-page .auth-footer-link,
+.auth-page .auth-google-separator {color:#334155;}
+.auth-page .auth-field input {background:#fff;color:#1F2937;border-color:#94A3B8;}
+.auth-page .auth-field input:focus {outline:2px solid #0E7490;outline-offset:1px;}
+.auth-page .auth-button {background:#D97706;color:#fff;}
+.auth-page .auth-button:hover {background:#B45309;}
+.auth-page .auth-button--secundario {background:transparent;color:#1F2937;border-color:#0E7490;}
+.auth-page .auth-button--secundario:hover {background:#C7E8F6;}
+.auth-page .auth-google-button {background:#fff;color:#1F2937;border-color:#94A3B8;}
+.auth-page .auth-google-button:hover {background:#F3F4F6;border-color:#0E7490;}
+.auth-page .auth-google-separator::before,
+.auth-page .auth-google-separator::after {background:#94A3B8;}
+.auth-page .botao-mostrar-senha {color:#334155;}
