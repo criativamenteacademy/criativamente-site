@@ -421,7 +421,7 @@
     <textarea id="textoResumoPrecificacao" aria-label="Resumo para precificação" readonly style="width:100%;min-height:280px;margin-top:12px;white-space:pre-wrap"></textarea>
     <p class="ajuda" id="statusResumoPrecificacao" role="status"></p>
   </section>
-  <p class="ajuda" id="statusFinalizacao" role="status">Finalizar registra a conclusão no Firebase. Nenhuma aula será apagada.</p>
+  <p class="ajuda" id="statusFinalizacao" role="status">Finalizar prepara o resumo; Concluir finalização registra a conclusão e limpa a memória temporária.</p>
 
   <button type="button" class="botao-imagem" onclick="listarAulasDoModulo()">🔍 Ver aulas já existentes neste módulo (pra editar)</button>
   <p class="ajuda">Escolha o curso e o número do módulo acima, depois clique aqui. Vai aparecer a lista das aulas já salvas nesse módulo — clique em uma pra carregar ela no formulário e editar.</p>
@@ -662,6 +662,7 @@
       barraAdmin.style.display = 'flex';
       await atualizarBotaoManutencaoGeral();
       await carregarCursos();
+      await atualizarEtapaFinalizacao();
     } else if (usuario) {
       // Logado, mas não é a conta de administrador — nega o acesso.
       signOut(auth);
@@ -1240,7 +1241,8 @@
       campo.value = partes.join('\\n');
       copiar.disabled = false;
       status.textContent = 'Resumo gerado. Revise e use Copiar resumo.';
-    } catch(e) { status.textContent = 'Falha ao gerar resumo: '+e.message; }
+      return campo.value;
+    } catch(e) { status.textContent = 'Falha ao gerar resumo: '+e.message; throw e; }
   };
   window.copiarResumoPrecificacao = async function() {
     const campo = document.getElementById('textoResumoPrecificacao');
@@ -1250,36 +1252,99 @@
     document.getElementById('statusResumoPrecificacao').textContent = 'Resumo copiado.';
   };
 
+  async function atualizarEtapaFinalizacao() {
+    const curso = document.getElementById('curso').value;
+    const botao = document.getElementById('botaoFinalizarCurso');
+    const campo = document.getElementById('textoResumoPrecificacao');
+    const copiar = document.getElementById('copiarResumoPrecificacao');
+    const status = document.getElementById('statusFinalizacao');
+    botao.textContent = 'Finalizar curso';
+    campo.value = '';
+    copiar.disabled = true;
+    if (!curso) return;
+    try {
+      const snap = await getDoc(doc(db, 'cursos', curso));
+      if (document.getElementById('curso').value !== curso) return;
+      const dados = snap.exists() ? snap.data() : {};
+      if (dados.etapaFinalizacao === 'aguardando_confirmacao' && dados.resumoPrecificacao) {
+        campo.value = dados.resumoPrecificacao;
+        copiar.disabled = false;
+        botao.textContent = 'Concluir finalização';
+        status.textContent = 'Resumo disponível para precificação. Copie e confira antes de concluir a finalização.';
+      } else if (dados.etapaFinalizacao === 'concluido' || dados.concluido === true) {
+        botao.textContent = 'Curso concluído';
+        botao.disabled = true;
+        status.textContent = 'Curso já finalizado.';
+      } else {
+        botao.disabled = false;
+        status.textContent = 'Clique em Finalizar curso para preparar o resumo. O curso ainda não será concluído.';
+      }
+    } catch (erro) {
+      status.textContent = 'Não foi possível consultar a finalização: ' + erro.message;
+    }
+  }
+  document.getElementById('curso').addEventListener('change', atualizarEtapaFinalizacao);
+  // O carregamento inicial também restaura a etapa persistida no Firestore.
+  // Após autenticação, a seleção do curso também atualiza a etapa.
+
   window.finalizarCurso = async function() {
     const curso = document.getElementById('curso').value;
     const seletor = document.getElementById('curso');
-    const nome = seletor.options[seletor.selectedIndex]?.textContent || curso;
+    const nome = seletor.options[seletor.selectedIndex]?.textContent?.trim() || curso;
     const status = document.getElementById('statusFinalizacao');
     const botao = document.getElementById('botaoFinalizarCurso');
-    if (!curso || !confirm(`Finalizar o curso "${nome}"? As aulas e módulos permanecerão salvos.`)) return;
+    if (!curso) { status.textContent = 'Selecione um curso.'; return; }
     botao.disabled = true;
-    status.textContent = 'Finalizando curso...';
     try {
-      await setDoc(doc(db, 'cursos', curso), { concluido: true, statusProducao: 'finalizado', finalizadoEm: new Date().toISOString() }, { merge: true });
-      status.textContent = 'Conclusão registrada no Firebase. Solicitando limpeza da memória do curso no n8n...';
-      // O caminho precisa corresponder ao Path configurado no nó "Recebe Finalizar Curso" do n8n.
+      const ref = doc(db, 'cursos', curso);
+      const snap = await getDoc(ref);
+      const dados = snap.exists() ? snap.data() : {};
+      if (dados.etapaFinalizacao === 'concluido' || dados.concluido === true) {
+        status.textContent = 'Este curso já está concluído.';
+        return;
+      }
+      if (dados.etapaFinalizacao !== 'aguardando_confirmacao') {
+        status.textContent = 'Preparando resumo para precificação...';
+        const resumo = await window.gerarResumoPrecificacao();
+        if (!resumo || resumo.length < 200) throw new Error('Resumo vazio ou incompleto.');
+        await setDoc(ref, {
+          resumoPrecificacao: resumo,
+          etapaFinalizacao: 'aguardando_confirmacao',
+          resumoPrecificacaoGeradoEm: new Date().toISOString()
+        }, { merge: true });
+        botao.textContent = 'Concluir finalização';
+        status.textContent = 'Resumo pronto e salvo. Copie para precificação; depois clique em Concluir finalização.';
+        return;
+      }
+      if (!confirm('Concluir definitivamente o curso "' + nome + '"? A memória temporária será limpa após a confirmação.')) return;
+      status.textContent = 'Confirmando finalização e limpando memória temporária...';
       const resposta = await fetch('https://n8n.criativamenteacademy.com/webhook/finalizar-curso', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ curso, curso_id: curso, nome_curso: nome, acao: 'finalizar_curso' })
+        body: JSON.stringify({ curso, curso_id: curso, nome_curso: nome, acao: 'concluir_finalizacao' })
       });
-      if (!resposta.ok) throw new Error('O n8n respondeu HTTP ' + resposta.status + '.');
+      if (!resposta.ok) throw new Error('O n8n respondeu HTTP ' + resposta.status);
       const bruto = await resposta.text();
       let retorno = {};
       if (bruto.trim()) {
-        try { retorno = JSON.parse(bruto); } catch (_) { throw new Error('O n8n não retornou uma confirmação JSON válida.'); }
+        try { retorno = JSON.parse(bruto); }
+        catch (_) { throw new Error('Resposta inválida do n8n. Verifique antes de repetir.'); }
       }
-      const dados = Array.isArray(retorno) ? (retorno[0]?.json || retorno[0] || {}) : (retorno.json || retorno);
-      if (dados.ok === false || dados.sucesso === false || dados.error || dados.erro) throw new Error(dados.mensagem || dados.message || dados.error || dados.erro || 'O n8n não confirmou a limpeza.');
-      status.textContent = `Curso "${nome}" finalizado no Firebase. Solicitação de limpeza enviada ao n8n. Nenhuma aula foi apagada.`;
-      await window.gerarResumoPrecificacao();
-    } catch (erro) { status.textContent = 'Atenção: verifique a conclusão no Firebase e a limpeza no n8n. ' + erro.message; }
-    finally { botao.disabled = false; }
+      const result = Array.isArray(retorno) ? (retorno[0]?.json || retorno[0] || {}) : (retorno.json || retorno);
+      if (result.ok !== true) throw new Error('O n8n não confirmou a limpeza. Verifique as execuções antes de repetir.');
+      await setDoc(ref, {
+        concluido: true,
+        statusProducao: 'finalizado',
+        finalizadoEm: new Date().toISOString(),
+        etapaFinalizacao: 'concluido'
+      }, { merge: true });
+      botao.textContent = 'Curso concluído';
+      status.textContent = 'Curso concluído. Resumo preservado no Firebase e memória temporária limpa.';
+    } catch (erro) {
+      status.textContent = 'Finalização não concluída: ' + erro.message;
+    } finally {
+      if (botao.textContent !== 'Curso concluído') botao.disabled = false;
+    }
   };
 
   window.apagarCursoCompleto = async function() {
