@@ -355,6 +355,8 @@
   .admin-coluna-auditoria {position:sticky;top:18px;border:1px solid #d1d5db;border-radius:12px;padding:20px;background:#f3f4f6;max-height:calc(100vh - 36px);overflow-y:auto;}
   .admin-coluna-auditoria h2 {margin:0 0 10px;color:#1f2937;font-size:21px;}
   #painelAuditoriaHtml {overflow-wrap:anywhere;}
+  #painelResumoPrecificacao {margin-top:22px !important;min-width:0;}
+  #textoResumoPrecificacao {width:100%;box-sizing:border-box;resize:vertical;}
   @media(max-width:950px) {.admin-duas-colunas {grid-template-columns:minmax(0,1fr);} .admin-coluna-auditoria {position:static;max-height:none;}}
 </style>
 </head>
@@ -413,14 +415,7 @@
     <button type="button" class="botao-imagem" id="botaoFinalizarModulo" onclick="finalizarModulo()">Finalizar módulo</button>
     <button type="button" class="botao-imagem" id="botaoFinalizarCurso" onclick="finalizarCurso()">Finalizar curso</button>
   </div>
-  <section id="painelResumoPrecificacao" style="margin:14px 0;padding:16px;border:1px solid #0E7490;border-radius:10px;background:#F3F4F6">
-    <strong>Resumo do curso para precificação</strong>
-    <p class="ajuda">Gerado a partir das aulas salvas após revisão. Confira antes de encaminhar para precificação.</p>
-    <button type="button" class="botao-imagem" onclick="gerarResumoPrecificacao()">Gerar / atualizar resumo</button>
-    <button type="button" class="botao-imagem" id="copiarResumoPrecificacao" onclick="copiarResumoPrecificacao()" disabled>Copiar resumo</button>
-    <textarea id="textoResumoPrecificacao" aria-label="Resumo para precificação" readonly style="width:100%;min-height:280px;margin-top:12px;white-space:pre-wrap"></textarea>
-    <p class="ajuda" id="statusResumoPrecificacao" role="status"></p>
-  </section>
+
   <p class="ajuda" id="statusFinalizacao" role="status">Finalizar prepara o resumo; Concluir finalização registra a conclusão e limpa a memória temporária.</p>
 
   <button type="button" class="botao-imagem" onclick="listarAulasDoModulo()">🔍 Ver aulas já existentes neste módulo (pra editar)</button>
@@ -492,6 +487,14 @@
     <p class="ajuda" id="statusCorrecaoHtml"></p>
   </section>
 
+  <section id="painelResumoPrecificacao" style="margin:14px 0;padding:16px;border:1px solid #0E7490;border-radius:10px;background:#F3F4F6">
+    <strong>Resumo do curso para precificação</strong>
+    <p class="ajuda">Gerado a partir das aulas salvas após revisão. Confira antes de encaminhar para precificação.</p>
+    <button type="button" class="botao-imagem" onclick="gerarResumoPrecificacao()">Gerar / atualizar resumo</button>
+    <button type="button" class="botao-imagem" id="copiarResumoPrecificacao" onclick="copiarResumoPrecificacao()" disabled>Copiar resumo</button>
+    <textarea id="textoResumoPrecificacao" aria-label="Resumo para precificação" readonly style="width:100%;min-height:280px;margin-top:12px;white-space:pre-wrap"></textarea>
+    <p class="ajuda" id="statusResumoPrecificacao" role="status"></p>
+  </section>
   </aside></div>
 
   <hr style="margin: 40px 0 20px; border: none; border-top: 2px solid #ccc;">
