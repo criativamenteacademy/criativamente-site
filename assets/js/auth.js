@@ -8,6 +8,8 @@ import { auth, db } from "./firebase-config.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
   signOut,
   updateProfile,
   sendEmailVerification,
@@ -15,6 +17,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   doc,
+  getDoc,
   setDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
@@ -55,6 +58,26 @@ export async function entrarUsuario(email, senha) {
   return credencial.user;
 }
 
+/** Login/cadastro com Google. Mantém as matrículas independentes do perfil. */
+export async function entrarComGoogle() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  const credencial = await signInWithPopup(auth, provider);
+  const usuario = credencial.user;
+  const referencia = doc(db, "usuarios", usuario.uid);
+  const registro = await getDoc(referencia);
+  if (!registro.exists()) {
+    await setDoc(referencia, {
+      nome: usuario.displayName || usuario.email?.split("@")[0] || "Aluno",
+      email: usuario.email || "",
+      criadoEm: serverTimestamp(),
+      status: "ativa",
+      preferencias: {}
+    });
+  }
+  return usuario;
+}
+
 /**
  * Logout.
  */
@@ -92,6 +115,11 @@ export function traduzirErroFirebase(codigo) {
     "auth/user-not-found": "E-mail ou senha incorretos.",
     "auth/wrong-password": "E-mail ou senha incorretos.",
     "auth/invalid-credential": "E-mail ou senha incorretos.",
+    "auth/popup-closed-by-user": "A janela do Google foi fechada antes da conclusão.",
+    "auth/popup-blocked": "O navegador bloqueou a janela do Google. Permita pop-ups e tente novamente.",
+    "auth/cancelled-popup-request": "A autenticação anterior foi cancelada. Tente novamente.",
+    "auth/account-exists-with-different-credential": "Já existe uma conta com este e-mail. Entre usando o método anterior.",
+    "auth/unauthorized-domain": "O domínio do site não está autorizado no Firebase.",
     "auth/too-many-requests": "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
     "auth/network-request-failed": "Falha de conexão. Verifique sua internet e tente novamente.",
     "auth/expired-action-code": "Este link expirou. Solicite um novo.",
