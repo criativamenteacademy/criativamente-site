@@ -1195,9 +1195,8 @@
     const status = document.getElementById('statusResumoPrecificacao');
     const campo = document.getElementById('textoResumoPrecificacao');
     const copiar = document.getElementById('copiarResumoPrecificacao');
-    campo.value = ''; copiar.disabled = true;
     if (!curso) { status.textContent = 'Selecione um curso.'; return; }
-    status.textContent = 'Lendo os módulos e as aulas salvas...';
+    status.textContent = 'Lendo todas as aulas salvas para análise do DeepSeek...';
     try {
       const modSnap = await getDocs(collection(db, 'cursos', curso, 'modulos'));
       const modulos = [];
@@ -1217,15 +1216,11 @@
         return (docHtml.body?.textContent||'').replace(/\\s+/g,' ').trim();
       };
       const partes = [
-        'RESUMO DO CURSO PARA PRECIFICAÇÃO',
         'Curso: '+nome,
         'Módulos encontrados: '+modulos.length,
         'Aulas encontradas: '+total,
-        'Fonte: conteúdo atualmente salvo no painel administrativo.',
-        'Observação: este documento não constitui uma nova auditoria por IA; confira a versão e a aprovação de cada aula.',
-        'Carga horária: não informada (sem medição confiável).',
-        '',
-        'CONTEÚDO PROGRAMÁTICO E ATIVIDADES'
+        'Fonte: aulas atualmente salvas no Firestore.',
+        'Conteúdo completo extraível de cada aula:'
       ];
       for (const m of modulos) {
         partes.push('', 'MÓDULO '+m.ordem+' — '+m.titulo);
@@ -1233,15 +1228,33 @@
           const conteudo = a.htmlCompleto || a.conteudoHtml || a.conteudo_html || a.conteudo || '';
           const texto = extrair(conteudo);
           partes.push('Aula '+(a.ordem??a.id)+' — '+(a.titulo||'Sem título'));
-          partes.push('Conteúdo e atividades: '+(texto ? texto.slice(0,2500) : 'Não há texto extraível nesta aula.'));
+          partes.push(texto || '[Sem texto extraível]');
         }
       }
-      partes.push('', 'ORIENTAÇÃO PARA PRECIFICAÇÃO',
-        'Avaliar profundidade, aplicabilidade, quantidade de aulas, entregas e mercado. Não presumir carga horária, resultados garantidos ou recursos não documentados.');
-      campo.value = partes.join('\\n');
+      const conteudo_precificacao = partes.join('\\n');
+      if (conteudo_precificacao.length < 200) throw new Error('Conteúdo insuficiente para gerar o resumo.');
+      if (new Blob([conteudo_precificacao]).size > 450000) {
+        throw new Error('Conteúdo excede o limite de envio seguro (450 KB). É necessário dividir a análise em partes; nenhum resumo foi gerado.');
+      }
+      status.textContent = 'DeepSeek analisando o conteúdo do curso...';
+      const resposta = await fetch('https://n8n.criativamenteacademy.com/webhook/finalizar-curso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ curso, curso_id: curso, nome_curso: nome, acao: 'gerar_resumo', conteudo_precificacao })
+      });
+      if (!resposta.ok) throw new Error('O n8n respondeu HTTP ' + resposta.status);
+      const bruto = await resposta.text();
+      let retorno;
+      try { retorno = JSON.parse(bruto); }
+      catch (_) { throw new Error('O n8n não devolveu um JSON válido.'); }
+      const result = Array.isArray(retorno) ? (retorno[0]?.json || retorno[0] || {}) : (retorno?.json || retorno || {});
+      const resumo = String(result.resumo_precificacao || '').trim();
+      if (result.ok !== true || resumo.length < 300) throw new Error('O n8n não devolveu um resumo válido.');
+      if (document.getElementById('curso').value !== curso) throw new Error('O curso selecionado mudou durante a geração. Selecione o curso original e tente novamente.');
+      campo.value = resumo;
       copiar.disabled = false;
-      status.textContent = 'Resumo gerado. Revise e use Copiar resumo.';
-      return campo.value;
+      status.textContent = 'Resumo produzido pelo DeepSeek. Revise antes de utilizar para precificação.';
+      return resumo;
     } catch(e) { status.textContent = 'Falha ao gerar resumo: '+e.message; throw e; }
   };
   window.copiarResumoPrecificacao = async function() {
