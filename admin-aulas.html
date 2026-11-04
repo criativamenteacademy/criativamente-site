@@ -1259,6 +1259,7 @@
     const copiar = document.getElementById('copiarResumoPrecificacao');
     const status = document.getElementById('statusFinalizacao');
     botao.textContent = 'Finalizar curso';
+    botao.disabled = false;
     campo.value = '';
     copiar.disabled = true;
     if (!curso) return;
