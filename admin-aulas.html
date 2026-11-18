@@ -1066,12 +1066,12 @@
   });
 
   function carregarAulaParaEdicao(aulaId, dados) {
-    atualizarSelecaoPosValidacao(aulaId, dados);
     invalidarAprovacao();
     document.getElementById('painelAuditoriaHtml').style.display = 'none';
     const numeroAula = aulaId.replace('aula-', '');
     document.getElementById('aula').value = numeroAula;
     document.getElementById('titulo').value = dados.titulo || '';
+    atualizarSelecaoPosValidacao(aulaId, dados);
     if (dados.formato === 'html-completo' || dados.htmlCompleto) {
       document.getElementById('htmlCompleto').value = dados.htmlCompleto || dados.conteudo || '';
       alternarModoConteudo('html');
@@ -1453,6 +1453,7 @@
   };
 
   let aulaPosValidacao = null;
+  let salvamentoPosValidacao = null;
   const estiloPosValidacao = `<style>:root{--bg:#f6f6f3;--surface:#fff;--ink:#1c2220;--muted:#5d6864;--line:#e2e5e1;--accent:#0e6b5b;--accent-soft:#e5f1ed}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 system-ui,"Segoe UI",Arial,sans-serif}.hero{background:var(--surface);border-bottom:1px solid var(--line)}.hero-in,.layout{max-width:1180px;margin:auto;padding:24px 16px}.layout{display:grid;gap:24px}main{max-width:800px;min-width:0}h1{line-height:1.2}.overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.ov,.task,.result,.callout{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin:18px 0}.task{border-top:4px solid var(--accent)}.callout{border-left:4px solid var(--accent)}input,textarea,select{max-width:100%;font:inherit}button{cursor:pointer}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%}td,th{padding:10px;border:1px solid var(--line)}@media(min-width:1024px){.layout{grid-template-columns:230px minmax(0,1fr)}}@media print{body{background:#fff}.task,.result,.callout{break-inside:avoid}}</style>`;
   function prepararHtmlLegado(conteudo, titulo) {
     if (!conteudo || !conteudo.trim()) throw new Error('A aula antiga está vazia.');
@@ -1486,6 +1487,7 @@
       if(assinatura!==assinaturaContexto() || aulaPosValidacao!==a)throw new Error('A aula selecionada mudou durante a correção. Resultado descartado.');
       document.getElementById('htmlCompleto').value=corrigido;
       invalidarAprovacao();
+      salvamentoPosValidacao={assinatura, curso:a.curso, modulo:a.modulo, aula:a.aula, original:a.conteudo, formato:a.formato, htmlOriginal:a.htmlCompleto};
       liberarParaConferencia(corrigido,'Correção pós-validação recebida. Confira estrutura, atividades e visual antes de salvar.');
       mostrarNotificacaoAula('Correção pós-validação pronta para conferência.');
       status.textContent='HTML corrigido recebido. Abra a prévia e aprove manualmente. A aula original permanece intacta até salvar.';
@@ -1760,6 +1762,7 @@
       return;
     }
     const caminho = `cursos/${curso}/modulos/modulo-${modulo}/aulas/aula-${aula}`;
+    const posValidacao=salvamentoPosValidacao && salvamentoPosValidacao.assinatura===assinaturaContexto() && salvamentoPosValidacao.curso===curso && salvamentoPosValidacao.modulo===modulo && salvamentoPosValidacao.aula===`aula-${aula}` ? salvamentoPosValidacao : null;
     const ref = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`, 'aulas', `aula-${aula}`);
     const estaEditando = document.getElementById('avisoEditando').style.display === 'block';
     botao.disabled = true;
@@ -1776,7 +1779,10 @@
         const refModulo = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`);
         await setDoc(refModulo, { titulo: nomeModulo, ordem: Number(modulo) }, { merge: true });
       }
-      await setDoc(ref, { titulo, ordem: Number(aula), conteudo: '', formato: 'html-completo', htmlCompleto: conteudo, ativo: true });
+      const atualizacao={ titulo, ordem: Number(aula), conteudo: '', formato: 'html-completo', htmlCompleto: conteudo, ativo: true };
+      if (posValidacao && !posValidacao.htmlOriginal && posValidacao.original) atualizacao.backupConteudoLegado = posValidacao.original;
+      await setDoc(ref, atualizacao, {merge:true});
+      salvamentoPosValidacao=null;
       statusDiv.className = 'sucesso';
       statusDiv.textContent = `Aula aprovada e salva em ${caminho}. Próxima aula: ${Number(aula)+1}.`;
       ocultarNotificacaoAula();
