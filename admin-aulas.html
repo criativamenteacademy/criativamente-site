@@ -102,6 +102,9 @@
   }
   #status.sucesso { display: block; background: #e3f5e1; color: #1e6b1e; }
   #status.erro { display: block; background: #fde3e3; color: #9c1c1c; }
+  #statusPosValidacao.status-erro { color:#991B1B !important;background:#FEE2E2;border:2px solid #DC2626;border-radius:8px;padding:12px;font-weight:700;line-height:1.5; }
+  #statusPosValidacao.status-sucesso { color:#166534 !important;background:#DCFCE7;border:1px solid #16A34A;border-radius:8px;padding:12px;font-weight:700;line-height:1.5; }
+  #statusPosValidacao.status-processando { color:#1F2937 !important;background:#F3F4F6;border:1px solid #94A3B8;border-radius:8px;padding:12px; }
   .ajuda {
     font-size: 12px;
     color: var(--cinza);
@@ -1545,6 +1548,7 @@
     document.getElementById('posValidacaoAula').textContent = 'Selecionada: '+aulaId+' — '+aulaPosValidacao.titulo+' ('+(dados.htmlCompleto||dados.formato==='html-completo'?'HTML completo':'formato antigo')+')';
     localizarAchadosPosValidacao();
     document.getElementById('statusPosValidacao').textContent='';
+    document.getElementById('statusPosValidacao').className='ajuda';
   }
   window.corrigirPosValidacao = async function() {
     const botao=document.getElementById('botaoPosValidacao'), status=document.getElementById('statusPosValidacao');
@@ -1556,7 +1560,7 @@
     salvamentoPosValidacao=null;
     const html=a.htmlCompleto || (a.formato==='html-completo'?a.conteudo:prepararHtmlLegado(a.conteudo,a.titulo));
     if (!htmlValido(html)) {status.textContent='Não foi possível preparar HTML válido. A aula original não foi alterada.';return;}
-    botao.disabled=true;status.textContent='Enviando ao Corretor. Nada será salvo automaticamente.';
+    botao.disabled=true;status.className='ajuda status-processando';status.textContent='Enviando ao Corretor. Nada será salvo automaticamente.';
     try {
       const instrucao='Correção pós-validação da aula '+a.titulo+'. IMPORTANTE: não basta envolver o conteúdo antigo em tags HTML. Reconstrua a apresentação da aula no padrão didático e visual da CriativaMente Academy, com seções identificáveis de Objetivos, Atividade prática, Entregável e Checklist; use fundo antracite #1F2937, âmbar #D97706, off-white #F3F4F6 e azul-petróleo #0E7490, com contraste e legibilidade. Preserve todos os textos corretos, imagens, links, exercícios e interações; não remova recursos existentes. Use como padrão estrutural e funcional o HTML completo da CriativaMente Academy: cabeçalho, objetivos, conteúdo, demonstrações, tarefas práticas, entregáveis, checklist e continuidade entre aulas quando pertinente. Preserve integralmente informações corretas, imagens, links, recursos funcionais e identidade visual. Corrija SOMENTE os problemas apontados abaixo; não invente dados nem transforme uma aula em outra. Mantenha HTML completo, CSS e scripts necessários. Para campos interativos use chaves de armazenamento exclusivas desta aula. ACHADOS:\n'+achado;
       const resposta=await fetch('https://n8n.criativamenteacademy.com/webhook/corrigir-aula',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conteudo_html:html,achados:[instrucao],pontos_bons:['Preservar conteúdo correto, imagens, recursos existentes, estrutura didática e padrão visual do curso.']})});
@@ -1572,6 +1576,7 @@
         document.getElementById('htmlCompleto').value=corrigido;
         document.getElementById('botaoVisualizarAluno').disabled=false;
         document.getElementById('botaoAprovarSalvar').disabled=true;
+        status.className='ajuda status-erro';
         status.textContent='Correção recebida, mas REPROVADA: '+falhaEstrutura+' Clique em “Visualizar como aluno” para inspecionar. Salvamento bloqueado; a aula publicada não foi alterada.';
         document.getElementById('avisoAprovacao').textContent='Prévia de correção reprovada: apenas inspeção. Não é permitido aprovar nem salvar.';
         return;
@@ -1581,8 +1586,9 @@
       salvamentoPosValidacao={assinatura, curso:a.curso, modulo:a.modulo, aula:a.aula, original:a.conteudo, formato:a.formato, htmlOriginal:a.htmlCompleto};
       liberarParaConferencia(corrigido,'Correção pós-validação recebida. Confira estrutura, atividades e visual antes de salvar.');
       mostrarNotificacaoAula('Correção pós-validação pronta para conferência.');
+      status.className='ajuda status-sucesso';
       status.textContent='HTML corrigido recebido. Abra a prévia e aprove manualmente. A aula original permanece intacta até salvar.';
-    }catch(e){status.textContent='Correção não concluída: '+e.message;}finally{botao.disabled=false;}
+    }catch(e){status.className='ajuda status-erro';status.textContent='Correção não concluída: '+e.message;}finally{botao.disabled=false;}
   };
   let auditoriaHtmlLiberada = false;
   let conteudoProntoParaAprovacao = '';
