@@ -489,10 +489,13 @@
 
   <section id="painelPosValidacao" style="margin:18px 0;padding:16px;border:1px solid #0e7490;border-radius:10px;background:#fff">
     <h2>Correção Pós-Validação</h2>
-    <p class="ajuda">Selecione uma aula existente na lista à esquerda. Cole apenas os achados desta aula. A correção não salva automaticamente.</p>
+    <p class="ajuda">Envie o relatório completo uma única vez. Selecione uma aula existente: o painel localizará automaticamente os achados correspondentes. Nada será salvo automaticamente.</p>
     <p id="posValidacaoAula" class="ajuda">Nenhuma aula existente selecionada.</p>
-    <label for="relatorioPosValidacao"><strong>Achados do Validador para esta aula</strong></label>
-    <textarea id="relatorioPosValidacao" rows="9" style="width:100%;box-sizing:border-box;margin:8px 0" placeholder="Cole aqui as correções específicas da aula selecionada."></textarea>
+    <label for="arquivoRelatorioPosValidacao"><strong>Relatório completo do Validador (.md, .txt, .json ou .zip)</strong></label>
+    <input type="file" id="arquivoRelatorioPosValidacao" accept=".md,.txt,.json,.zip" onchange="carregarRelatorioPosValidacao(this.files[0])" style="display:block;margin:8px 0">
+    <p id="statusArquivoPosValidacao" class="ajuda" role="status">Nenhum relatório carregado.</p>
+    <label for="relatorioPosValidacao"><strong>Achados identificados para a aula selecionada (confira antes de corrigir)</strong></label>
+    <textarea id="relatorioPosValidacao" rows="9" readonly style="width:100%;box-sizing:border-box;margin:8px 0" placeholder="Envie o relatório e selecione uma aula para localizar os achados automaticamente."></textarea>
     <button type="button" class="botao-imagem" id="botaoPosValidacao" onclick="corrigirPosValidacao()">Corrigir aula selecionada</button>
     <p id="statusPosValidacao" class="ajuda" role="status"></p>
   </section>
@@ -1462,17 +1465,84 @@
     const tituloSeguro = titulo.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'+tituloSeguro+'</title>'+estiloPosValidacao+'</head><body><header class="hero"><div class="hero-in"><h1>'+tituloSeguro+'</h1></div></header><div class="layout"><main id="conteudo">'+conteudo+'</main></div></body></html>';
   }
+  let relatorioCompletoPosValidacao = '';
+  let nomeRelatorioPosValidacao = '';
+  async function lerArquivoRelatorioPosValidacao(arquivo) {
+    const ext=arquivo.name.split('.').pop().toLowerCase();
+    if (arquivo.size>12*1024*1024) throw new Error('Arquivo maior que 12 MB.');
+    if (['md','txt','json'].includes(ext)) return await arquivo.text();
+    if (ext!=='zip') throw new Error('Formato não suportado. Envie .md, .txt, .json ou .zip.');
+    if (!window.JSZip) {
+      await new Promise((resolve,reject)=>{
+        const script=document.createElement('script');
+        script.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        script.onload=resolve;script.onerror=()=>reject(new Error('Não foi possível abrir ZIP. Extraia e envie o arquivo .md ou .txt.'));
+        document.head.appendChild(script);
+      });
+    }
+    const zip=await window.JSZip.loadAsync(await arquivo.arrayBuffer());
+    const candidatos=Object.values(zip.files).filter(f=>!f.dir && /\\.(md|txt|json)$/i.test(f.name) && !f.name.startsWith('__MACOSX/'));
+    if(!candidatos.length)throw new Error('ZIP sem relatório .md, .txt ou .json.');
+    candidatos.sort((a,b)=>Number(/valida|relat[oó]rio/i.test(b.name))-Number(/valida|relat[oó]rio/i.test(a.name)));
+    return await candidatos[0].async('string');
+  }
+  function numeroAulaPosValidacao(a) {
+    const m=String(a.aula||'').match(/(\\d+)$/);
+    return m?Number(m[1]):null;
+  }
+  function localizarAchadosPosValidacao() {
+    const campo=document.getElementById('relatorioPosValidacao');
+    campo.value='';
+    const status=document.getElementById('statusArquivoPosValidacao');
+    if(!relatorioCompletoPosValidacao){status.textContent='Envie o relatório completo para identificar os achados.';return;}
+    if(!aulaPosValidacao){status.textContent='Relatório carregado. Selecione uma aula existente.';return;}
+    const a=aulaPosValidacao;
+    const modulo=String(a.modulo||'').match(/(\\d+)$/);
+    const numeroModulo=modulo?Number(modulo[1]):null;
+    const numeroAula=numeroAulaPosValidacao(a);
+    if(!numeroModulo || !numeroAula){status.textContent='Não foi possível identificar o número do módulo ou da aula. Nenhuma correção será enviada.';return;}
+    const texto=relatorioCompletoPosValidacao.replace(/\\r\\n?/g,'\\n');
+    const secoes=[...texto.matchAll(/^#{1,4}\\s*M[oó]dulo\\s+(\\d+)\\b[^\\n]*$/gim)];
+    const secao=secoes.find(x=>Number(x[1])===numeroModulo);
+    if(!secao){status.textContent='Módulo '+numeroModulo+' não encontrado no relatório. Nenhuma correção será enviada.';return;}
+    const inicio=secao.index+secao[0].length;
+    const seguinte=secoes.find(x=>x.index>secao.index);
+    const corpo=texto.slice(inicio,seguinte?seguinte.index:texto.length).split(/^#{1,4}\\s*(?:M[eé]todo|Retomada|Resultado|Conclus[aã]o)\\b/im)[0];
+    const linhas=corpo.split('\\n');
+    const marcador=new RegExp('^\\\\s*[-*]\\\\s*(?:\\\\*\\\\*)?Aula\\\\s*0?'+numeroAula+'\\\\s*:', 'i');
+    const achados=[];
+    let coletando=false;
+    for(const linha of linhas){
+      if(/^\\s*[-*]\\s*(?:\\*\\*)?Aula\\s+\\d+\\s*:/i.test(linha)){coletando=marcador.test(linha);if(coletando)achados.push(linha);continue;}
+      if(coletando && /^\\s{2,}\\S/.test(linha)){achados.push(linha);continue;}
+      if(coletando)coletando=false;
+    }
+    if(!achados.length){status.textContent='Aula '+numeroAula+' não encontrada no Módulo '+numeroModulo+'. Nenhuma correção será enviada.';return;}
+    campo.value=achados.join('\\n');
+    status.textContent='Relatório '+nomeRelatorioPosValidacao+' carregado. Encontrado: Módulo '+numeroModulo+', Aula '+numeroAula+'. Confira os achados antes de corrigir.';
+  }
+  window.carregarRelatorioPosValidacao = async function(arquivo) {
+    if(!arquivo)return;
+    const status=document.getElementById('statusArquivoPosValidacao');
+    status.textContent='Lendo relatório...';
+    try{
+      const texto=await lerArquivoRelatorioPosValidacao(arquivo);
+      if(!texto.trim())throw new Error('Relatório vazio.');
+      relatorioCompletoPosValidacao=texto;nomeRelatorioPosValidacao=arquivo.name;
+      localizarAchadosPosValidacao();
+    }catch(e){relatorioCompletoPosValidacao='';nomeRelatorioPosValidacao='';document.getElementById('relatorioPosValidacao').value='';status.textContent='Falha ao carregar relatório: '+e.message;}
+  };
   function atualizarSelecaoPosValidacao(aulaId, dados) {
     aulaPosValidacao = { curso:document.getElementById('curso').value, modulo:document.getElementById('modulo').value.trim(), aula:aulaId, titulo:dados.titulo||'', formato:dados.formato||'', conteudo:dados.conteudo||'', htmlCompleto:dados.htmlCompleto||'' };
     document.getElementById('posValidacaoAula').textContent = 'Selecionada: '+aulaId+' — '+aulaPosValidacao.titulo+' ('+(dados.htmlCompleto||dados.formato==='html-completo'?'HTML completo':'formato antigo')+')';
-    document.getElementById('relatorioPosValidacao').value='';
+    localizarAchadosPosValidacao();
     document.getElementById('statusPosValidacao').textContent='';
   }
   window.corrigirPosValidacao = async function() {
     const botao=document.getElementById('botaoPosValidacao'), status=document.getElementById('statusPosValidacao');
     const achado=document.getElementById('relatorioPosValidacao').value.trim();
     const a=aulaPosValidacao;
-    if (!a || !achado) {status.textContent='Selecione uma aula existente e cole os achados específicos dela.';return;}
+    if (!a || !achado) {status.textContent='Selecione uma aula e envie um relatório que contenha achados específicos dela.';return;}
     if (a.curso!==document.getElementById('curso').value || a.modulo!==document.getElementById('modulo').value.trim() || a.aula!=='aula-'+document.getElementById('aula').value.trim() || document.getElementById('avisoEditando').style.display!=='block') {status.textContent='A seleção mudou. Carregue novamente a aula antes de corrigir.';return;}
     const assinatura=assinaturaContexto();
     salvamentoPosValidacao=null;
