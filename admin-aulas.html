@@ -487,6 +487,16 @@
     <p class="ajuda" id="statusCorrecaoHtml"></p>
   </section>
 
+  <section id="painelPosValidacao" style="margin:18px 0;padding:16px;border:1px solid #0e7490;border-radius:10px;background:#fff">
+    <h2>Correção Pós-Validação</h2>
+    <p class="ajuda">Selecione uma aula existente na lista à esquerda. Cole apenas os achados desta aula. A correção não salva automaticamente.</p>
+    <p id="posValidacaoAula" class="ajuda">Nenhuma aula existente selecionada.</p>
+    <label for="relatorioPosValidacao"><strong>Achados do Validador para esta aula</strong></label>
+    <textarea id="relatorioPosValidacao" rows="9" style="width:100%;box-sizing:border-box;margin:8px 0" placeholder="Cole aqui as correções específicas da aula selecionada."></textarea>
+    <button type="button" class="botao-imagem" id="botaoPosValidacao" onclick="corrigirPosValidacao()">Corrigir aula selecionada</button>
+    <p id="statusPosValidacao" class="ajuda" role="status"></p>
+  </section>
+
   <section id="painelResumoPrecificacao" style="margin:14px 0;padding:16px;border:1px solid #0E7490;border-radius:10px;background:#F3F4F6">
     <strong>Resumo do curso para precificação</strong>
     <p class="ajuda">Gerado a partir das aulas salvas após revisão. Confira antes de encaminhar para precificação.</p>
@@ -981,6 +991,9 @@
     const curso = document.getElementById('curso').value;
     const modulo = document.getElementById('modulo').value.trim();
     const lista = document.getElementById('listaAulas');
+    aulaPosValidacao = null;
+    salvamentoPosValidacao=null;
+    document.getElementById('posValidacaoAula').textContent = 'Nenhuma aula existente selecionada.';
     document.getElementById('avisoEditando').style.display = 'none';
 
     if (!modulo) {
@@ -1055,10 +1068,12 @@
 
   function carregarAulaParaEdicao(aulaId, dados) {
     invalidarAprovacao();
+    salvamentoPosValidacao=null;
     document.getElementById('painelAuditoriaHtml').style.display = 'none';
     const numeroAula = aulaId.replace('aula-', '');
     document.getElementById('aula').value = numeroAula;
     document.getElementById('titulo').value = dados.titulo || '';
+    atualizarSelecaoPosValidacao(aulaId, dados);
     if (dados.formato === 'html-completo' || dados.htmlCompleto) {
       document.getElementById('htmlCompleto').value = dados.htmlCompleto || dados.conteudo || '';
       alternarModoConteudo('html');
@@ -1439,6 +1454,48 @@
     }
   };
 
+  let aulaPosValidacao = null;
+  let salvamentoPosValidacao = null;
+  const estiloPosValidacao = `<style>:root{--bg:#f6f6f3;--surface:#fff;--ink:#1c2220;--muted:#5d6864;--line:#e2e5e1;--accent:#0e6b5b;--accent-soft:#e5f1ed}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 system-ui,"Segoe UI",Arial,sans-serif}.hero{background:var(--surface);border-bottom:1px solid var(--line)}.hero-in,.layout{max-width:1180px;margin:auto;padding:24px 16px}.layout{display:grid;gap:24px}main{max-width:800px;min-width:0}h1{line-height:1.2}.overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.ov,.task,.result,.callout{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin:18px 0}.task{border-top:4px solid var(--accent)}.callout{border-left:4px solid var(--accent)}input,textarea,select{max-width:100%;font:inherit}button{cursor:pointer}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%}td,th{padding:10px;border:1px solid var(--line)}@media(min-width:1024px){.layout{grid-template-columns:230px minmax(0,1fr)}}@media print{body{background:#fff}.task,.result,.callout{break-inside:avoid}}</style>`;
+  function prepararHtmlLegado(conteudo, titulo) {
+    if (!conteudo || !conteudo.trim()) throw new Error('A aula antiga está vazia.');
+    const tituloSeguro = titulo.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'+tituloSeguro+'</title>'+estiloPosValidacao+'</head><body><header class="hero"><div class="hero-in"><h1>'+tituloSeguro+'</h1></div></header><div class="layout"><main id="conteudo">'+conteudo+'</main></div></body></html>';
+  }
+  function atualizarSelecaoPosValidacao(aulaId, dados) {
+    aulaPosValidacao = { curso:document.getElementById('curso').value, modulo:document.getElementById('modulo').value.trim(), aula:aulaId, titulo:dados.titulo||'', formato:dados.formato||'', conteudo:dados.conteudo||'', htmlCompleto:dados.htmlCompleto||'' };
+    document.getElementById('posValidacaoAula').textContent = 'Selecionada: '+aulaId+' — '+aulaPosValidacao.titulo+' ('+(dados.htmlCompleto||dados.formato==='html-completo'?'HTML completo':'formato antigo')+')';
+    document.getElementById('relatorioPosValidacao').value='';
+    document.getElementById('statusPosValidacao').textContent='';
+  }
+  window.corrigirPosValidacao = async function() {
+    const botao=document.getElementById('botaoPosValidacao'), status=document.getElementById('statusPosValidacao');
+    const achado=document.getElementById('relatorioPosValidacao').value.trim();
+    const a=aulaPosValidacao;
+    if (!a || !achado) {status.textContent='Selecione uma aula existente e cole os achados específicos dela.';return;}
+    if (a.curso!==document.getElementById('curso').value || a.modulo!==document.getElementById('modulo').value.trim() || a.aula!=='aula-'+document.getElementById('aula').value.trim() || document.getElementById('avisoEditando').style.display!=='block') {status.textContent='A seleção mudou. Carregue novamente a aula antes de corrigir.';return;}
+    const assinatura=assinaturaContexto();
+    salvamentoPosValidacao=null;
+    const html=a.htmlCompleto || (a.formato==='html-completo'?a.conteudo:prepararHtmlLegado(a.conteudo,a.titulo));
+    if (!htmlValido(html)) {status.textContent='Não foi possível preparar HTML válido. A aula original não foi alterada.';return;}
+    botao.disabled=true;status.textContent='Enviando ao Corretor. Nada será salvo automaticamente.';
+    try {
+      const instrucao='Correção pós-validação da aula '+a.titulo+'. Use como padrão estrutural e funcional o HTML completo da CriativaMente Academy: cabeçalho, objetivos, conteúdo, demonstrações, tarefas práticas, entregáveis, checklist e continuidade entre aulas quando pertinente. Preserve integralmente informações corretas, imagens, links, recursos funcionais e identidade visual. Corrija SOMENTE os problemas apontados abaixo; não invente dados nem transforme uma aula em outra. Mantenha HTML completo, CSS e scripts necessários. Para campos interativos use chaves de armazenamento exclusivas desta aula. ACHADOS:\n'+achado;
+      const resposta=await fetch('https://n8n.criativamenteacademy.com/webhook/corrigir-aula',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conteudo_html:html,achados:[instrucao],pontos_bons:['Preservar conteúdo correto, imagens, recursos existentes, estrutura didática e padrão visual do curso.']})});
+      const bruto=await resposta.text();if(!resposta.ok)throw new Error('HTTP '+resposta.status+' '+bruto.slice(0,250));
+      let resultado;try{resultado=JSON.parse(bruto);}catch(_){throw new Error('Resposta do Corretor não é JSON.');}
+      const item=Array.isArray(resultado)?(resultado[0]?.json||resultado[0]||{}):(resultado.json||resultado);
+      const corrigido=item.html_corrigido||item.htmlCorrigido||item.conteudo_html_corrigido||'';
+      if(item.ok===false||!htmlValido(corrigido))throw new Error(item.motivo||'Corretor não devolveu HTML completo válido.');
+      if(assinatura!==assinaturaContexto() || aulaPosValidacao!==a)throw new Error('A aula selecionada mudou durante a correção. Resultado descartado.');
+      document.getElementById('htmlCompleto').value=corrigido;
+      invalidarAprovacao();
+      salvamentoPosValidacao={assinatura, curso:a.curso, modulo:a.modulo, aula:a.aula, original:a.conteudo, formato:a.formato, htmlOriginal:a.htmlCompleto};
+      liberarParaConferencia(corrigido,'Correção pós-validação recebida. Confira estrutura, atividades e visual antes de salvar.');
+      mostrarNotificacaoAula('Correção pós-validação pronta para conferência.');
+      status.textContent='HTML corrigido recebido. Abra a prévia e aprove manualmente. A aula original permanece intacta até salvar.';
+    }catch(e){status.textContent='Correção não concluída: '+e.message;}finally{botao.disabled=false;}
+  };
   let auditoriaHtmlLiberada = false;
   let conteudoProntoParaAprovacao = '';
   let contextoProntoParaAprovacao = '';
@@ -1708,6 +1765,7 @@
       return;
     }
     const caminho = `cursos/${curso}/modulos/modulo-${modulo}/aulas/aula-${aula}`;
+    const posValidacao=salvamentoPosValidacao && salvamentoPosValidacao.assinatura===assinaturaContexto() && salvamentoPosValidacao.curso===curso && salvamentoPosValidacao.modulo===modulo && salvamentoPosValidacao.aula===`aula-${aula}` ? salvamentoPosValidacao : null;
     const ref = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`, 'aulas', `aula-${aula}`);
     const estaEditando = document.getElementById('avisoEditando').style.display === 'block';
     botao.disabled = true;
@@ -1724,7 +1782,11 @@
         const refModulo = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`);
         await setDoc(refModulo, { titulo: nomeModulo, ordem: Number(modulo) }, { merge: true });
       }
-      await setDoc(ref, { titulo, ordem: Number(aula), conteudo: '', formato: 'html-completo', htmlCompleto: conteudo, ativo: true });
+      if (posValidacao && (!existente.exists() || (existente.data().htmlCompleto || existente.data().conteudo || '') !== (posValidacao.htmlOriginal || posValidacao.original))) throw new Error('A aula foi modificada no banco desde que foi carregada. Recarregue antes de salvar para não sobrescrever mudanças.');
+      const atualizacao={ titulo, ordem: Number(aula), conteudo: '', formato: 'html-completo', htmlCompleto: conteudo, ativo: true };
+      if (posValidacao && !posValidacao.htmlOriginal && posValidacao.original && !existente.data()?.backupConteudoLegado) atualizacao.backupConteudoLegado = posValidacao.original;
+      await setDoc(ref, atualizacao, {merge:true});
+      salvamentoPosValidacao=null;
       statusDiv.className = 'sucesso';
       statusDiv.textContent = `Aula aprovada e salva em ${caminho}. Próxima aula: ${Number(aula)+1}.`;
       ocultarNotificacaoAula();
