@@ -1565,9 +1565,17 @@
       const item=Array.isArray(resultado)?(resultado[0]?.json||resultado[0]||{}):(resultado.json||resultado);
       const corrigido=item.html_corrigido||item.htmlCorrigido||item.conteudo_html_corrigido||'';
       if(item.ok===false||!htmlValido(corrigido))throw new Error(item.motivo||'Corretor não devolveu HTML completo válido.');
-      const falhaEstrutura=validarEstruturaAcademy(corrigido);
-      if(falhaEstrutura)throw new Error(falhaEstrutura+' A aula original não foi alterada.');
       if(assinatura!==assinaturaContexto() || aulaPosValidacao!==a)throw new Error('A aula selecionada mudou durante a correção. Resultado descartado.');
+      const falhaEstrutura=validarEstruturaAcademy(corrigido);
+      if(falhaEstrutura){
+        invalidarAprovacao();
+        document.getElementById('htmlCompleto').value=corrigido;
+        document.getElementById('botaoVisualizarAluno').disabled=false;
+        document.getElementById('botaoAprovarSalvar').disabled=true;
+        status.textContent='Correção recebida, mas REPROVADA: '+falhaEstrutura+' Clique em “Visualizar como aluno” para inspecionar. Salvamento bloqueado; a aula publicada não foi alterada.';
+        document.getElementById('avisoAprovacao').textContent='Prévia de correção reprovada: apenas inspeção. Não é permitido aprovar nem salvar.';
+        return;
+      }
       document.getElementById('htmlCompleto').value=corrigido;
       invalidarAprovacao();
       salvamentoPosValidacao={assinatura, curso:a.curso, modulo:a.modulo, aula:a.aula, original:a.conteudo, formato:a.formato, htmlOriginal:a.htmlCompleto};
