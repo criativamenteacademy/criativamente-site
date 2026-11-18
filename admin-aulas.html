@@ -1467,7 +1467,7 @@
   }
   function validarEstruturaAcademy(html) {
     if(!htmlValido(html)) return 'HTML completo inválido.';
-    const texto=html.replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi,' ').replace(/<style\\b[^>]*>[\\s\\S]*?<\\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\\s+/g,' ').toLowerCase();
+    const texto=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').toLowerCase();
     const secoes=[
       ['objetivos',/objetivo|você vai aprender|ao final desta aula/],
       ['atividade prática',/atividade prática|exercício prático|mão na massa|tarefa prática/],
