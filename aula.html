@@ -15,12 +15,21 @@
     #bloco-aula, #bloco-erro { color: #F3F4F6; }
     #aula-titulo, #erro-titulo { color: #F3F4F6 !important; }
     #modulo-nome { color: #D97706 !important; }
-    /* Apenas os dois cursos antigos mantêm a aparência anterior. */
-    body.aula-legada { background: #fff !important; }
-    body.aula-legada #area-principal { background: #fff !important; }
-    body.aula-legada #bloco-aula, body.aula-legada #bloco-erro { color: #1c2220; }
-    body.aula-legada #aula-titulo, body.aula-legada #erro-titulo { color: #1c2220 !important; }
-    body.aula-legada #modulo-nome { color: #B5541A !important; }
+    /* Cursos legados: identidade institucional no entorno, com leitura clara. */
+    body.aula-legada, body.aula-legada #area-principal { background:#1F2937 !important; }
+    body.aula-legada #bloco-aula, body.aula-legada #bloco-erro { color:#F3F4F6; }
+    body.aula-legada #aula-titulo, body.aula-legada #erro-titulo { color:#F3F4F6 !important; }
+    body.aula-legada #modulo-nome { color:#D97706 !important; }
+    body.aula-legada #indice-curso { border-color:#0E7490 !important; }
+    body.aula-legada .aula-conteudo:not(.aula-conteudo--html) {
+      background:#F3F4F6; color:#1F2937; border-radius:12px; padding:22px;
+    }
+    body.aula-legada .aula-conteudo:not(.aula-conteudo--html) h1,
+    body.aula-legada .aula-conteudo:not(.aula-conteudo--html) h2,
+    body.aula-legada .aula-conteudo:not(.aula-conteudo--html) h3 { color:#1F2937; }
+    body.aula-legada .aula-conteudo:not(.aula-conteudo--html) a { color:#0E7490; }
+    body.aula-legada #botao-anterior { border-color:#D97706 !important; color:#D97706 !important; }
+
   </style>
 </head>
 <!--
