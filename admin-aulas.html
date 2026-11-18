@@ -1465,6 +1465,18 @@
     const tituloSeguro = titulo.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'+tituloSeguro+'</title>'+estiloPosValidacao+'</head><body><header class="hero"><div class="hero-in"><h1>'+tituloSeguro+'</h1></div></header><div class="layout"><main id="conteudo">'+conteudo+'</main></div></body></html>';
   }
+  function validarEstruturaAcademy(html) {
+    if(!htmlValido(html)) return 'HTML completo inválido.';
+    const texto=html.replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi,' ').replace(/<style\\b[^>]*>[\\s\\S]*?<\\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\\s+/g,' ').toLowerCase();
+    const secoes=[
+      ['objetivos',/objetivo|você vai aprender|ao final desta aula/],
+      ['atividade prática',/atividade prática|exercício prático|mão na massa|tarefa prática/],
+      ['entregável',/entregável|resultado esperado|o que você vai produzir/],
+      ['checklist',/checklist|lista de verificação|conferência final/]
+    ];
+    const ausentes=secoes.filter(([nome,teste])=>!teste.test(texto)).map(([nome])=>nome);
+    return ausentes.length?'Estrutura didática incompleta. Faltam: '+ausentes.join(', ')+'.':'';
+  }
   let relatorioCompletoPosValidacao = '';
   let nomeRelatorioPosValidacao = '';
   async function lerArquivoRelatorioPosValidacao(arquivo) {
@@ -1546,13 +1558,15 @@
     if (!htmlValido(html)) {status.textContent='Não foi possível preparar HTML válido. A aula original não foi alterada.';return;}
     botao.disabled=true;status.textContent='Enviando ao Corretor. Nada será salvo automaticamente.';
     try {
-      const instrucao='Correção pós-validação da aula '+a.titulo+'. Use como padrão estrutural e funcional o HTML completo da CriativaMente Academy: cabeçalho, objetivos, conteúdo, demonstrações, tarefas práticas, entregáveis, checklist e continuidade entre aulas quando pertinente. Preserve integralmente informações corretas, imagens, links, recursos funcionais e identidade visual. Corrija SOMENTE os problemas apontados abaixo; não invente dados nem transforme uma aula em outra. Mantenha HTML completo, CSS e scripts necessários. Para campos interativos use chaves de armazenamento exclusivas desta aula. ACHADOS:\n'+achado;
+      const instrucao='Correção pós-validação da aula '+a.titulo+'. IMPORTANTE: não basta envolver o conteúdo antigo em tags HTML. Reconstrua a apresentação da aula no padrão didático e visual da CriativaMente Academy, com seções identificáveis de Objetivos, Atividade prática, Entregável e Checklist; use fundo antracite #1F2937, âmbar #D97706, off-white #F3F4F6 e azul-petróleo #0E7490, com contraste e legibilidade. Preserve todos os textos corretos, imagens, links, exercícios e interações; não remova recursos existentes. Use como padrão estrutural e funcional o HTML completo da CriativaMente Academy: cabeçalho, objetivos, conteúdo, demonstrações, tarefas práticas, entregáveis, checklist e continuidade entre aulas quando pertinente. Preserve integralmente informações corretas, imagens, links, recursos funcionais e identidade visual. Corrija SOMENTE os problemas apontados abaixo; não invente dados nem transforme uma aula em outra. Mantenha HTML completo, CSS e scripts necessários. Para campos interativos use chaves de armazenamento exclusivas desta aula. ACHADOS:\n'+achado;
       const resposta=await fetch('https://n8n.criativamenteacademy.com/webhook/corrigir-aula',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conteudo_html:html,achados:[instrucao],pontos_bons:['Preservar conteúdo correto, imagens, recursos existentes, estrutura didática e padrão visual do curso.']})});
       const bruto=await resposta.text();if(!resposta.ok)throw new Error('HTTP '+resposta.status+' '+bruto.slice(0,250));
       let resultado;try{resultado=JSON.parse(bruto);}catch(_){throw new Error('Resposta do Corretor não é JSON.');}
       const item=Array.isArray(resultado)?(resultado[0]?.json||resultado[0]||{}):(resultado.json||resultado);
       const corrigido=item.html_corrigido||item.htmlCorrigido||item.conteudo_html_corrigido||'';
       if(item.ok===false||!htmlValido(corrigido))throw new Error(item.motivo||'Corretor não devolveu HTML completo válido.');
+      const falhaEstrutura=validarEstruturaAcademy(corrigido);
+      if(falhaEstrutura)throw new Error(falhaEstrutura+' A aula original não foi alterada.');
       if(assinatura!==assinaturaContexto() || aulaPosValidacao!==a)throw new Error('A aula selecionada mudou durante a correção. Resultado descartado.');
       document.getElementById('htmlCompleto').value=corrigido;
       invalidarAprovacao();
@@ -1848,6 +1862,7 @@
         const refModulo = doc(db, 'cursos', curso, 'modulos', `modulo-${modulo}`);
         await setDoc(refModulo, { titulo: nomeModulo, ordem: Number(modulo) }, { merge: true });
       }
+      if(posValidacao){const falhaEstrutura=validarEstruturaAcademy(conteudo);if(falhaEstrutura)throw new Error(falhaEstrutura+' Salvamento bloqueado.');}
       if (posValidacao && (!existente.exists() || (existente.data().htmlCompleto || existente.data().conteudo || '') !== (posValidacao.htmlOriginal || posValidacao.original))) throw new Error('A aula foi modificada no banco desde que foi carregada. Recarregue antes de salvar para não sobrescrever mudanças.');
       const atualizacao={ titulo, ordem: Number(aula), conteudo: '', formato: 'html-completo', htmlCompleto: conteudo, ativo: true };
       if (posValidacao && !posValidacao.htmlOriginal && posValidacao.original && !existente.data()?.backupConteudoLegado) atualizacao.backupConteudoLegado = posValidacao.original;
