@@ -1486,39 +1486,35 @@
     candidatos.sort((a,b)=>Number(/valida|relat[oó]rio/i.test(b.name))-Number(/valida|relat[oó]rio/i.test(a.name)));
     return await candidatos[0].async('string');
   }
-  function numeroAulaPosValidacao(a) {
-    const m=String(a.aula||'').match(/(\\d+)$/);
-    return m?Number(m[1]):null;
-  }
   function localizarAchadosPosValidacao() {
     const campo=document.getElementById('relatorioPosValidacao');
     campo.value='';
     const status=document.getElementById('statusArquivoPosValidacao');
     if(!relatorioCompletoPosValidacao){status.textContent='Envie o relatório completo para identificar os achados.';return;}
     if(!aulaPosValidacao){status.textContent='Relatório carregado. Selecione uma aula existente.';return;}
-    const a=aulaPosValidacao;
-    const modulo=String(a.modulo||'').match(/(\\d+)$/);
-    const numeroModulo=modulo?Number(modulo[1]):null;
-    const numeroAula=numeroAulaPosValidacao(a);
-    if(!numeroModulo || !numeroAula){status.textContent='Não foi possível identificar o número do módulo ou da aula. Nenhuma correção será enviada.';return;}
-    const texto=relatorioCompletoPosValidacao.replace(/\\r\\n?/g,'\\n');
-    const secoes=[...texto.matchAll(/^#{1,4}\\s*M[oó]dulo\\s+(\\d+)\\b[^\\n]*$/gim)];
+    const modulo=String(document.getElementById('modulo').value||'').trim();
+    const aula=String(document.getElementById('aula').value||'').trim();
+    const numeroModulo=/^\d+$/.test(modulo)?Number(modulo):null;
+    const numeroAula=/^\d+$/.test(aula)?Number(aula):null;
+    if(!numeroModulo || !numeroAula){status.textContent='Confira os números do módulo e da aula. Nenhuma correção será enviada.';return;}
+    const texto=relatorioCompletoPosValidacao.replace(/\r\n?/g,'\n');
+    const secoes=[...texto.matchAll(/^#{1,4}\s*M[oó]dulo\s+(\d+)\b[^\n]*$/gim)];
     const secao=secoes.find(x=>Number(x[1])===numeroModulo);
     if(!secao){status.textContent='Módulo '+numeroModulo+' não encontrado no relatório. Nenhuma correção será enviada.';return;}
     const inicio=secao.index+secao[0].length;
     const seguinte=secoes.find(x=>x.index>secao.index);
-    const corpo=texto.slice(inicio,seguinte?seguinte.index:texto.length).split(/^#{1,4}\\s*(?:M[eé]todo|Retomada|Resultado|Conclus[aã]o)\\b/im)[0];
-    const linhas=corpo.split('\\n');
-    const marcador=new RegExp('^\\\\s*[-*]\\\\s*(?:\\\\*\\\\*)?Aula\\\\s*0?'+numeroAula+'\\\\s*:', 'i');
+    const corpo=texto.slice(inicio,seguinte?seguinte.index:texto.length).split(/^#{1,4}\s*(?:M[eé]todo|Retomada|Resultado|Conclus[aã]o)\b/im)[0];
+    const linhas=corpo.split('\n');
+    const marcador=new RegExp('^\\s*[-*]\\s*(?:\\*\\*)?Aula\\s*0?'+numeroAula+'\\s*:', 'i');
     const achados=[];
     let coletando=false;
     for(const linha of linhas){
-      if(/^\\s*[-*]\\s*(?:\\*\\*)?Aula\\s+\\d+\\s*:/i.test(linha)){coletando=marcador.test(linha);if(coletando)achados.push(linha);continue;}
-      if(coletando && /^\\s{2,}\\S/.test(linha)){achados.push(linha);continue;}
+      if(/^\s*[-*]\s*(?:\*\*)?Aula\s+\d+\s*:/i.test(linha)){coletando=marcador.test(linha);if(coletando)achados.push(linha);continue;}
+      if(coletando && /^\s{2,}\S/.test(linha)){achados.push(linha);continue;}
       if(coletando)coletando=false;
     }
     if(!achados.length){status.textContent='Aula '+numeroAula+' não encontrada no Módulo '+numeroModulo+'. Nenhuma correção será enviada.';return;}
-    campo.value=achados.join('\\n');
+    campo.value=achados.join('\n');
     status.textContent='Relatório '+nomeRelatorioPosValidacao+' carregado. Encontrado: Módulo '+numeroModulo+', Aula '+numeroAula+'. Confira os achados antes de corrigir.';
   }
   window.carregarRelatorioPosValidacao = async function(arquivo) {
