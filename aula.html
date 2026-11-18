@@ -29,6 +29,12 @@
     body.aula-legada .aula-conteudo:not(.aula-conteudo--html) h3 { color:#1F2937; }
     body.aula-legada .aula-conteudo:not(.aula-conteudo--html) a { color:#0E7490; }
     body.aula-legada #botao-anterior { border-color:#D97706 !important; color:#D97706 !important; }
+    #indice-curso-lista .indice-aula { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+    #indice-curso-lista .indice-aula--concluida::after {
+      content:"";display:block;flex:0 0 12px;width:12px;height:12px;
+      border-radius:50%;background-color:#39FF14;box-shadow:0 0 8px #39FF14;
+      margin-left:auto;
+    }
 
   </style>
 </head>
@@ -149,20 +155,20 @@
           const concluida=concluidas[modulo.id+'_'+item.id]===true;
           const atual=modulo.id===moduloId&&item.id===aulaId;
           link.textContent=(item.titulo||item.id)+(atual?' (atual)':'');
+          link.className='indice-aula'+(concluida?' indice-aula--concluida':'');
           link.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;margin:3px 0;border-radius:6px;color:inherit;text-decoration:underline;';
           if(atual){link.setAttribute('aria-current','page');link.style.fontWeight='700';}
-          if(concluida){
-            const ponto=document.createElement('span');
-            ponto.setAttribute('aria-label','Aula concluída');
-            ponto.title='Aula concluída';
-            ponto.style.cssText='flex:0 0 11px;width:11px;height:11px;border-radius:50%;background:#39FF14;box-shadow:0 0 7px #39FF14;';
-            link.appendChild(ponto);
-          }
+          if(concluida){link.setAttribute('aria-label',(item.titulo||item.id)+' — concluída');}
           grupo.appendChild(link);
         }
         painel.appendChild(grupo);
       }
     }
+    document.getElementById('indice-curso').addEventListener('toggle',async(evento)=>{
+      if(!evento.currentTarget.open||!auth.currentUser)return;
+      try{await atualizarIndiceCurso(auth.currentUser.uid);}
+      catch(erro){console.warn('Não foi possível atualizar indicadores de conclusão:',erro);}
+    });
     async function concluirAulaAtual(uid) {
       await marcarAulaConcluida(uid,cursoId,moduloId,aulaId);
       const modulos=await listarModulos(cursoId);
