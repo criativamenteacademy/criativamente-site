@@ -66,7 +66,6 @@
       <div class="aula-conteudo" id="aula-conteudo"></div>
       <div class="aula-acoes">
         <a class="auth-button" id="botao-anterior" href="#" style="display:none; width:auto; padding:11px 24px; text-decoration:none; text-align:center; background:transparent; border:1px solid #B5541A; color:#B5541A;">← Aula anterior</a>
-        <button class="auth-button" id="botao-concluir" style="width:auto; padding:11px 24px;">Marcar aula como concluída</button>
         <a class="auth-button" id="botao-proxima" href="#" style="display:none; width:auto; padding:11px 24px; text-decoration:none; text-align:center;">Próxima aula →</a>
       </div>
     </article>
@@ -141,7 +140,7 @@
           const concluida=concluidas[modulo.id+'_'+item.id]===true;
           const atual=modulo.id===moduloId&&item.id===aulaId;
           link.textContent=(concluida?'✓ ':atual?'• ':'○ ')+(item.titulo||item.id)+(atual?' (atual)':'');
-          link.style.cssText='display:block;padding:8px 10px;margin:3px 0;border-radius:6px;color:inherit;text-decoration:underline;';
+          link.style.cssText='display:block;padding:8px 10px;margin:3px 0;border-radius:6px;color:'+(concluida?'#22C55E':'inherit')+';text-decoration:underline;';
           if(atual){link.setAttribute('aria-current','page');link.style.fontWeight='700';}
           grupo.appendChild(link);
         }
@@ -297,28 +296,7 @@
       }
     });
 
-    document.getElementById("botao-concluir").addEventListener("click", async () => {
-      const usuario = auth.currentUser;
-      if (!usuario || !cursoId || !aulaId) return;
 
-      const botao = document.getElementById("botao-concluir");
-      botao.disabled = true;
-      botao.textContent = "Salvando...";
-
-      try {
-        const concluido = await concluirAulaAtual(usuario.uid);
-        botao.textContent = "Aula concluída ✓";
-        const botaoProxima = document.getElementById("botao-proxima");
-        if(concluido) {
-          botaoProxima.href = '/certificado.html?curso='+encodeURIComponent(cursoId);
-          botaoProxima.textContent = 'Curso concluído — ver meu certificado';
-        }
-        botaoProxima.style.display = "inline-block";
-      } catch {
-        botao.disabled = false;
-        botao.textContent = "Marcar aula como concluída";
-      }
-    });
   </script>
 
   <script type="module" src="/assets/js/auth-guard.js"></script>
