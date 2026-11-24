@@ -73,7 +73,7 @@
         return;
       }
 
-      if (curso.emManutencao === true) {
+      if ((curso.desativado === true || curso.emManutencao === true)) {
         window.location.replace("/manutencao.html");
         return;
       }

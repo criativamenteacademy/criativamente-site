@@ -15,7 +15,7 @@ try {
   const snapshot = await getDocs(collection(db, 'catalogo_publico'));
   const registros = new Map(snapshot.docs.map(d => [d.id, d.data()]));
   const visivel = (id, d) => {
-    if (d?.excluido === true || d?.ativo === false) return false;
+    if (d?.desativado === true || d?.excluido === true || d?.ativo === false) return false;
     return d ? d.publicado === true : legados.has(id);
   };
   if (container) {

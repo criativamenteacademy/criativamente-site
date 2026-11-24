@@ -6,8 +6,11 @@
     "directory": "./",
     "binding": "ASSETS",
     "run_worker_first": [
-      "/posicionamento-estrategico.html",
-      "/patrimonio-protegido.html"
+      "/posicionamento-estrategico*",
+      "/patrimonio-protegido*",
+      "/negocio-e-estrategia*",
+      "/inteligencia-artificial-e-produtividade*",
+      "/curso-2-inteligencia-artificial-e-produtividade*"
     ]
   }
 }

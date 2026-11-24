@@ -528,6 +528,7 @@
     <!-- Confirmação sensível: exige reautenticação do administrador antes de excluir o conteúdo. -->
     <label for="senhaConfirmacaoExclusao" style="display:block;margin-top:14px;">Senha de acesso ao painel para confirmar a exclusão</label>\n    <input id="senhaConfirmacaoExclusao" type="password" autocomplete="current-password" placeholder="Digite sua senha de acesso" style="display:block;width:100%;max-width:380px;box-sizing:border-box;margin-top:6px;padding:10px;border:1px solid #bca3a3;border-radius:6px;">\n    <button type="button" style="background:#c0392b; color:#fff; border:none; padding:10px 16px; border-radius:6px; cursor:pointer; margin-top:10px;" onclick="apagarCursoCompleto()">🗑️ Apagar todo o conteúdo deste curso</button>
 
+    <hr><p>Desativação reversível do curso selecionado acima. Nenhuma aula será apagada.</p><button type="button" id="botaoDesativarCompleto" onclick="alternarDesativacaoCompleta()" style="background:#9a3412;color:white;padding:12px;border:0;border-radius:6px">Desativar / reativar curso</button><div id="statusDesativacao" role="status"></div>
     <div id="statusApagar" style="margin-top:10px;"></div>
   </div>
 </div>
@@ -592,6 +593,7 @@
     if (cursos.has(selecionadoApagar)) seletorApagar.value = selecionadoApagar;
     await atualizarBotaoManutencaoCurso();
     await atualizarPublicacaoCurso();
+    await atualizarDesativacaoCompleta();
   }
 
   async function atualizarPublicacaoCurso() {
@@ -603,6 +605,7 @@
     try {
       const snap = await getDoc(doc(db, 'cursos', id));
       const d = snap.exists() ? snap.data() : {};
+      if (d.desativado === true) { botao.disabled = true; status.textContent = 'Curso desativado. Reative na zona de perigo.'; return; }
       const publicado = d.visibilidadeGerenciada === true ? d.publicado === true : (['posicionamento-estrategico','patrimonio-protegido'].includes(id) && d.excluido !== true);
       botao.textContent = publicado ? 'Despublicar do site' : 'Publicar no site';
       status.textContent = publicado ? 'Curso publicado no site.' : 'Curso não publicado no site.';
@@ -616,6 +619,7 @@
       const snap = await getDoc(ref);
       if (!snap.exists()) { alert('Curso não encontrado no banco de dados.'); return; }
       const dados = snap.data();
+      if (dados.desativado === true) { alert('Reative o curso primeiro.'); return; }
       if (dados.excluido === true) { alert('Curso excluído não pode ser republicado.'); return; }
       const publicado = dados.visibilidadeGerenciada === true ? dados.publicado === true : (['posicionamento-estrategico','patrimonio-protegido'].includes(id) && dados.excluido !== true);
       if (!confirm(publicado ? 'Retirar este curso do site?' : 'Publicar este curso no site? Verifique antes se a página de vendas existe.')) return;
@@ -1385,6 +1389,45 @@
     }
   };
 
+  async function atualizarDesativacaoCompleta() {
+    const id = document.getElementById('cursoParaApagar').value;
+    const b = document.getElementById('botaoDesativarCompleto');
+    b.disabled = true;
+    if (!id) return;
+    try {
+      const s = await getDoc(doc(db,'cursos',id));
+      if (document.getElementById('cursoParaApagar').value !== id) return;
+      b.textContent = s.data()?.desativado === true ? 'Reativar curso' : 'Desativar curso';
+      b.disabled = !s.exists();
+    } catch(e) { document.getElementById('statusDesativacao').textContent = e.message; }
+  }
+  document.getElementById('cursoParaApagar').addEventListener('change', atualizarDesativacaoCompleta);
+  window.alternarDesativacaoCompleta = async function() {
+    const id = document.getElementById('cursoParaApagar').value;
+    const b = document.getElementById('botaoDesativarCompleto');
+    const status = document.getElementById('statusDesativacao');
+    const campo = document.getElementById('senhaConfirmacaoExclusao');
+    const senha = campo.value; campo.value = '';
+    if (!id || !senha) { status.textContent = 'Selecione o curso e informe a senha do painel.'; return; }
+    b.disabled = true;
+    try {
+      const u = auth.currentUser;
+      if (!u || u.email?.toLowerCase() !== EMAIL_ADMIN.toLowerCase()) throw Error('Sessão administrativa inválida.');
+      await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email,senha));
+      const ref = doc(db,'cursos',id), pub = doc(db,'catalogo_publico',id);
+      const [s,p] = await Promise.all([getDoc(ref),getDoc(pub)]);
+      if (!s.exists() || s.data().excluido === true) throw Error('Curso indisponível.');
+      const d = s.data(), desativado = d.desativado !== true;
+      if (!confirm((desativado?'Desativar ':'Reativar ')+nomeCursoExibicao(id,d)+'?')) return;
+      const lote = writeBatch(db);
+      lote.set(ref,{desativado},{merge:true});
+      const legado = ['posicionamento-estrategico','patrimonio-protegido'].includes(id);
+      lote.set(pub,{...(p.exists()?{}:{publicado:d.visibilidadeGerenciada===true?d.publicado===true:legado,titulo:nomeCursoExibicao(id,d),paginaVendas:d.paginaVendas||'/'+id+'.html'}),desativado},{merge:true});
+      await lote.commit();
+      status.textContent = desativado?'Curso desativado. Conteúdo preservado.':'Curso reativado. Visibilidade anterior preservada.';
+    } catch(e) { status.textContent = 'Falha: '+e.message; }
+    finally { await atualizarDesativacaoCompleta(); await atualizarPublicacaoCurso(); }
+  };
   window.apagarCursoCompleto = async function() {
     const curso = document.getElementById('cursoParaApagar').value;
     const nomeCursoSelect = document.getElementById('cursoParaApagar');

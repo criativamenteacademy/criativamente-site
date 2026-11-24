@@ -216,6 +216,13 @@ async function criarCobranca(request, env, corsHeaders) {
   if (!curso) {
     return jsonResponse({ erro: "Curso n\xE3o encontrado." }, 404, corsHeaders);
   }
+  const disponibilidade = await fetch('https://firestore.googleapis.com/v1/projects/'+env.FIREBASE_PROJECT_ID+'/databases/(default)/documents/catalogo_publico/'+encodeURIComponent(cursoId), {cache:'no-store'});
+  const legado = ['posicionamento-estrategico','patrimonio-protegido'].includes(cursoId);
+  if (!(disponibilidade.status === 404 && legado)) {
+    if (!disponibilidade.ok) return jsonResponse({erro:'Disponibilidade não confirmada.'},503,corsHeaders);
+    const campos = (await disponibilidade.json()).fields || {};
+    if (campos.desativado?.booleanValue === true || campos.publicado?.booleanValue !== true || campos.excluido?.booleanValue === true || campos.ativo?.booleanValue === false) return jsonResponse({erro:'Curso indisponível para compras.'},409,corsHeaders);
+  }
   const cpfLimpo = limparCpf(cpf);
   const headersAsaas = {
     "Content-Type": "application/json",

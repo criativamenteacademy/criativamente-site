@@ -216,6 +216,10 @@
         // content-loader.js aplica, nesta ordem: autenticado + e-mail
         // verificado → conta ativa → curso liberado. Só depois disso
         // o conteúdo real da aula é retornado.
+        const estadoCurso = await getDoc(doc(db,'cursos',cursoId));
+        if (!estadoCurso.exists() || estadoCurso.data().desativado === true || estadoCurso.data().emManutencao === true) {
+          window.location.replace('/curso.html?curso='+encodeURIComponent(cursoId)); return;
+        }
         const aula = await carregarAula(cursoId, moduloId, aulaId);
 
         // Busca o nome do módulo pra mostrar como contexto acima do título da aula

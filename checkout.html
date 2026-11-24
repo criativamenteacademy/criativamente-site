@@ -132,12 +132,23 @@
       document.getElementById("checkout-descricao").textContent = curso.descricao;
     }
 
+    async function disponivel() {
+      const r = await fetch('https://firestore.googleapis.com/v1/projects/criativamente-academy/databases/(default)/documents/catalogo_publico/'+encodeURIComponent(cursoId),{cache:'no-store'});
+      if (r.status===404 && ['posicionamento-estrategico','patrimonio-protegido'].includes(cursoId)) return true;
+      if (!r.ok) return false;
+      const f=(await r.json()).fields||{};
+      return f.publicado?.booleanValue===true && f.desativado?.booleanValue!==true && f.excluido?.booleanValue!==true && f.ativo?.booleanValue!==false;
+    }
     let usuarioAtual = null;
 
-    onAuthStateChanged(auth, (usuario) => {
+    onAuthStateChanged(auth, async (usuario) => {
       if (!usuario) {
         const destino = sanitizarRedirect(window.location.pathname + window.location.search);
         window.location.replace(`/login.html?redirect=${encodeURIComponent(destino)}`);
+        return;
+      }
+      if (!curso || !(await disponivel().catch(()=>false))) {
+        document.querySelector(".auth-loading").textContent = "Curso indisponível para novas inscrições.";
         return;
       }
       usuarioAtual = usuario;
